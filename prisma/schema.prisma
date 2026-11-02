@@ -1,0 +1,202 @@
+// SQLite for local development. Switch provider to "postgresql" for production.
+// Status/role fields are plain strings; allowed values live in src/lib/constants.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  role         String         @default("VENDOR") // VENDOR | BUYER | ADMIN
+  // Set once the user enters the code we emailed them. Required before rating.
+  emailVerifiedAt DateTime?
+  emailCodes   EmailCode[]
+  reviews      Review[]
+  // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
+  termsVersion    String?
+  termsAcceptedAt DateTime?
+  // Suspended users can't log in and their listings and reviews are hidden.
+  suspendedAt     DateTime?
+  suspendReason   String         @default("")
+  // Account deletion anonymizes the user but keeps payment records.
+  deletedAt       DateTime?
+  createdAt    DateTime       @default(now())
+  sessions     Session[]
+  vendor       VendorProfile?
+  reviewed     Payment[]      @relation("ReviewedBy")
+}
+
+model Session {
+  id        String   @id // random token stored in the cookie
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+
+model VendorProfile {
+  id            String         @id @default(cuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName  String
+  phone         String
+  whatsapp      Boolean        @default(false) // phone number also takes WhatsApp messages
+  metro         String // metro slug, see src/lib/metros.ts
+  zip           String
+  about         String         @default("")
+  createdAt     DateTime       @default(now())
+  listings      Listing[]
+  subscriptions Subscription[]
+  payments      Payment[]
+  aiDrafts      AiDraft[]
+  reviews       Review[]
+}
+
+// One-time code emailed to prove the user owns their address.
+model EmailCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// A verified buyer's rating of a seller. One per buyer per seller; editing replaces it.
+model Review {
+  id        String        @id @default(cuid())
+  vendorId  String
+  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  comment   String        @default("")
+  status    String        @default("VISIBLE") // VISIBLE | HIDDEN (removed by admin)
+  vendorReply     String    @default("")
+  vendorRepliedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([vendorId, buyerId])
+}
+
+// One row per AI ad-writer use, for the daily limit.
+model AiDraft {
+  id        String        @id @default(cuid())
+  vendorId  String
+  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@index([vendorId, createdAt])
+}
+
+model Listing {
+  id            String        @id @default(cuid())
+  vendorId      String
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  category      String
+  priceCents    Int?
+  priceUnit     String        @default("") // e.g. "per plate", "per hour"
+  metro         String
+  zip           String
+  // ACTIVE | HIDDEN (by seller) | PENDING_REVIEW | REJECTED | REMOVED (by admin)
+  status        String        @default("ACTIVE")
+  moderationNote String       @default("") // why it was held, rejected or removed
+  views         Int           @default(0)
+  updatedAt     DateTime      @default(now()) @updatedAt
+  // Denormalized from approved ad boosts so browse can sort featured listings first.
+  featuredUntil DateTime?
+  createdAt     DateTime      @default(now())
+  boosts        AdBoost[]
+  reports       Report[]
+
+  @@index([metro, category, status])
+}
+
+// A user's complaint about a listing. Admins review and hide or dismiss.
+model Report {
+  id            String    @id @default(cuid())
+  listingId     String
+  listing       Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reason        String // see REPORT_REASONS in src/lib/legal.ts
+  details       String    @default("")
+  reporterEmail String    @default("")
+  status        String    @default("OPEN") // OPEN | ACTIONED | DISMISSED
+  createdAt     DateTime  @default(now())
+  resolvedAt    DateTime?
+
+  @@index([status])
+}
+
+// A paid monthly plan. Free plan has no row: no active subscription means FREE.
+model Subscription {
+  id        String        @id @default(cuid())
+  vendorId  String
+  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  plan      String // BASIC | PRO
+  status    String        @default("PENDING") // PENDING | ACTIVE | EXPIRED | REJECTED
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime      @default(now())
+  payment   Payment?
+}
+
+// A paid "featured" placement for one listing.
+model AdBoost {
+  id        String    @id @default(cuid())
+  listingId String
+  listing   Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  days      Int
+  status    String    @default("PENDING") // PENDING | ACTIVE | EXPIRED | REJECTED
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  payment   Payment?
+}
+
+// What a vendor paid us, for either a subscription or an ad boost.
+// Manually reviewed by an admin today; a Stripe webhook can mark these APPROVED later.
+model Payment {
+  id             String        @id @default(cuid())
+  vendorId       String
+  vendor         VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  purpose        String // SUBSCRIPTION | AD_BOOST
+  subscriptionId String?       @unique
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  adBoostId      String?       @unique
+  adBoost        AdBoost?      @relation(fields: [adBoostId], references: [id], onDelete: Cascade)
+  amountCents    Int
+  method         String // ZELLE | VENMO | OTHER
+  reference      String
+  status         String        @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNote      String        @default("")
+  reviewedById   String?
+  reviewedBy     User?         @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([status])
+}
+
+// Every admin action, for accountability.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String // e.g. "payment.approve", "listing.remove", "user.suspend"
+  targetType String
+  targetId   String
+  details    String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
