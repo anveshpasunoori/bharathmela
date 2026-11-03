@@ -147,9 +147,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   // browsing in a city uses its clean page (/in/jacksonville/auto-services/oil-change).
   const subs = subcategoriesFor(category);
   const picked = pickedSubcategory(category, params);
-  const subHref = (id?: string) => {
+  const subHref = (id?: string, drop: string[] = []) => {
     const p = new URLSearchParams(pageQuery);
-    for (const k of ["ss", "from", "stay", "deleted"]) p.delete(k);
+    for (const k of ["ss", "from", "stay", "deleted", ...drop]) p.delete(k);
     if (subs) p.delete(subs.param);
     const plain = [...p.keys()].every((k) => k === "category" || k === "metro");
     if (!nearMode && plain) return id ? citySubcategoryPath(metro, category!, id) : cityCategoryPath(metro, category!);
@@ -217,11 +217,21 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       <section className={showingListings ? "space-y-3" : "space-y-3 rounded-xl bg-gradient-to-br from-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"}>
         {showingListings ? (
           <div>
-            {picked && categoryInfo ? (
-              <Link href={subHref()} className="text-sm text-stone-500 hover:text-brand">← All {categoryInfo.label}</Link>
-            ) : (
-              <Link href={home} className="text-sm text-stone-500 hover:text-brand">← All categories</Link>
-            )}
+            <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
+              <Link href={home} className="hover:text-brand">All categories</Link>
+              {categoryInfo && (
+                <>
+                  <span aria-hidden>›</span>
+                  {picked ? <Link href={subHref()} className="hover:text-brand">{categoryInfo.label}</Link> : <span className="text-stone-700">{categoryInfo.label}</span>}
+                </>
+              )}
+              {picked && (
+                <>
+                  <span aria-hidden>›</span>
+                  <span className="text-stone-700">{picked.label}</span>
+                </>
+              )}
+            </nav>
             <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
               {categoryInfo ? (
                 <>
@@ -249,6 +259,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             <p className="mt-1 text-stone-600">Home food, tutors, pujaris, event vendors, rooms and more {where}.</p>
           </div>
         )}
+        {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
         <form className="flex gap-2" role="search">
           {locationInputs}
           {category && <input type="hidden" name="category" value={category} />}
@@ -291,6 +302,16 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 </Link>
               );
             })}
+          </nav>
+        )}
+        {showingListings && !category && (
+          // One scrollable row on phones instead of a wall of wrapped chips.
+          <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Narrow to a category">
+            {CATEGORIES.map((c) => (
+              <Link key={c.id} href={href(c.id)} className="badge shrink-0 whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
+                {c.icon} {c.label}
+              </Link>
+            ))}
           </nav>
         )}
         {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
@@ -382,58 +403,26 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </section>
       )}
 
-      {showingListings && (
-        // One scrollable row on phones instead of a wall of wrapped chips.
-        <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Categories">
-          {/* The current category first, so it's visible without scrolling the row. */}
-          {[...CATEGORIES].sort((a, b) => Number(b.id === category) - Number(a.id === category)).map((c) => (
-            <Link
-              key={c.id}
-              href={href(c.id)}
-              aria-current={category === c.id ? "page" : undefined}
-              className={`badge shrink-0 whitespace-nowrap px-3 py-1.5 ${category === c.id ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}
-            >
-              {c.icon} {c.label}
-            </Link>
-          ))}
-        </nav>
-      )}
-
-      {category && LICENSE_TIPS[category] && <p className="text-xs text-stone-500">{LICENSE_TIPS[category]}</p>}
-
-      {category === "ROOM_RENTAL" && (
-        <div className="space-y-3">
-          <RentalTabs metro={metro} active="offered" />
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-sky-50 px-4 py-3 text-sm ring-1 ring-sky-100">
-            <span>Looking for a room? Post what you need and let owners come to you.</span>
-            <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn py-1.5">I need a place to live</Link>
-          </div>
-        </div>
-      )}
-
       {(q || category) && (
         <div className="space-y-1 text-sm text-stone-600">
-          {listings.length > 1 && (
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />
-              <span className="text-xs text-stone-500" title="Sponsored listings paid to appear first. Pro sellers pay for a higher spot in Recommended.">
-                Recommended order includes paid placement · <Link href="/pricing" className="underline">how it works</Link>
-              </span>
-            </div>
-          )}
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <p>
-              {listings.length} result{listings.length === 1 ? "" : "s"}
+              <span className="font-semibold text-stone-900">{listings.length} result{listings.length === 1 ? "" : "s"}</span>
               {q && <> for &ldquo;{q}&rdquo;</>}
-              {category && <> in {categoryLabel(category)}</>}
-              {picked && <> · {picked.label}</>}
               {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
               {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
               {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
-              {" · "}
-              <Link href={home} className="text-brand">Clear</Link>
+              {q && (
+                <>
+                  {" · "}
+                  <Link href={category ? subHref(picked?.id, ["q"]) : home} className="text-brand">Clear search</Link>
+                </>
+              )}
             </p>
-            <SaveSearchButton query={pageQuery} saved={searchSaved} />
+            <div className="flex items-center gap-2">
+              <SaveSearchButton query={pageQuery} saved={searchSaved} />
+              {listings.length > 1 && <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />}
+            </div>
           </div>
           {movedFrom && q && (
             <p>
@@ -512,6 +501,27 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       )}
 
+      {showingListings && (
+        <div className="space-y-1 text-xs text-stone-500">
+          {category && LICENSE_TIPS[category] && <p>Tip: {LICENSE_TIPS[category]}</p>}
+          {listings.length > 1 && (
+            <p title="Sponsored listings paid to appear first. Pro sellers pay for a higher spot in Recommended.">
+              The Recommended order includes paid placement · <Link href="/pricing" className="underline">how it works</Link>
+            </p>
+          )}
+        </div>
+      )}
+
+      {category === "ROOM_RENTAL" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
+          <div>
+            <p className="font-semibold">Looking for a room?</p>
+            <p className="text-sm text-stone-600">Post what you need and let owners come to you.</p>
+          </div>
+          <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
+        </div>
+      )}
+
       {(category === "GARAGE_SALE" || category === "ROOM_RENTAL") && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
           <div>
@@ -535,6 +545,19 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           </div>
           <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
         </div>
+      )}
+
+      {category && (
+        <section>
+          <h2 className="mb-2 text-sm font-semibold text-stone-700">Other categories {where}</h2>
+          <nav className="flex flex-wrap gap-2 text-sm" aria-label="Other categories">
+            {CATEGORIES.filter((c) => c.id !== category).map((c) => (
+              <Link key={c.id} href={href(c.id)} className="badge whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
+                {c.icon} {c.label}
+              </Link>
+            ))}
+          </nav>
+        </section>
       )}
     </div>
   );
