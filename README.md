@@ -147,7 +147,9 @@ Location is app-wide and lives in the top bar ("📍 Fremont, CA ▾") on every 
   - A picked city keeps only the metro.
   - Nothing goes in the database (`src/lib/user-location.ts`, `src/lib/geo.ts`).
 - **Overrides:** a `?metro=` in the URL (e.g. "Found in other cities" links) wins for that page.
-- **Near-you browsing:** with a precise location, home and category pages browse within 5/10/25/50 miles across metros, sort by distance and label "N mi away". "All of <metro>" switches back to metro browsing. Visitors far from every metro see their own city and the nearest metro's distance.
+- **Near-you browsing:** with a precise location, home and category pages browse within 5/10/25/50/100 miles across metros, sort by distance and label "N mi away". "All of <metro>" switches back to metro browsing; it's only offered when that metro is within 60 miles (`LOCAL_MILES`).
+- **Far from every metro:** pages say so plainly ("BharathMela isn't in Billings, MT yet. Showing Denver, CO, our nearest city (454 mi away)") instead of passing the nearest metro off as local.
+- **Metros:** 25 cities in `src/lib/metros.ts`, including Jacksonville, Orlando, Tampa Bay and Miami. Add a city there with its center and time zone.
 
 ## Buyer experience
 

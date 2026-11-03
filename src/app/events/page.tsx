@@ -4,6 +4,7 @@ import { type EventWhen, upcomingEvents } from "@/lib/event-data";
 import { EVENT_TYPES, FESTIVALS, eventTypeLabel, isEventType, isFestival } from "@/lib/events";
 import { metroName } from "@/lib/metros";
 import { resolveLocation } from "@/lib/user-location";
+import { FarNote } from "@/components/FarNote";
 
 export const metadata = {
   title: "Indian events near you – BharathMela",
@@ -25,7 +26,7 @@ export default async function EventsPage({
 }) {
   const p = await searchParams;
   // Default to the city of the visitor's saved location.
-  const { metro } = await resolveLocation(p.metro);
+  const { metro, far } = await resolveLocation(p.metro);
   const type = p.type && isEventType(p.type) ? p.type : undefined;
   const festival = p.festival && isFestival(p.festival) ? p.festival : undefined;
   const when = (WHEN.find((w) => w.id === p.when)?.id ?? "all") as EventWhen;
@@ -96,6 +97,7 @@ export default async function EventsPage({
         </details>
       </div>
 
+      <FarNote far={far} metro={metro} />
       <p className="text-sm text-stone-600">
         {events.length} upcoming event{events.length === 1 ? "" : "s"} in {metroName(metro)}
         {type && <> · {eventTypeLabel(type)}</>}

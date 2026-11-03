@@ -15,8 +15,9 @@ import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } fro
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
 import { resolveLocation } from "@/lib/user-location";
+import { FarNote } from "@/components/FarNote";
 
-const RADII = [5, 10, 25, 50];
+const RADII = [5, 10, 25, 50, 100];
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
 export default async function Home({
@@ -47,7 +48,7 @@ export default async function Home({
 }) {
   const params = await searchParams;
   // With a saved location and no city picked, browse "near you" by radius across metros.
-  const { place, metro } = await resolveLocation(params.metro);
+  const { place, metro, far } = await resolveLocation(params.metro);
   const nearMode = !!place && !isMetro(params.metro);
   const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
   const placeMetro = place ? metroFor(place) : null;
@@ -185,11 +186,15 @@ export default async function Home({
                 </Link>
               );
             })}
-            <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-              All of {metroName(metro)}
-            </Link>
+            {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
+            {!far && (
+              <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                All of {metroName(metro)}
+              </Link>
+            )}
           </nav>
         )}
+        {!nearMode && <FarNote far={far} metro={metro} />}
       </section>
 
       {!showingListings && (
@@ -440,10 +445,10 @@ export default async function Home({
           <p>{q || diet.length ? `Nothing matches ${where} yet.` : `No listings ${where} yet.`}</p>
           {nearMode && (
             <p className="mt-2 text-sm">
-              {radius < 50 && (
+              {radius < 100 && (
                 <>
-                  <Link href={`/?${new URLSearchParams({ radius: "50", ...(category ? { category } : {}), ...(q ? { q } : {}) })}`} className="font-semibold text-brand">
-                    Search within 50 miles
+                  <Link href={`/?${new URLSearchParams({ radius: String(RADII.find((r) => r > radius)), ...(category ? { category } : {}), ...(q ? { q } : {}) })}`} className="font-semibold text-brand">
+                    Search within {RADII.find((r) => r > radius)} miles
                   </Link>
                   {" · "}
                 </>

@@ -4,6 +4,7 @@ import { RentalTabs } from "@/components/RentalTabs";
 import { WantedCard } from "@/components/WantedCard";
 import { metroName } from "@/lib/metros";
 import { resolveLocation } from "@/lib/user-location";
+import { FarNote } from "@/components/FarNote";
 import { SPACE_TYPES } from "@/lib/rentals";
 import { browseWanted, firstName, wantedNeeds, wantedSpaceLabels } from "@/lib/rooms-wanted";
 
@@ -19,7 +20,7 @@ export default async function RoomsWantedPage({
 }) {
   const p = await searchParams;
   // Default to the city of the visitor's saved location.
-  const { metro } = await resolveLocation(p.metro);
+  const { metro, far } = await resolveLocation(p.metro);
   const rent = Number(p.rent) > 0 ? Math.round(Number(p.rent) * 100) : undefined;
   const space = SPACE_TYPES.some((t) => t.id === p.space) ? p.space : undefined;
   const by = /^\d{4}-\d{2}-\d{2}$/.test(p.by ?? "") ? p.by : undefined;
@@ -70,6 +71,7 @@ export default async function RoomsWantedPage({
         </form>
       </FilterPanel>
 
+      <FarNote far={far} metro={metro} />
       <p className="text-sm text-stone-600">{posts.length} {posts.length === 1 ? "person" : "people"} looking in {metroName(metro)}</p>
       {posts.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

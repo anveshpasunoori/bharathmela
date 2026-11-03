@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
 import { type Place, metroFor, placeFromCoords } from "./geo";
-import { DEFAULT_METRO, isMetro } from "./metros";
+import { DEFAULT_METRO, LOCAL_MILES, isMetro } from "./metros";
 
 // The visitor's chosen location, kept only in a cookie on their device (never in our database).
 const COOKIE = "loc";
@@ -66,13 +66,17 @@ async function ipGuess(): Promise<Place | null> {
 
 // Which metro a page should show: a city in the URL wins, then the visitor's saved place, then their
 // chosen city, then a guess from their connection. `place` is only set for a precise, saved location.
+// `far` is set when the metro came from where the visitor is but is too far away to call local.
 export async function resolveLocation(paramMetro?: string) {
   const [place, chosen] = await Promise.all([getUserLocation(), getMetroChoice()]);
   const guess = !place && !chosen ? await ipGuess() : null;
-  const metro = isMetro(paramMetro)
-    ? paramMetro
-    : place
-      ? metroFor(place).metro
-      : (chosen ?? (guess ? metroFor(guess).metro : DEFAULT_METRO));
-  return { place, guess, metro, chosen: !!chosen, overridden: isMetro(paramMetro) };
+  const overridden = isMetro(paramMetro);
+  const from = place ?? guess;
+  const auto = from ? metroFor(from) : null;
+  const metro = overridden ? paramMetro : place ? auto!.metro : (chosen ?? auto?.metro ?? DEFAULT_METRO);
+  const far =
+    from && auto && !overridden && metro === auto.metro && auto.miles > LOCAL_MILES
+      ? { city: `${from.city}, ${from.state}`, miles: Math.round(auto.miles) }
+      : null;
+  return { place, guess, metro, chosen: !!chosen, overridden, far };
 }
