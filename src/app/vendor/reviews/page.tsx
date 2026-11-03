@@ -24,7 +24,7 @@ export default async function VendorReviewsPage() {
           abusive, contact support and we&apos;ll review it.
         </p>
       </div>
-      {reviews.length === 0 && <p className="card text-stone-600">No ratings yet. Ask happy customers to rate you on DesiBazaar.</p>}
+      {reviews.length === 0 && <p className="card text-stone-600">No ratings yet. Ask happy customers to rate you on BharathMela.</p>}
       {reviews.map((r) => (
         <div key={r.id} className="card space-y-2">
           <div className="flex items-center justify-between">

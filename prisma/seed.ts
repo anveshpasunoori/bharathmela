@@ -8,7 +8,7 @@ const db = new PrismaClient();
 const DAY_MS = 86_400_000;
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@desibazaar.test";
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@bharathmela.test";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin-dev-password";
   await db.user.upsert({
     where: { email: adminEmail },
@@ -27,7 +27,7 @@ async function main() {
 
   const samples = [
     {
-      email: "lakshmi@desibazaar.test",
+      email: "lakshmi@bharathmela.test",
       name: "Lakshmi R",
       businessName: "Lakshmi's Andhra Kitchen",
       phone: "(408) 555-0141",
@@ -43,7 +43,7 @@ async function main() {
       ],
     },
     {
-      email: "pandit.sharma@desibazaar.test",
+      email: "pandit.sharma@bharathmela.test",
       name: "Ravi Sharma",
       businessName: "Pandit Ravi Sharma",
       phone: "(510) 555-0199",
@@ -56,7 +56,7 @@ async function main() {
       ],
     },
     {
-      email: "sruthi.arts@desibazaar.test",
+      email: "sruthi.arts@bharathmela.test",
       name: "Sruthi V",
       businessName: "Sruthi Laya Kala Kendra",
       phone: "(408) 555-0177",
@@ -69,7 +69,7 @@ async function main() {
       ],
     },
     {
-      email: "venkat.rooms@desibazaar.test",
+      email: "venkat.rooms@bharathmela.test",
       name: "Venkat P",
       businessName: "Venkat P",
       phone: "(408) 555-0162",
@@ -83,7 +83,7 @@ async function main() {
       ],
     },
     {
-      email: "priya.realtor@desibazaar.test",
+      email: "priya.realtor@bharathmela.test",
       name: "Priya Nair",
       businessName: "Priya Nair Realty",
       phone: "(408) 555-0188",
@@ -97,7 +97,7 @@ async function main() {
       ],
     },
     {
-      email: "rao.law@desibazaar.test",
+      email: "rao.law@bharathmela.test",
       name: "Srinivas Rao",
       businessName: "Rao Immigration Law, PC",
       phone: "(650) 555-0175",
@@ -111,7 +111,7 @@ async function main() {
       ],
     },
     {
-      email: "lens.lights@desibazaar.test",
+      email: "lens.lights@bharathmela.test",
       name: "Karthik Reddy",
       businessName: "Lens & Lights Studio",
       phone: "(408) 555-0133",
@@ -125,7 +125,7 @@ async function main() {
       ],
     },
     {
-      email: "baraat.beats@desibazaar.test",
+      email: "baraat.beats@bharathmela.test",
       name: "Harpreet Singh",
       businessName: "Baraat Beats DJ & Decor",
       phone: "(510) 555-0156",
@@ -139,7 +139,7 @@ async function main() {
       ],
     },
     {
-      email: "utsav.rentals@desibazaar.test",
+      email: "utsav.rentals@bharathmela.test",
       name: "Lakshmi Narayanan",
       businessName: "Utsav Party Rentals",
       phone: "(408) 555-0122",
@@ -153,7 +153,7 @@ async function main() {
       ],
     },
     {
-      email: "meena.tutor@desibazaar.test",
+      email: "meena.tutor@bharathmela.test",
       name: "Meena K",
       businessName: "Meena's Math & Telugu Classes",
       phone: "(972) 555-0123",
@@ -224,7 +224,7 @@ async function main() {
   }
 
   // One vendor waiting for an upgrade approval, so the admin queue has something in it.
-  const meena = await db.user.findUnique({ where: { email: "meena.tutor@desibazaar.test" }, include: { vendor: true } });
+  const meena = await db.user.findUnique({ where: { email: "meena.tutor@bharathmela.test" }, include: { vendor: true } });
   if (meena?.vendor && !(await db.payment.count({ where: { vendorId: meena.vendor.id } }))) {
     await db.subscription.create({
       data: {
@@ -247,20 +247,20 @@ async function main() {
     const PT = "America/Los_Angeles";
     const CT = "America/Chicago";
     const events = [
-      { email: "lakshmi@desibazaar.test", metro: "bay-area", tz: PT, offset: 5, start: "11:00", end: "20:00",
+      { email: "lakshmi@bharathmela.test", metro: "bay-area", tz: PT, offset: 5, start: "11:00", end: "20:00",
         title: "Diwali Mela 2026 – food stalls, dance & fireworks show", type: "FESTIVAL", festival: "Diwali",
         description: "Family Diwali celebration with 30+ food and shopping stalls, classical and Bollywood dance performances, rangoli contest for kids and a fireworks show at 7:30 PM. Free parking.",
         venueName: "Santa Clara Convention Center", address: "5001 Great America Pkwy, Santa Clara, CA 95054", isFree: false, priceCents: 1000,
         ticketUrl: "https://www.eventbrite.com/e/diwali-mela-sample" },
-      { email: "sruthi.arts@desibazaar.test", metro: "bay-area", tz: PT, offset: 9, start: "17:30", end: "20:30",
+      { email: "sruthi.arts@bharathmela.test", metro: "bay-area", tz: PT, offset: 9, start: "17:30", end: "20:30",
         title: "Carnatic vocal concert & student Bharatanatyam recital", type: "CONCERT", festival: "",
         description: "Annual recital by students of Sruthi Laya Kala Kendra, followed by a Carnatic vocal concert with violin and mridangam accompaniment. All are welcome.",
         venueName: "Cupertino Community Hall", address: "10350 Torre Ave, Cupertino, CA 95014", isFree: true, priceCents: null, ticketUrl: "" },
-      { email: "pandit.sharma@desibazaar.test", metro: "bay-area", tz: PT, offset: 3, start: "10:00", end: "13:00",
+      { email: "pandit.sharma@bharathmela.test", metro: "bay-area", tz: PT, offset: 3, start: "10:00", end: "13:00",
         title: "Community Satyanarayan Puja & prasadam", type: "RELIGIOUS", festival: "",
         description: "Monthly community Satyanarayan Vratham with katha in Telugu and Hindi. Families can sponsor a kalasham. Prasadam lunch served after the puja.",
         venueName: "Fremont Community Center", address: "40204 Paseo Padre Pkwy, Fremont, CA 94538", isFree: true, priceCents: null, ticketUrl: "" },
-      { email: "meena.tutor@desibazaar.test", metro: "dallas", tz: CT, offset: 12, start: "19:00", end: "23:00",
+      { email: "meena.tutor@bharathmela.test", metro: "dallas", tz: CT, offset: 12, start: "19:00", end: "23:00",
         title: "Navratri Garba & Dandiya Night", type: "FESTIVAL", festival: "Navratri / Garba / Dandiya",
         description: "Live dhol and singers, garba and dandiya raas for all ages, dandiya sticks available at the door, Gujarati snacks on sale.",
         venueName: "Plano Event Center", address: "2000 E Spring Creek Pkwy, Plano, TX 75074", isFree: false, priceCents: 1500,
@@ -282,10 +282,10 @@ async function main() {
   // Sample "I need a place" requests from a seeded renter (password "buyer-dev-password").
   if (!(await db.roomWanted.count())) {
     const renter = await db.user.upsert({
-      where: { email: "anil.renter@desibazaar.test" },
+      where: { email: "anil.renter@bharathmela.test" },
       update: {},
       create: {
-        email: "anil.renter@desibazaar.test",
+        email: "anil.renter@bharathmela.test",
         name: "Anil Kumar",
         role: "BUYER",
         passwordHash: await bcrypt.hash("buyer-dev-password", 10),

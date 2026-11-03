@@ -43,7 +43,14 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
         </p>
       )}
       <div className="mt-3 flex items-baseline justify-between text-sm">
-        <span className="text-stone-500">{listing.vendor.businessName}</span>
+        <span className="text-stone-500">
+          {listing.vendor.businessName}
+          {listing.distanceMiles != null && (
+            <span className="block text-xs">
+              📍 {listing.distanceMiles < 1 ? "under 1 mi" : `${Math.round(listing.distanceMiles)} mi`} away
+            </span>
+          )}
+        </span>
         {listing.priceCents != null && (
           <span className="font-semibold">
             {formatUSD(listing.priceCents)} <span className="font-normal text-stone-500">{listing.priceUnit}</span>

@@ -11,7 +11,9 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <ul>
         <li>Sellers: name, email, phone, business name, city and ZIP, listings, and payment references you submit.</li>
-        <li>Anyone: reports you send us (and your email if you give it). If you tap &ldquo;Use my location&rdquo;, your browser&apos;s location is used only to pick your nearest city and is not stored.</li>
+        <li>Anyone: reports you send us (and your email if you give it). If you tap &ldquo;Use my location&rdquo; or enter a ZIP code, we look up your city on our own server (no outside
+          location service) and remember your city, ZIP and approximate area (rounded to about 1 km) in a cookie on your device for up to 6 months,
+          so we can show listings near you. We don&apos;t store it in our database. Use &ldquo;forget&rdquo; next to your location to remove it.</li>
         <li>Basic technical data such as a login cookie.</li>
       </ul>
 

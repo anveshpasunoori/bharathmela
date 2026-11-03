@@ -3,10 +3,12 @@ import { EventCard } from "@/components/EventCard";
 import { LocationPicker } from "@/components/LocationPicker";
 import { type EventWhen, upcomingEvents } from "@/lib/event-data";
 import { EVENT_TYPES, FESTIVALS, eventTypeLabel, isEventType, isFestival } from "@/lib/events";
+import { metroFor } from "@/lib/geo";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
+import { getUserLocation } from "@/lib/user-location";
 
 export const metadata = {
-  title: "Indian events near you – DesiBazaar",
+  title: "Indian events near you – BharathMela",
   description: "Concerts, dance performances, festival celebrations, pujas and community events in your US city.",
 };
 
@@ -24,7 +26,9 @@ export default async function EventsPage({
   searchParams: Promise<{ metro?: string; type?: string; festival?: string; when?: string; free?: string; q?: string }>;
 }) {
   const p = await searchParams;
-  const metro = isMetro(p.metro) ? p.metro : DEFAULT_METRO;
+  // Default to the city of the visitor's saved location.
+  const place = await getUserLocation();
+  const metro = isMetro(p.metro) ? p.metro : place ? metroFor(place).metro : DEFAULT_METRO;
   const type = p.type && isEventType(p.type) ? p.type : undefined;
   const festival = p.festival && isFestival(p.festival) ? p.festival : undefined;
   const when = (WHEN.find((w) => w.id === p.when)?.id ?? "all") as EventWhen;
@@ -54,7 +58,7 @@ export default async function EventsPage({
           <button className="btn">Search</button>
         </form>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <LocationPicker metro={metro} basePath="/events" />
+          <LocationPicker metro={metro} basePath="/events" place={place} />
           <Link href="/vendor/events/new" className="text-sm font-semibold text-brand">Organizing something? Post an event →</Link>
         </div>
       </section>

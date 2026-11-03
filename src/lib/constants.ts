@@ -1,16 +1,16 @@
 export const CATEGORIES = [
-  { id: "FOOD", label: "Home Food & Cloud Kitchens", priceHint: "per plate" },
-  { id: "TUTORING", label: "Tutoring & Classes", priceHint: "per hour" },
-  { id: "DANCE_MUSIC", label: "Dance, Music & Sangeetham", priceHint: "per month" },
-  { id: "PUJARI", label: "Pujari & Religious Services", priceHint: "per puja" },
-  { id: "EVENT_SERVICES", label: "Weddings & Event Services", priceHint: "starting at" },
-  { id: "DOMESTIC_HELP", label: "Domestic Help & Nannies", priceHint: "per hour" },
-  { id: "ROOM_RENTAL", label: "Room Rentals", priceHint: "per month" },
-  { id: "REALTOR", label: "Realtors & Real Estate", priceHint: "" },
-  { id: "LEGAL", label: "Lawyers & Legal Services", priceHint: "per hour" },
-  { id: "ART", label: "Art & Crafts", priceHint: "per item" },
-  { id: "CLOTHING", label: "Clothing & Jewelry", priceHint: "per item" },
-  { id: "GOODS", label: "Other Goods & Services", priceHint: "" },
+  { id: "FOOD", label: "Home Food & Cloud Kitchens", priceHint: "per plate", icon: "🍛" },
+  { id: "TUTORING", label: "Tutoring & Classes", priceHint: "per hour", icon: "📚" },
+  { id: "DANCE_MUSIC", label: "Dance, Music & Sangeetham", priceHint: "per month", icon: "💃" },
+  { id: "PUJARI", label: "Pujari & Religious Services", priceHint: "per puja", icon: "🪔" },
+  { id: "EVENT_SERVICES", label: "Weddings & Event Services", priceHint: "starting at", icon: "📸" },
+  { id: "DOMESTIC_HELP", label: "Domestic Help & Nannies", priceHint: "per hour", icon: "🧹" },
+  { id: "ROOM_RENTAL", label: "Room Rentals", priceHint: "per month", icon: "🏠" },
+  { id: "REALTOR", label: "Realtors & Real Estate", priceHint: "", icon: "🏡" },
+  { id: "LEGAL", label: "Lawyers & Legal Services", priceHint: "per hour", icon: "⚖️" },
+  { id: "ART", label: "Art & Crafts", priceHint: "per item", icon: "🎨" },
+  { id: "CLOTHING", label: "Clothing & Jewelry", priceHint: "per item", icon: "🥻" },
+  { id: "GOODS", label: "Other Goods & Services", priceHint: "", icon: "🛍️" },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];

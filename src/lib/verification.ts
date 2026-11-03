@@ -21,8 +21,8 @@ export async function sendVerificationCode(user: { id: string; email: string; na
   });
   await sendEmail(
     user.email,
-    `Your DesiBazaar code: ${code}`,
-    `Hi ${user.name},\n\nYour DesiBazaar verification code is ${code}. It expires in 15 minutes.\n\nIf you didn't sign up, ignore this email.`,
+    `Your BharathMela code: ${code}`,
+    `Hi ${user.name},\n\nYour BharathMela verification code is ${code}. It expires in 15 minutes.\n\nIf you didn't sign up, ignore this email.`,
   );
   return {};
 }

@@ -3,7 +3,7 @@
 // Bump when the Terms change materially; sellers who accepted an older version can be re-prompted.
 export const TERMS_VERSION = "2026-11-02";
 
-export const SITE_NAME = "DesiBazaar";
+export const SITE_NAME = "BharathMela";
 
 export const PLATFORM_DISCLAIMER =
   `${SITE_NAME} is a listing platform only. Listings are posted by independent sellers, not by ${SITE_NAME}. ` +
@@ -24,7 +24,7 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
       "Selling food as \"Organic\" requires USDA organic certification once your organic sales pass $5,000 a year, and only certified sellers may use the USDA seal.",
     ],
     buyer:
-      "Home-cooked food may not come from an inspected commercial kitchen. Dietary markers (vegan, gluten-free, organic, halal…) are the seller's own claims and aren't verified by DesiBazaar. If you have an allergy, confirm ingredients and kitchen practices with the seller.",
+      "Home-cooked food may not come from an inspected commercial kitchen. Dietary markers (vegan, gluten-free, organic, halal…) are the seller's own claims and aren't verified by BharathMela. If you have an allergy, confirm ingredients and kitchen practices with the seller.",
   },
   TUTORING: {
     seller: ["You are responsible for the safety of minors in your care and any background checks your state requires."],
@@ -35,11 +35,11 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
   DOMESTIC_HELP: {
     requiresReview: true,
     seller: [
-      "You are an independent worker or agency, not an employee or agent of DesiBazaar.",
+      "You are an independent worker or agency, not an employee or agent of BharathMela.",
       "You are responsible for your own work authorization, taxes, licenses and insurance.",
     ],
     buyer:
-      "DesiBazaar does not screen, employ or background-check anyone listed here. Run your own background check and check references. " +
+      "BharathMela does not screen, employ or background-check anyone listed here. Run your own background check and check references. " +
       "If you hire someone, you may have employer obligations (taxes, minimum wage, work authorization) under federal and state law.",
   },
   EVENT_SERVICES: {
@@ -61,7 +61,7 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
       "Don't promise results (\"guaranteed sale in 7 days\") or advertise rebates or commissions where your state restricts them.",
     ],
     buyer:
-      "Check the agent's license with your state's real estate department before signing anything. DesiBazaar checks that a license number was provided but doesn't guarantee it's current or in good standing. Never wire earnest money without calling the title or escrow company at a number you looked up yourself.",
+      "Check the agent's license with your state's real estate department before signing anything. BharathMela checks that a license number was provided but doesn't guarantee it's current or in good standing. Never wire earnest money without calling the title or escrow company at a number you looked up yourself.",
   },
   LEGAL: {
     requiresReview: true,
@@ -72,7 +72,7 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
       "You're responsible for your own conflict checks, engagement letters and client trust accounts.",
     ],
     buyer:
-      "Check the lawyer's license with the state bar before hiring. Contacting a lawyer through DesiBazaar doesn't create an attorney-client relationship, and what you send isn't confidential until you've hired them. Beware of anyone who guarantees a visa, green card or court result.",
+      "Check the lawyer's license with the state bar before hiring. Contacting a lawyer through BharathMela doesn't create an attorney-client relationship, and what you send isn't confidential until you've hired them. Beware of anyone who guarantees a visa, green card or court result.",
   },
   ROOM_RENTAL: {
     requiresReview: true,
@@ -105,8 +105,8 @@ export const EVENT_RULES = [
   "Event details must be accurate: date, venue, price, performers. Update or hide the event if anything changes or it's cancelled.",
   "You're responsible for venue permits, insurance, food permits, and licenses for any alcohol, raffles or fireworks.",
   "Public events can't turn people away based on race, religion, national origin, sex or disability. Don't write \"Indians only\" or similar.",
-  "You handle tickets, refunds and attendee safety. DesiBazaar doesn't sell tickets or run events.",
+  "You handle tickets, refunds and attendee safety. BharathMela doesn't sell tickets or run events.",
 ];
 
 export const EVENT_DISCLAIMER =
-  "Events are organized by independent organizers, not DesiBazaar. We don't sell tickets, verify performers or guarantee that an event happens. Check the organizer's details before buying tickets.";
+  "Events are organized by independent organizers, not BharathMela. We don't sell tickets, verify performers or guarantee that an event happens. Check the organizer's details before buying tickets.";

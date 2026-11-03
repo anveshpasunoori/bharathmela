@@ -71,7 +71,7 @@ export async function createWanted(_: FormState, form: FormData): Promise<FormSt
 export async function updateWanted(_: FormState, form: FormData): Promise<FormState> {
   const user = await requireVerified("/rooms-wanted/mine");
   const post = await ownPost(user.id, String(form.get("id") ?? ""));
-  if (post.status === "REMOVED") return { error: "This post was removed by DesiBazaar and can't be edited." };
+  if (post.status === "REMOVED") return { error: "This post was removed by BharathMela and can't be edited." };
   const input = parseWantedForm(form);
   if ("error" in input) return input;
   if (!hit("listing", user.id)) return { error: TOO_MANY };
@@ -139,10 +139,10 @@ export async function contactRenter(_: FormState, form: FormData): Promise<FormS
   await sendEmail(
     post.user.email,
     `${user.name} has a place for you – "${post.title}"`,
-    `${user.name} saw your DesiBazaar post "${post.title}" and wrote:\n\n${body}\n\n` +
+    `${user.name} saw your BharathMela post "${post.title}" and wrote:\n\n${body}\n\n` +
       `Reply to this email to answer ${user.name} directly.\n\n` +
       `Stay safe: see the place in person before paying anything, and never wire money or pay with gift cards.\n` +
-      `If this message is a scam or abusive, report it from your post on DesiBazaar.`,
+      `If this message is a scam or abusive, report it from your post on BharathMela.`,
     user.email,
   );
   return { message: "Message sent. They'll reply to your email if they're interested." };

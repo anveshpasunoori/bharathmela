@@ -1,4 +1,4 @@
-# DesiBazaar
+# BharathMela
 
 A local marketplace for Indian home businesses in US cities: home kitchens, tutors, pujaris, artists and sellers. Buyers browse free. **Vendors pay the platform** for a monthly plan and for featured ads.
 
@@ -14,7 +14,7 @@ npm run dev
 
 Open http://localhost:3000. Seeded logins (dev only):
 
-- Admin: `admin@desibazaar.test` / value of `SEED_ADMIN_PASSWORD` in `.env`
+- Admin: `admin@bharathmela.test` / value of `SEED_ADMIN_PASSWORD` in `.env`
 - Sample vendors: see `prisma/seed.ts`
 
 ## Revenue model
@@ -43,7 +43,7 @@ Same-plan renewals extend the current period, and featured ads stack. Expired pl
 
 ## Liability protections
 
-DesiBazaar is set up as a neutral listing platform. The Terms of Service and Privacy Policy at `/terms` and `/privacy` are **drafts with [placeholders]; have a lawyer review them**.
+BharathMela is set up as a neutral listing platform. The Terms of Service and Privacy Policy at `/terms` and `/privacy` are **drafts with [placeholders]; have a lawyer review them**.
 
 - Sellers must accept the Terms at signup (`termsVersion` / `termsAcceptedAt` on `User`), and must confirm each listing follows the rules.
 - Category rules (`src/lib/legal.ts`) are shown when posting and to buyers (Fair Housing for rentals, food permits, domestic help).
@@ -133,6 +133,17 @@ Sellers can also post events as organizers at `/vendor/events/new`: concerts, da
 - **Browse at `/events`:** filter by date (today, this weekend, next 7 or 30 days), type, festival and free entry, with search.
 - **Event pages:** Google Calendar, Apple/Outlook (.ics) and map links.
 - **Times:** stored in UTC and shown in each city's time zone (`src/lib/events.ts`).
+
+## Location ("Use my location")
+
+- **Finding the city:** "Use my location" takes the browser's GPS position and finds the visitor's real city and ZIP using the bundled `zipcodes` dataset (`src/lib/geo.ts`). No outside geocoding service is called. Visitors can also type a ZIP.
+- **Storage:** the city, ZIP and rounded coordinates (about 1 km) are kept in an httpOnly cookie on the visitor's device for 6 months (`src/lib/user-location.ts`), never in the database.
+- **Browsing:** with a saved location, the home page browses "near you" within 5/10/25/50 miles across metros, sorts by distance, and labels cards "N mi away". "All of <metro>" switches back to metro browsing.
+- **Far from every metro** (e.g. Columbus, OH): the visitor sees their own city plus a link to the nearest metro and its distance.
+
+## Home page
+
+Home shows upcoming events and category tiles (with live counts for the area). Listings appear only after picking a category or searching.
 
 ## Search
 

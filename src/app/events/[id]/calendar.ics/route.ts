@@ -13,10 +13,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//DesiBazaar//Events//EN",
+    "PRODID:-//BharathMela//Events//EN",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
-    `UID:${event.id}@desibazaar`,
+    `UID:${event.id}@bharathmela`,
     `DTSTAMP:${stamp(new Date())}`,
     `DTSTART:${stamp(event.startsAt)}`,
     `DTEND:${stamp(event.endsAt)}`,

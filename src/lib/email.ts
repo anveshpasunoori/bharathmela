@@ -39,7 +39,7 @@ export async function sendEmail(to: string, subject: string, text: string, reply
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM ?? "DesiBazaar <no-reply@example.com>",
+      from: process.env.EMAIL_FROM ?? "BharathMela <no-reply@example.com>",
       to,
       subject,
       text,

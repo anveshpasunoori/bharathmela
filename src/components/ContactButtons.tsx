@@ -2,7 +2,7 @@
 export function ContactButtons({ phone, whatsapp, name }: { phone: string; whatsapp: boolean; name: string }) {
   const digits = phone.replace(/\D/g, "");
   const intl = digits.length === 10 ? `1${digits}` : digits;
-  const text = encodeURIComponent(`Hi ${name}, I saw your listing on DesiBazaar.`);
+  const text = encodeURIComponent(`Hi ${name}, I saw your listing on BharathMela.`);
   return (
     <div className="flex flex-wrap gap-2">
       <a href={`tel:+${intl}`} className="btn">

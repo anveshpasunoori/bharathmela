@@ -20,7 +20,7 @@ async function getSeller(id: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const seller = await getSeller((await params).id);
-  return { title: seller ? `${seller.businessName} | DesiBazaar` : "Seller not found | DesiBazaar" };
+  return { title: seller ? `${seller.businessName} | BharathMela` : "Seller not found | BharathMela" };
 }
 
 export default async function SellerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -65,7 +65,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             {listings.map((l) => (
               <ListingCard
                 key={l.id}
-                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0 }}
+                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0, distanceMiles: null }}
               />
             ))}
           </div>
@@ -86,7 +86,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
       <section className="card">
         <h2 className="mb-2 font-semibold">Ratings</h2>
         <ReviewList reviews={reviews} sellerName={seller.businessName} />
-        <p className="mt-2 text-xs text-stone-500">Ratings are the opinions of individual users, not of DesiBazaar.</p>
+        <p className="mt-2 text-xs text-stone-500">Ratings are the opinions of individual users, not of BharathMela.</p>
       </section>
     </div>
   );

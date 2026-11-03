@@ -29,8 +29,8 @@ async function getListing(id: string) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const listing = await getListing((await params).id);
   return listing
-    ? { title: `${listing.title} – ${listing.vendor.businessName} | DesiBazaar`, description: listing.description.slice(0, 160) }
-    : { title: "Listing not found | DesiBazaar" };
+    ? { title: `${listing.title} – ${listing.vendor.businessName} | BharathMela`, description: listing.description.slice(0, 160) }
+    : { title: "Listing not found | BharathMela" };
 }
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
@@ -92,7 +92,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
             {summary && <Stars rating={summary.average} count={summary.count} />}
             <span>{metroName(listing.metro)} · ZIP {listing.zip}</span>
-            {sellerSince && <span>On DesiBazaar since {sellerSince.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
+            {sellerSince && <span>On BharathMela since {sellerSince.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
           </div>
         </div>
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
@@ -143,7 +143,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </ActionForm>
         )}
         <ReviewList reviews={reviews} sellerName={listing.vendor.businessName} />
-        <p className="text-xs text-stone-500">Ratings are the opinions of individual users, not of DesiBazaar.</p>
+        <p className="text-xs text-stone-500">Ratings are the opinions of individual users, not of BharathMela.</p>
       </section>
 
       <div className="rounded-md border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">

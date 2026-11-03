@@ -139,7 +139,7 @@ export function screenListing(text: string, category: string): Screening {
   }
   for (const { pattern, reason } of PROHIBITED) {
     const m = normalized.match(pattern);
-    if (m) return { block: `Listings for ${reason} aren't allowed on DesiBazaar (found "${m[0]}").`, flags: [] };
+    if (m) return { block: `Listings for ${reason} aren't allowed on BharathMela (found "${m[0]}").`, flags: [] };
   }
   const flags = [...SUSPICIOUS, ...(PROFESSIONAL_FLAGS[category] ?? [])]
     .filter(({ pattern }) => pattern.test(normalized))

@@ -6,13 +6,16 @@ import { RentalTabs } from "@/components/RentalTabs";
 import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
-import { browseListings } from "@/lib/listings";
+import { metroFor } from "@/lib/geo";
+import { browseListings, categoryCounts } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
+import { getUserLocation } from "@/lib/user-location";
 
+const RADII = [5, 10, 25, 50];
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
 export default async function Home({
@@ -37,10 +40,16 @@ export default async function Home({
     item?: string;
     occ?: string;
     ins?: string;
+    radius?: string;
   }>;
 }) {
   const params = await searchParams;
-  const metro = isMetro(params.metro) ? params.metro : DEFAULT_METRO;
+  // With a saved location and no city picked, browse "near you" by radius across metros.
+  const place = await getUserLocation();
+  const nearMode = !!place && !isMetro(params.metro);
+  const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
+  const placeMetro = place ? metroFor(place) : null;
+  const metro = isMetro(params.metro) ? params.metro : (placeMetro?.metro ?? DEFAULT_METRO);
   const category = CATEGORIES.some((c) => c.id === params.category) ? params.category : undefined;
   const q = (params.q ?? "").slice(0, 100);
   // Dietary filters only apply to food.
@@ -78,18 +87,39 @@ export default async function Home({
           insured: params.ins === "1",
         }
       : {};
-  const [{ listings, search }, events] = await Promise.all([
-    browseListings(metro, category, q, diet, rentalFilters, proFilters, eventFilters),
-    q || category ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
+  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
+  // The home page shows categories first; listings appear once a category is picked or a search is made.
+  const showingListings = !!(category || q);
+  const [{ listings, search }, events, counts] = await Promise.all([
+    showingListings
+      ? browseListings({ metro, category, query: q, diet, rentalFilters, proFilters, eventFilters, near })
+      : Promise.resolve({ listings: [], search: { active: false, suggestion: null, otherMetros: [], hintedCategory: undefined, maxPriceCents: undefined, minPriceCents: undefined } }),
+    showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
+    showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
   ]);
+  const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
 
-  const href = (cat?: string, dietTags: string[] = [], query = q, city = metro) => {
-    const p = new URLSearchParams({ metro: city });
+  // Links keep the current location mode: "near you" (radius) or a picked metro.
+  const locationParams = (city?: string) => {
+    const p = new URLSearchParams();
+    if (city) p.set("metro", city);
+    else if (nearMode) p.set("radius", String(radius));
+    else p.set("metro", metro);
+    return p;
+  };
+  const home = `/?${locationParams()}`;
+  const href = (cat?: string, dietTags: string[] = [], query = q, city?: string) => {
+    const p = locationParams(city);
     if (cat) p.set("category", cat);
     if (query) p.set("q", query);
     if (cat === "FOOD" && dietTags.length) p.set("diet", dietTags.join(","));
     return `/?${p}`;
   };
+  const locationInputs = nearMode ? (
+    <input type="hidden" name="radius" value={radius} />
+  ) : (
+    <input type="hidden" name="metro" value={metro} />
+  );
   const toggleDiet = (id: DietTag) => href("FOOD", diet.includes(id) ? diet.filter((d) => d !== id) : [...diet, id]);
 
   return (
@@ -100,10 +130,10 @@ export default async function Home({
       <section className="rounded-xl bg-gradient-to-br from-brand-soft to-white p-6 ring-1 ring-orange-100 sm:p-8">
         <h1 className="text-2xl font-bold sm:text-3xl">Home businesses from our community, near you</h1>
         <p className="mt-1 text-stone-600">
-          Home food, tutors, dance and music teachers, pujaris, artists and more in {metroName(metro)}.
+          Home food, tutors, dance and music teachers, pujaris, event vendors and more {where}.
         </p>
         <form className="mt-4 flex flex-col gap-2 sm:flex-row" role="search">
-          <input type="hidden" name="metro" value={metro} />
+          {locationInputs}
           {category && <input type="hidden" name="category" value={category} />}
           {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
           <input
@@ -128,8 +158,29 @@ export default async function Home({
           </p>
         )}
         <div className="mt-3">
-          <LocationPicker metro={metro} />
+          <LocationPicker metro={metro} place={place} />
         </div>
+        {place && (
+          <nav className="mt-3 flex flex-wrap items-center gap-2 text-sm" aria-label="Distance">
+            <span className="text-stone-500">Near {place.city}:</span>
+            {RADII.map((r) => {
+              const p = new URLSearchParams(locationParams());
+              p.delete("metro");
+              p.set("radius", String(r));
+              if (category) p.set("category", category);
+              if (q) p.set("q", q);
+              const on = nearMode && radius === r;
+              return (
+                <Link key={r} href={`/?${p}`} className={`rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                  {r} mi
+                </Link>
+              );
+            })}
+            <Link href={href(category, diet, q, metro)} className={`rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+              All of {metroName(metro)}
+            </Link>
+          </nav>
+        )}
       </section>
 
       {events.length > 0 && (
@@ -146,9 +197,34 @@ export default async function Home({
         </section>
       )}
 
+      {!showingListings && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">Browse by category</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {CATEGORIES.map((c) => {
+              const n = counts.get(c.id) ?? 0;
+              return (
+                <Link key={c.id} href={href(c.id)} className="card flex items-center gap-3 p-4 transition hover:shadow-md hover:ring-1 hover:ring-brand/30">
+                  <span className="text-3xl" aria-hidden>{c.icon}</span>
+                  <span>
+                    <span className="block font-semibold leading-tight">{c.label}</span>
+                    <span className="text-xs text-stone-500">{n ? `${n} listing${n === 1 ? "" : "s"}` : "Be the first"}</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-sm text-stone-600">
+            Looking for a room? <Link href={`/rooms-wanted/new?metro=${metro}`} className="font-semibold text-brand">Post what you need</Link>
+            {" · "}Hosting something? <Link href="/vendor/events/new" className="font-semibold text-brand">Post an event</Link>
+          </p>
+        </section>
+      )}
+
+      {showingListings && (
       <nav className="flex flex-wrap gap-2 text-sm" aria-label="Categories">
-        <Link href={href()} className={`badge px-3 py-1.5 ${!category ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}>
-          All
+        <Link href={href(undefined, [], "")} className="badge bg-white px-3 py-1.5 ring-1 ring-stone-200">
+          ← All categories
         </Link>
         {CATEGORIES.map((c) => (
           <Link
@@ -156,10 +232,11 @@ export default async function Home({
             href={href(c.id)}
             className={`badge px-3 py-1.5 ${category === c.id ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}
           >
-            {c.label}
+            {c.icon} {c.label}
           </Link>
         ))}
       </nav>
+      )}
 
       {category === "FOOD" && (
         <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Dietary filters">
@@ -183,7 +260,7 @@ export default async function Home({
 
       {category === "EVENT_SERVICES" && (
         <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Event service filters">
-          <input type="hidden" name="metro" value={metro} />
+          {locationInputs}
           <input type="hidden" name="category" value="EVENT_SERVICES" />
           {q && <input type="hidden" name="q" value={q} />}
           <div>
@@ -222,7 +299,7 @@ export default async function Home({
 
       {category && isProfessional(category) && (
         <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Professional filters">
-          <input type="hidden" name="metro" value={metro} />
+          {locationInputs}
           <input type="hidden" name="category" value={category} />
           {q && <input type="hidden" name="q" value={q} />}
           <div className="sm:col-span-2">
@@ -265,7 +342,7 @@ export default async function Home({
 
       {category === "ROOM_RENTAL" && (
         <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Rental filters">
-          <input type="hidden" name="metro" value={metro} />
+          {locationInputs}
           <input type="hidden" name="category" value="ROOM_RENTAL" />
           {q && <input type="hidden" name="q" value={q} />}
           <div>
@@ -308,7 +385,7 @@ export default async function Home({
             {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
             {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
             {" · "}
-            <Link href={`/?metro=${metro}`} className="text-brand">Clear</Link>
+            <Link href={home} className="text-brand">Clear</Link>
           </p>
           {search.suggestion && (
             <p>
@@ -330,7 +407,7 @@ export default async function Home({
         </div>
       )}
 
-      {listings.length ? (
+      {!showingListings ? null : listings.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l) => (
             <ListingCard key={l.id} listing={l} />
@@ -338,7 +415,23 @@ export default async function Home({
         </div>
       ) : (
         <div className="card text-center text-stone-600">
-          <p>{q || diet.length ? `Nothing matches in ${metroName(metro)} yet.` : "No listings here yet."}</p>
+          <p>{q || diet.length ? `Nothing matches ${where} yet.` : `No listings ${where} yet.`}</p>
+          {nearMode && (
+            <p className="mt-2 text-sm">
+              {radius < 50 && (
+                <>
+                  <Link href={`/?${new URLSearchParams({ radius: "50", ...(category ? { category } : {}), ...(q ? { q } : {}) })}`} className="font-semibold text-brand">
+                    Search within 50 miles
+                  </Link>
+                  {" · "}
+                </>
+              )}
+              <Link href={href(category, diet, q, metro)} className="font-semibold text-brand">
+                Browse all of {metroName(metro)}
+              </Link>
+              {placeMetro && placeMetro.miles > 60 && <> ({Math.round(placeMetro.miles)} mi away, our nearest city)</>}
+            </p>
+          )}
           {search.otherMetros.length > 0 && (
             <p className="mt-2 text-sm">
               Found in other cities:{" "}
@@ -358,7 +451,7 @@ export default async function Home({
             </p>
           )}
           <Link href="/vendor/signup" className="mt-3 inline-block font-semibold text-brand">
-            Run a home business in {metroName(metro)}? List it free →
+            Run a home business {nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}? List it free →
           </Link>
         </div>
       )}

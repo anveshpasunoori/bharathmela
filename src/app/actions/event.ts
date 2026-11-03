@@ -150,7 +150,7 @@ export async function createEvent(_: FormState, form: FormData): Promise<FormSta
 export async function updateEvent(_: FormState, form: FormData): Promise<FormState> {
   const { vendor } = await requireVendor();
   const event = await ownEvent(vendor.id, field(form, "eventId"));
-  if (event.status === "REMOVED") return { error: "This event was removed by DesiBazaar and can't be edited." };
+  if (event.status === "REMOVED") return { error: "This event was removed by BharathMela and can't be edited." };
   const input = parseEvent(form, event.metro);
   if ("error" in input) return input;
   if (!hit("listing", vendor.id)) return { error: TOO_MANY };

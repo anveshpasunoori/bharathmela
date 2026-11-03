@@ -136,7 +136,7 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
 export async function updateListing(_: FormState, form: FormData): Promise<FormState> {
   const { vendor } = await requireVendor();
   const listing = await ownListing(vendor.id, field(form, "listingId"));
-  if (listing.status === "REMOVED") return { error: "This listing was removed by DesiBazaar and can't be edited." };
+  if (listing.status === "REMOVED") return { error: "This listing was removed by BharathMela and can't be edited." };
   const input = parseListing(form);
   if ("error" in input) return input;
   if (!hit("listing", vendor.id)) return { error: TOO_MANY };

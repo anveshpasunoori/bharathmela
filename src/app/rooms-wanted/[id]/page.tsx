@@ -17,7 +17,7 @@ async function getPost(id: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const post = await getPost((await params).id);
-  return { title: post ? `${post.title} | DesiBazaar` : "Post not found | DesiBazaar" };
+  return { title: post ? `${post.title} | BharathMela` : "Post not found | BharathMela" };
 }
 
 export default async function WantedPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ posted?: string }> }) {

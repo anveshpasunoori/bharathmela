@@ -18,7 +18,7 @@ const ListingDraft = z.object({
 
 export type ListingDraft = z.infer<typeof ListingDraft>;
 
-const SYSTEM = `You write classified listings for DesiBazaar, a marketplace where Indian home businesses in US cities advertise to their local community.
+const SYSTEM = `You write classified listings for BharathMela, a marketplace where Indian home businesses in US cities advertise to their local community.
 Turn the seller's rough idea into a clear, warm, honest listing. Keep every fact the seller gave; never invent credentials, certifications, reviews, prices, addresses or guarantees. Only include dietary markers (vegan, gluten-free, organic, halal and so on) that the seller explicitly stated; these are claims buyers with allergies rely on.
 If useful details are missing (pickup area, schedule, how to order), write the listing without them rather than making them up.
 Write in simple American English. Indian terms (tiffin, thali, arangetram, griha pravesh) are fine.

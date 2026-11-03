@@ -3,7 +3,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { requireUser } from "@/lib/auth";
 import { changePassword, deleteAccount } from "../actions/auth";
 
-export const metadata = { title: "Account – DesiBazaar" };
+export const metadata = { title: "Account – BharathMela" };
 
 export default async function AccountPage() {
   const user = await requireUser("/account");

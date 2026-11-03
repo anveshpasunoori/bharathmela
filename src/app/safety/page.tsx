@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Safety tips – DesiBazaar" };
+export const metadata = { title: "Safety tips – BharathMela" };
 
 const SECTIONS = [
   {
@@ -51,9 +51,9 @@ export default function SafetyPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Stay safe on DesiBazaar</h1>
+        <h1 className="text-2xl font-bold">Stay safe on BharathMela</h1>
         <p className="mt-1 text-stone-600">
-          DesiBazaar connects you with independent sellers in your community. We screen listings for prohibited items and discriminatory
+          BharathMela connects you with independent sellers in your community. We screen listings for prohibited items and discriminatory
           wording, verify email addresses, and act on reports, but we don&apos;t vet sellers or take part in deals. These habits protect you.
         </p>
       </div>

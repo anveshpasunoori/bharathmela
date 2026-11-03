@@ -65,7 +65,7 @@ export function ProfessionalFields({ category, initial }: { category: "REALTOR" 
         <input type="checkbox" name="p_licenseConfirm" required className="mt-0.5" />
         <span>
           My license is active and in good standing, and this listing follows my state&apos;s {category === "LEGAL" ? "bar advertising rules" : "real estate advertising and fair housing rules"}.
-          DesiBazaar will check the license number before the listing goes live.
+          BharathMela will check the license number before the listing goes live.
         </span>
       </label>
     </div>

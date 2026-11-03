@@ -17,8 +17,8 @@ async function getEvent(id: string) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const event = await getEvent((await params).id);
   return event
-    ? { title: `${event.title} | DesiBazaar Events`, description: event.description.slice(0, 160) }
-    : { title: "Event not found | DesiBazaar" };
+    ? { title: `${event.title} | BharathMela Events`, description: event.description.slice(0, 160) }
+    : { title: "Event not found | BharathMela" };
 }
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -97,7 +97,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
       <div className="rounded-md border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
         <p>{EVENT_DISCLAIMER}</p>
-        {event.ticketUrl && <p className="mt-1">Tickets are sold on {new URL(event.ticketUrl).hostname.replace(/^www\./, "")}, not DesiBazaar.</p>}
+        {event.ticketUrl && <p className="mt-1">Tickets are sold on {new URL(event.ticketUrl).hostname.replace(/^www\./, "")}, not BharathMela.</p>}
         <Link href={`/events/${event.id}/report`} className="mt-2 inline-block font-semibold text-red-700 hover:underline">
           Report this event
         </Link>

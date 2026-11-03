@@ -11,7 +11,7 @@ export default function TermsPage() {
       <p className="text-sm text-stone-500">Version {TERMS_VERSION}</p>
 
       <p>
-        These Terms are an agreement between you and [LEGAL ENTITY NAME, e.g. DesiBazaar LLC] (&ldquo;{SITE_NAME}&rdquo;,
+        These Terms are an agreement between you and [LEGAL ENTITY NAME, e.g. BharathMela LLC] (&ldquo;{SITE_NAME}&rdquo;,
         &ldquo;we&rdquo;). By using {SITE_NAME} or posting a listing, you agree to them.
       </p>
 

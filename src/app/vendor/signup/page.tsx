@@ -6,7 +6,7 @@ import { vendorSignup } from "../../actions/auth";
 export default function VendorSignupPage() {
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="text-2xl font-bold">Sell on DesiBazaar</h1>
+      <h1 className="text-2xl font-bold">Sell on BharathMela</h1>
       <p className="mb-4 mt-1 text-stone-600">Start free with one listing. Upgrade any time.</p>
       <div className="card">
         <ActionForm action={vendorSignup} submitLabel="Create seller account">

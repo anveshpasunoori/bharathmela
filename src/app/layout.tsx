@@ -12,7 +12,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "DesiBazaar – Indian home businesses near you",
+  title: "BharathMela – Indian home businesses near you",
   description: "Find home kitchens, tutors, dance and music teachers, pujaris, artists and sellers from the Indian community in your US city.",
 };
 
@@ -33,8 +33,8 @@ export default async function RootLayout({
         <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 backdrop-blur">
           <nav className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm" aria-label="Main">
             <Link href="/" className="mr-auto flex items-center gap-2 text-lg font-bold text-brand">
-              <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-white">DB</span>
-              DesiBazaar
+              <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-white">BM</span>
+              BharathMela
             </Link>
             <Link href="/events" className="hover:text-brand">Events</Link>
             <Link href="/pricing" className="hover:text-brand">For sellers</Link>
@@ -51,7 +51,7 @@ export default async function RootLayout({
             ) : (
               <>
                 <Link href="/login" className="hover:text-brand">Log in</Link>
-                <Link href="/vendor/signup" className="btn py-1.5">Sell on DesiBazaar</Link>
+                <Link href="/vendor/signup" className="btn py-1.5">Sell on BharathMela</Link>
               </>
             )}
           </nav>
@@ -60,7 +60,7 @@ export default async function RootLayout({
         <footer className="border-t border-stone-200 bg-white">
           <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 text-sm sm:grid-cols-4">
             <div className="sm:col-span-2">
-              <p className="font-semibold text-brand">DesiBazaar</p>
+              <p className="font-semibold text-brand">BharathMela</p>
               <p className="mt-1 text-stone-600">Home businesses from the Indian community, in your US city.</p>
             </div>
             <div className="space-y-1">

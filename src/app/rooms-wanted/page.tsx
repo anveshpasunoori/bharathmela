@@ -2,12 +2,14 @@ import Link from "next/link";
 import { LocationPicker } from "@/components/LocationPicker";
 import { RentalTabs } from "@/components/RentalTabs";
 import { WantedCard } from "@/components/WantedCard";
+import { metroFor } from "@/lib/geo";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
+import { getUserLocation } from "@/lib/user-location";
 import { SPACE_TYPES } from "@/lib/rentals";
 import { browseWanted, firstName, wantedNeeds, wantedSpaceLabels } from "@/lib/rooms-wanted";
 
 export const metadata = {
-  title: "People looking for a room – DesiBazaar",
+  title: "People looking for a room – BharathMela",
   description: "Renters from the Indian community looking for rooms, paying-guest stays and apartments in your city.",
 };
 
@@ -17,7 +19,9 @@ export default async function RoomsWantedPage({
   searchParams: Promise<{ metro?: string; rent?: string; space?: string; by?: string; q?: string }>;
 }) {
   const p = await searchParams;
-  const metro = isMetro(p.metro) ? p.metro : DEFAULT_METRO;
+  // Default to the city of the visitor's saved location.
+  const place = await getUserLocation();
+  const metro = isMetro(p.metro) ? p.metro : place ? metroFor(place).metro : DEFAULT_METRO;
   const rent = Number(p.rent) > 0 ? Math.round(Number(p.rent) * 100) : undefined;
   const space = SPACE_TYPES.some((t) => t.id === p.space) ? p.space : undefined;
   const by = /^\d{4}-\d{2}-\d{2}$/.test(p.by ?? "") ? p.by : undefined;
@@ -33,7 +37,7 @@ export default async function RoomsWantedPage({
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
           <Link href="/rooms-wanted/mine" className="text-sm font-semibold text-brand">My requests</Link>
-          <LocationPicker metro={metro} basePath="/rooms-wanted" />
+          <LocationPicker metro={metro} basePath="/rooms-wanted" place={place} />
         </div>
       </section>
 

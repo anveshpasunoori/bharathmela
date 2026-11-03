@@ -6,7 +6,7 @@ import { requireVendor } from "@/lib/auth";
 import { metroName } from "@/lib/metros";
 import { createEvent } from "../../../actions/event";
 
-export const metadata = { title: "New event – DesiBazaar" };
+export const metadata = { title: "New event – BharathMela" };
 
 export default async function NewEventPage() {
   const { vendor } = await requireVendor();
