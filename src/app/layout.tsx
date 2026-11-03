@@ -57,7 +57,8 @@ export default async function RootLayout({
           Skip to content
         </a>
         <Suspense>
-        <NavProgress>
+          <NavProgress />
+        </Suspense>
         <SiteHeader user={user} savedCount={savedCount} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
@@ -96,8 +97,6 @@ export default async function RootLayout({
           <p className="mx-auto max-w-5xl px-4 pb-6 text-xs text-stone-500">{PLATFORM_DISCLAIMER}</p>
           <JsonLd data={SITE_JSON_LD} />
         </footer>
-        </NavProgress>
-        </Suspense>
       </body>
     </html>
   );
