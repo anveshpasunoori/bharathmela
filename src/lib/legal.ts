@@ -42,6 +42,17 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
       "DesiBazaar does not screen, employ or background-check anyone listed here. Run your own background check and check references. " +
       "If you hire someone, you may have employer obligations (taxes, minimum wage, work authorization) under federal and state law.",
   },
+  EVENT_SERVICES: {
+    seller: [
+      "Show only photos and videos of your own work, and get permission from the people in them before posting.",
+      "Bartenders: serve only alcohol the host provides, only to guests 21 and over, and follow your state's server-certification rules. Selling or supplying alcohol requires a liquor or caterer's license.",
+      "Many venues require vendors to carry liability insurance. Only mark yourself as insured if you have a current policy.",
+      "Party rentals: inspect items before each event, and state the damage deposit, late-return and cleaning fees in your rental agreement. Bounce houses must be insured and set up and anchored by trained staff.",
+      "Put prices, deposits, cancellation terms and what's included in a written contract with your client.",
+    ],
+    buyer:
+      "Get a written contract with the date, hours, what's included, deposit and cancellation terms. Ask for references and, if your venue needs it, a certificate of insurance. Pay deposits by a method you can dispute, like a credit card, and never pay in full far in advance. For rentals, photograph items at delivery and get the damage-deposit terms in writing.",
+  },
   REALTOR: {
     requiresReview: true,
     seller: [

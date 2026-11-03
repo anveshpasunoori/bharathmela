@@ -9,6 +9,7 @@ import { upcomingEvents } from "@/lib/event-data";
 import { browseListings } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
 
@@ -32,6 +33,10 @@ export default async function Home({
     spec?: string;
     lang?: string;
     free?: string;
+    svc?: string;
+    item?: string;
+    occ?: string;
+    ins?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -63,8 +68,18 @@ export default async function Home({
           freeConsult: params.free === "1",
         }
       : {};
+  // Service, rental item, occasion and insurance filters for wedding and event vendors.
+  const eventFilters: EventServiceFilters =
+    category === "EVENT_SERVICES"
+      ? {
+          service: EVENT_SERVICES.some((s) => s.id === params.svc) ? params.svc : undefined,
+          item: RENTAL_ITEMS.some((s) => s.id === params.item) ? params.item : undefined,
+          occasion: OCCASIONS.some((o) => o.id === params.occ) ? params.occ : undefined,
+          insured: params.ins === "1",
+        }
+      : {};
   const [{ listings, search }, events] = await Promise.all([
-    browseListings(metro, category, q, diet, rentalFilters, proFilters),
+    browseListings(metro, category, q, diet, rentalFilters, proFilters, eventFilters),
     q || category ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
   ]);
 
@@ -164,6 +179,45 @@ export default async function Home({
             );
           })}
         </nav>
+      )}
+
+      {category === "EVENT_SERVICES" && (
+        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Event service filters">
+          <input type="hidden" name="metro" value={metro} />
+          <input type="hidden" name="category" value="EVENT_SERVICES" />
+          {q && <input type="hidden" name="q" value={q} />}
+          <div>
+            <label className="label" htmlFor="svc">Service</label>
+            <select id="svc" name="svc" defaultValue={eventFilters.service ?? ""} className="input">
+              <option value="">Any</option>
+              {EVENT_SERVICES.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="item">Rental item</label>
+            <select id="item" name="item" defaultValue={eventFilters.item ?? ""} className="input">
+              <option value="">Any</option>
+              {RENTAL_ITEMS.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="occ">Occasion</label>
+            <select id="occ" name="occ" defaultValue={eventFilters.occasion ?? ""} className="input">
+              <option value="">Any</option>
+              {OCCASIONS.map((o) => (
+                <option key={o.id} value={o.id}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col justify-end gap-2">
+            <label className="flex items-center gap-2"><input type="checkbox" name="ins" value="1" defaultChecked={eventFilters.insured} /> Insured</label>
+            <button className="btn">Apply</button>
+          </div>
+        </form>
       )}
 
       {category && isProfessional(category) && (

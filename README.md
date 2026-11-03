@@ -89,6 +89,17 @@ Rental listings have structured details (`src/lib/rentals.ts`, stored as JSON in
 - **Filters:** space type, max rent, move-in date, private bath, furnished, pets allowed.
 - **Search:** covers rental details too ("attached bath", "PG", "wifi", neighborhood names).
 
+## Weddings & event services (including party rentals)
+
+The `EVENT_SERVICES` category (`src/lib/event-services.ts`) covers photographers, videographers, DJs, bartenders, decorators, makeup, mehndi, dhol, live music, MCs, choreographers, planners, photo booths, catering, cakes, invitations and party rentals.
+- **What vendors pick:** services, occasions (weddings, sangeet, haldi/mehndi, receptions, birthdays, baby showers/seemantham, housewarming, corporate…), areas served, languages and self-reported liability insurance.
+- **Party rentals** also list rental items (tents, tables and chairs, linens, mandap, jhoola and throne chairs, backdrops, serving gear, dance floors, AV, lights, bounce houses, outfits, generators) and whether they deliver and set up.
+- **Required confirmations:**
+  - Bartenders: they serve host-provided alcohol to 21+ guests only, or hold a liquor license.
+  - Photographers and videographers: their portfolio is their own work, with consent from the people in it.
+  - Bounce-house renters: insurance, inspection and trained setup.
+- **Buyer filters:** service, rental item, occasion and insured. Search covers terms like "bouncy castle", "jhula rental", "seemantham photographer" and "dhol for baraat".
+
 ## Realtors and lawyers
 
 Two licensed-professional categories, `REALTOR` and `LEGAL` (`src/lib/professionals.ts`):

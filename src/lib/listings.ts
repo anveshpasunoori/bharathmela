@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { ratingsFor } from "./reviews";
+import { type EventServiceFilters, eventServiceSearchText, matchesEventServiceFilters, readEventService } from "./event-services";
 import { type ProfessionalFilters, isProfessional, matchesProfessionalFilters, professionalSearchText, readProfessional } from "./professionals";
 import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
 import { parseQuery, rankListings, suggestQuery } from "./search";
@@ -26,6 +27,7 @@ export async function browseListings(
   diet: string[] = [],
   rentalFilters: RentalFilters = {},
   proFilters: ProfessionalFilters = {},
+  eventFilters: EventServiceFilters = {},
 ) {
   const now = new Date();
   const filters: Prisma.ListingWhereInput = {
@@ -42,13 +44,15 @@ export async function browseListings(
     where: { ...filters, metro },
     include: withPlans(now),
     orderBy: { createdAt: "desc" },
-    take: searching || filteringRentals || Object.values(proFilters).some(Boolean) ? 5000 : 200,
+    take: searching || filteringRentals || Object.values(proFilters).some(Boolean) || Object.values(eventFilters).some(Boolean) ? 5000 : 200,
   });
   const filteringPros = !!category && isProfessional(category) && Object.values(proFilters).some(Boolean);
+  const filteringEvents = category === "EVENT_SERVICES" && Object.values(eventFilters).some(Boolean);
   const candidates = fetched.filter(
     (l) =>
       (!filteringRentals || matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters)) &&
-      (!filteringPros || matchesProfessionalFilters(readProfessional(l.details), proFilters)),
+      (!filteringPros || matchesProfessionalFilters(readProfessional(l.details), proFilters)) &&
+      (!filteringEvents || matchesEventServiceFilters(readEventService(l.details), eventFilters)),
   );
   // Rental details (space type, neighborhood, amenities) are searchable too.
   const scored = searching
@@ -57,7 +61,8 @@ export async function browseListings(
         candidates.map((l) => {
           const rental = l.category === "ROOM_RENTAL" ? readRental(l.details) : null;
           const pro = isProfessional(l.category) ? readProfessional(l.details) : null;
-          const extra = rental ? rentalSearchText(rental) : pro ? professionalSearchText(l.category, pro) : "";
+          const ev = l.category === "EVENT_SERVICES" ? readEventService(l.details) : null;
+          const extra = rental ? rentalSearchText(rental) : pro ? professionalSearchText(l.category, pro) : ev ? eventServiceSearchText(ev) : "";
           return { ...l, description: `${l.description} ${extra}`, original: l };
         }),
       ).map(({ item, score }) => ({ item: item.original, score }))

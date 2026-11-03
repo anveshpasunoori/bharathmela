@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
+import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
 import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
 import { RentalDetailsView, RentalScamWarning } from "@/components/RentalDetailsView";
 import { ReviewList } from "@/components/ReviewList";
@@ -15,6 +16,7 @@ import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { PUBLIC_LISTING } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { readEventService } from "@/lib/event-services";
 import { isProfessional, readProfessional } from "@/lib/professionals";
 import { readRental } from "@/lib/rentals";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
@@ -38,6 +40,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const buyerNote = CATEGORY_RULES[listing.category]?.buyer;
   const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
+  const eventService = listing.category === "EVENT_SERVICES" ? readEventService(listing.details) : null;
 
   const [user, reviews, ratings, sellerSince] = await Promise.all([
     getCurrentUser(),
@@ -75,6 +78,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         )}
         {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
         {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
+        {eventService && <EventServiceDetailsView details={eventService} />}
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
         <p className="text-xs text-stone-400">Updated {listing.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
       </article>

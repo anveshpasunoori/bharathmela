@@ -9,7 +9,8 @@ import { getVendorPlan } from "@/lib/billing";
 import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
-import { isProfessional, parseProfessionalForm } from "@/lib/professionals";
+import { parseEventServiceForm } from "@/lib/event-services";
+import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
 import { screenListing } from "@/lib/moderation";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
@@ -84,6 +85,11 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     if (priceCents == null || priceCents < 5000) return { error: "Enter the monthly rent." };
     return { title, description, category, priceCents, priceUnit: "per month", tags, details: JSON.stringify(rental) };
   }
+  if (category === "EVENT_SERVICES") {
+    const services = parseEventServiceForm(form, LANGUAGES);
+    if ("error" in services) return services;
+    return { title, description, category, priceCents, priceUnit, tags, details: JSON.stringify(services) };
+  }
   if (isProfessional(category)) {
     const pro = parseProfessionalForm(form, category);
     if ("error" in pro) return pro;
@@ -95,7 +101,7 @@ function parseListing(form: FormData): ListingInput | { error: string } {
 // Decides whether a listing can go live right away or must wait for an admin.
 async function moderate(input: ListingInput, vendorId: string) {
   const extra = JSON.parse(input.details);
-  const neighborhood = [extra.neighborhood, extra.firm].filter(Boolean).join("\n");
+  const neighborhood = [extra.neighborhood, extra.firm, extra.areasServed].filter(Boolean).join("\n");
   const screening = screenListing(`${input.title}\n${input.description}\n${input.priceUnit}\n${neighborhood}`, input.category);
   if (screening.block) return { error: screening.block } as const;
   const reasons = [...screening.flags];

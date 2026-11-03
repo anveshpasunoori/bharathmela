@@ -70,6 +70,22 @@ const SYNONYMS: string[][] = [
   ["maid", "housekeeper", "housekeeping", "cleaning", "cleaner", "house cleaning", "bai"],
   ["caregiver", "elder care", "eldercare", "senior care", "attendant"],
   ["cook", "chef", "home cook", "cooking"],
+  // Wedding and event vendors
+  ["photographer", "photography", "photo shoot", "photoshoot", "candid", "pre wedding shoot", "prewedding", "maternity shoot"],
+  ["videographer", "videography", "cinematographer", "wedding film", "wedding video", "drone"],
+  ["dj", "deejay", "disc jockey", "baraat dj", "sound system"],
+  ["bartender", "bartending", "bar service", "mixologist", "barback"],
+  ["decorator", "decor", "decoration", "decorations", "mandap", "stage decor", "floral", "flowers", "balloon", "balloons"],
+  ["makeup", "makeup artist", "mua", "bridal makeup", "hair stylist", "saree draping"],
+  ["dhol", "dholi", "dhol player", "dhol wala", "nagada"],
+  ["emcee", "mc", "anchor", "master of ceremonies"],
+  ["choreographer", "choreography", "sangeet dance", "dance practice"],
+  ["planner", "wedding planner", "event planner", "coordinator", "event management"],
+  ["photo booth", "photobooth", "360 booth", "selfie booth"],
+  ["party rentals", "party rental", "event rentals", "tent", "tents", "canopy", "chairs", "tables", "linens", "bounce house", "bouncy castle", "inflatable", "jhoola", "jhula", "swing"],
+  ["haldi", "pellikoothuru", "mangala snanam"],
+  ["sangeet", "sangeeth", "garba night"],
+  ["baby shower", "seemantham", "godh bharai", "valaikaapu"],
   // Realtors and lawyers
   ["realtor", "real estate agent", "realty", "real estate", "broker", "listing agent", "buyers agent", "realtors"],
   ["buy home", "buy a home", "buy house", "home buying", "house hunting", "first home"],
@@ -110,6 +126,7 @@ const CATEGORY_HINTS: Record<string, string[]> = {
   DOMESTIC_HELP: ["nanny", "maid", "caregiver", "cook", "help", "helper"],
   ROOM_RENTAL: ["room", "rent", "roommate", "apartment"],
   REALTOR: ["realtor", "buy home", "sell home"],
+  EVENT_SERVICES: ["photographer", "videographer", "dj", "bartender", "decorator", "makeup", "dhol", "emcee", "choreographer", "planner", "photo booth", "party rentals"],
   LEGAL: ["lawyer", "immigration", "divorce", "wills", "llc", "nri"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],
@@ -189,6 +206,13 @@ for (const group of SYNONYMS) {
 }
 const canonical = (s: string) => CANONICAL.get(s) ?? s;
 
+// Words that mean something else inside a category: "rentals" in an event vendor's ad means
+// party rentals, not housing. Applied to those listings, and to queries hinting at that category.
+const CATEGORY_CANON: Record<string, Map<string, string>> = {
+  EVENT_SERVICES: new Map([[canonical(stem("rent")), canonical(stem("partyrentals"))]]),
+};
+const canonIn = (category: string, canon: string) => CATEGORY_CANON[category]?.get(canon) ?? canon;
+
 const HINT_INDEX = new Map<string, string>();
 for (const [cat, words] of Object.entries(CATEGORY_HINTS)) {
   for (const w of words) HINT_INDEX.set(canonical(stem(w.replace(/ /g, ""))), cat);
@@ -255,6 +279,7 @@ export function parseQuery(query: string): ParsedQuery {
     terms.push({ raw, stem: s, canon });
   }
   const hintedCategory = terms.map((t) => HINT_INDEX.get(t.canon)).find(Boolean);
+  if (hintedCategory) for (const t of terms) t.canon = canonIn(hintedCategory, t.canon);
   return { terms: terms.slice(0, 8), maxPriceCents, minPriceCents, hintedCategory };
 }
 
@@ -291,7 +316,7 @@ function indexDoc(doc: Searchable): DocIndex {
     const tokens = tokenize(text, true);
     words.push(...tokens);
     const stems = tokens.map(stem);
-    return { field, stems, canons: new Set(stems.map(canonical)) };
+    return { field, stems, canons: new Set(stems.map((x) => canonIn(doc.category, canonical(x)))) };
   });
   return { fields, words };
 }

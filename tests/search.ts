@@ -12,6 +12,8 @@ const docs = [
   L("room", "ROOM_RENTAL", "Private room in 3BR house near Lawrence Expwy", "Furnished room with shared bath, utilities and Wi-Fi included.", 140000, "per month"),
   L("realtor", "REALTOR", "Your Bay Area home buying partner", "First-time buyers and relocations. Coldwell Banker. Hindi and Telugu.", null, "", "", "Priya Nair Realty"),
   L("lawyer", "LEGAL", "Immigration and family law attorney", "H-1B, green card, citizenship and divorce cases. Free consultation.", 25000, "per hour", "", "Rao Law"),
+  L("photo", "EVENT_SERVICES", "Candid wedding photography & films", "Sangeet, haldi and wedding coverage across the Bay Area. Drone add-on.", 250000, "starting at", "", "Lens & Lights Studio"),
+  L("rentals", "EVENT_SERVICES", "Party rentals: tents, mandap, jhoola & bounce houses", "Tables, chairs, linens, chafing dishes and kids' bounce houses. We deliver and set up.", 20000, "starting at", "", "Utsav Rentals"),
   L("art", "ART", "Madhubani paintings on canvas", "Hand-painted Madhubani art. Custom orders welcome.", 8500, "per painting"),
 ];
 const cases: [string, string[], string[]?][] = [
@@ -48,6 +50,12 @@ const cases: [string, string[], string[]?][] = [
   ["green card lawyer", ["lawyer"]],
   ["h1b", ["lawyer"]],
   ["estate planning", [], ["laddu", "mealbox", "dance"]],
+  ["wedding photographer", ["photo"]],
+  ["videographer", ["photo"], ["lawyer"]],
+  ["bouncy castle", ["rentals"]],
+  ["jhula rental", ["rentals"]],
+  ["tent for party", ["rentals"]],
+  ["room for rent", ["room"], ["rentals"]],
 ];
 let fail = 0;
 for (const [q, mustInclude, mustExclude = []] of cases) {

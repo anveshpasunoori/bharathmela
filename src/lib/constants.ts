@@ -3,6 +3,7 @@ export const CATEGORIES = [
   { id: "TUTORING", label: "Tutoring & Classes", priceHint: "per hour" },
   { id: "DANCE_MUSIC", label: "Dance, Music & Sangeetham", priceHint: "per month" },
   { id: "PUJARI", label: "Pujari & Religious Services", priceHint: "per puja" },
+  { id: "EVENT_SERVICES", label: "Weddings & Event Services", priceHint: "starting at" },
   { id: "DOMESTIC_HELP", label: "Domestic Help & Nannies", priceHint: "per hour" },
   { id: "ROOM_RENTAL", label: "Room Rentals", priceHint: "per month" },
   { id: "REALTOR", label: "Realtors & Real Estate", priceHint: "" },

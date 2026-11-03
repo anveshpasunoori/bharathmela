@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
+import type { EventServiceDetails } from "@/lib/event-services";
 import type { ProfessionalDetails } from "@/lib/professionals";
 import type { RentalDetails } from "@/lib/rentals";
 import { CategorySelect } from "./CategorySelect";
+import { EventServiceFields } from "./EventServiceFields";
 import { ProfessionalFields } from "./ProfessionalFields";
 import { RentalFields } from "./RentalFields";
 
@@ -18,11 +20,13 @@ export function ListingFields({
   initial,
   initialRental,
   initialProfessional,
+  initialEventService,
 }: {
   canUseAI: boolean;
   initial?: ListingValues;
   initialRental?: RentalDetails | null;
   initialProfessional?: ProfessionalDetails | null;
+  initialEventService?: EventServiceDetails | null;
 }) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -122,6 +126,8 @@ export function ListingFields({
           <p className="mt-1 text-xs text-stone-500">Vegan also marks Vegetarian, Eggless and Dairy-free; Jain also marks Vegetarian.</p>
         </fieldset>
       )}
+
+      {category === "EVENT_SERVICES" && <EventServiceFields initial={initialEventService} />}
 
       {(category === "REALTOR" || category === "LEGAL") && (
         <ProfessionalFields key={category} category={category} initial={initialProfessional} />
