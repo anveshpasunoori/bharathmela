@@ -28,8 +28,9 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
 
 ## Subcategory icons
 
-- `source-sheets/subcategory-icons-1.webp`: illustrated subcategory icons (8 per row, in the order of the sheet's
-  labels), cut to `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` and listed in `src/lib/subcategory-art.ts`.
-  The veena (Dance/Carnatic) on it was skipped, as it came out as a plain stick.
-- `icons-to-draw/sheet-2.png` and `sheet-3.png`: the drawn icons still waiting for illustrated versions, laid out
-  the same way, to have them redrawn. Subcategories without an illustration use the drawn `.svg`.
+- `source-sheets/subcategory-icons-1.webp` and `-2.webp`: illustrated subcategory icons (8 per row, in the
+  order of the sheets' labels), cut to `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` and listed in
+  `src/lib/subcategory-art.ts`. Skipped: Dance/Carnatic (a stick on sheet 1, a dancer on sheet 2; it's a music
+  style) and Legal/Estate (a house and key on sheet 2, which reads as real estate).
+- `icons-to-draw/sheet-3.png`: the drawn icons still waiting for illustrated versions, to have them redrawn.
+  Subcategories without an illustration use the drawn `.svg`.
