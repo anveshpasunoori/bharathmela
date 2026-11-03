@@ -10,6 +10,10 @@ Images kept for later use. Pictures the app shows live in `public/categories/` (
     `FASHION_JEWELRY`, `ACCESSORIES`, `FABRICS`, `ELECTRONICS`, `HOME_APPLIANCES`, `KITCHENWARE`,
     `SPORTS_FITNESS`, `PET_SUPPLIES`, `PERSONAL_CARE`, `BABY_CARE`, `OFFICE_STATIONERY`, `GARDENING_TOOLS`,
     `BOOKS_MEDIA`
+  - auto services: `CAR_DETAILING`, `CAR_BODY_SHOP`, `CAR_TIRES`, `OIL_CHANGE`, `CAR_DIAGNOSTICS`
+  - event types, e.g. for the Events page filters: `EVENT_CONCERTS` (concerts and festivals), `EVENT_POOJAS`
+    (poojas and religious), `EVENT_MELAS` (melas and fairs), `EVENT_WEDDINGS` (weddings and celebrations),
+    `EVENT_CORPORATE`
   - `JOBS`, and `MUSIC` (music lessons; an alternative picture for Dance, Music & Sangeetham)
 - `category-illustrations/`: the earlier illustrated tiles for rooms, tutoring, food, legal, domestic help,
   dance, realtors and events, replaced by photos.
