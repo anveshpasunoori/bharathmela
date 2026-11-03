@@ -7,6 +7,14 @@
   --font-sans: var(--font-geist-sans);
 }
 
+/* Horizontally scrolling chip rows on phones: swipeable, without a scrollbar line under them. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 body {
   background: #fafaf9;
   color: #1c1917;

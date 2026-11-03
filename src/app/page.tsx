@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EventCard } from "@/components/EventCard";
-import { FilterPanel } from "@/components/FilterPanel";
+import { FilterBar, type FilterDef } from "@/components/FilterBar";
 import { ListingCard } from "@/components/ListingCard";
 import { RentalTabs } from "@/components/RentalTabs";
 import { SortSelect } from "@/components/SortSelect";
 import { syncExpirations } from "@/lib/billing";
-import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
+import { CATEGORIES, DIET_TAGS, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch } from "@/lib/listings";
@@ -142,7 +142,59 @@ export default async function Home({
     <input type="hidden" name="metro" value={metro} />
   );
   const categoryInfo = CATEGORIES.find((c) => c.id === category);
-  const toggleDiet = (id: DietTag) => href("FOOD", diet.includes(id) ? diet.filter((d) => d !== id) : [...diet, id]);
+
+  // The filter bar under the search box: distance, then the filters for this category.
+  const pick = (key: string, label: string, anyLabel: string, param: string, opts: readonly { id: string; label: string }[], current?: string): FilterDef => ({
+    kind: "choice", key, label,
+    options: [{ label: anyLabel, params: { [param]: null } }, ...opts.map((o) => ({ label: o.label, params: { [param]: o.id } }))],
+    selected: current ? opts.findIndex((o) => o.id === current) + 1 || null : null,
+  });
+  const filterBar: FilterDef[] = [];
+  if (place) {
+    const options = [
+      ...RADII.map((r) => ({ label: `Within ${r} mi`, params: { radius: String(r), metro: null } })),
+      // A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker.
+      ...(far ? [] : [{ label: `All of ${metroName(metro)}`, params: { metro, radius: null } }]),
+    ];
+    filterBar.push({
+      kind: "choice", key: "distance", label: "Distance", options,
+      selected: nearMode ? RADII.indexOf(radius) : far ? null : RADII.length,
+      defaultIndex: RADII.indexOf(25),
+    });
+  }
+  if (category === "FOOD") {
+    filterBar.push({ kind: "multi", key: "diet", param: "diet", label: "Dietary", options: DIET_TAGS, selected: diet });
+  }
+  if (category === "ROOM_RENTAL") {
+    filterBar.push(
+      pick("space", "Space type", "Any space", "space", SPACE_TYPES, rentalFilters.space),
+      { kind: "max", key: "rent", param: "maxRent", label: "Rent", suffix: "per month", value: rentalFilters.maxRent ? rentalFilters.maxRent / 100 : null, presets: [800, 1000, 1200, 1500, 2000, 2500] },
+      { kind: "date", key: "by", param: "by", label: "Move-in date", prefix: "By", value: rentalFilters.availableBy ?? null },
+      {
+        kind: "checks", key: "more", label: "More",
+        items: [
+          { param: "pbath", label: "Private bath", checked: !!rentalFilters.privateBath },
+          { param: "furn", label: "Furnished", checked: !!rentalFilters.furnished },
+          { param: "pets", label: "Pets allowed", checked: !!rentalFilters.pets },
+        ],
+      },
+    );
+  }
+  if (category && isProfessional(category)) {
+    filterBar.push(
+      pick("spec", category === "LEGAL" ? "Practice area" : "Service", category === "LEGAL" ? "Any practice area" : "Any service", "spec", SPECIALTIES[category], proFilters.specialty),
+      pick("lang", "Language", "Any language", "lang", LANGUAGES.map((l) => ({ id: l, label: `Speaks ${l}` })), proFilters.language),
+      { kind: "toggle", key: "free", param: "free", label: "Free consultation", on: !!proFilters.freeConsult },
+    );
+  }
+  if (category === "EVENT_SERVICES") {
+    filterBar.push(
+      pick("svc", "Service", "Any service", "svc", EVENT_SERVICES, eventFilters.service),
+      pick("item", "Rental item", "Any rental item", "item", RENTAL_ITEMS, eventFilters.item),
+      pick("occ", "Occasion", "Any occasion", "occ", OCCASIONS, eventFilters.occasion),
+      { kind: "toggle", key: "ins", param: "ins", label: "Insured", on: !!eventFilters.insured },
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -188,9 +240,10 @@ export default async function Home({
             ))}
           </p>
         )}
-        {place && (
+        {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
+        {place && !showingListings && (
           // Distance from the visitor's location (set in the top bar).
-          <nav className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 text-sm" aria-label="Distance">
+          <nav className="scrollbar-none -mx-1 flex items-center gap-2 overflow-x-auto px-1 text-sm" aria-label="Distance">
             <span className="shrink-0 text-stone-500">Within</span>
             {RADII.map((r) => {
               const p = new URLSearchParams();
@@ -254,7 +307,7 @@ export default async function Home({
 
       {showingListings && (
         // One scrollable row on phones instead of a wall of wrapped chips.
-        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Categories">
+        <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Categories">
           {/* The current category first, so it's visible without scrolling the row. */}
           {[...CATEGORIES].sort((a, b) => Number(b.id === category) - Number(a.id === category)).map((c) => (
             <Link
@@ -269,100 +322,10 @@ export default async function Home({
         </nav>
       )}
 
-      {category === "FOOD" && (
-        <nav className="-mx-4 flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 pb-1 text-sm" aria-label="Dietary filters">
-          <span className="shrink-0 text-stone-500">Dietary:</span>
-          {DIET_TAGS.map((t) => {
-            const on = diet.includes(t.id);
-            return (
-              <Link
-                key={t.id}
-                href={toggleDiet(t.id)}
-                aria-pressed={on}
-                className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-200"}`}
-              >
-                {on ? "✓ " : ""}
-                {t.label}
-              </Link>
-            );
-          })}
-        </nav>
-      )}
-
-      {category === "EVENT_SERVICES" && (
-        <FilterPanel active={Object.values(eventFilters).filter(Boolean).length}>
-        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Event service filters">
-          {locationInputs}
-          <input type="hidden" name="category" value="EVENT_SERVICES" />
-          {q && <input type="hidden" name="q" value={q} />}
-          <div>
-            <label className="label" htmlFor="svc">Service</label>
-            <select id="svc" name="svc" defaultValue={eventFilters.service ?? ""} className="input">
-              <option value="">Any</option>
-              {EVENT_SERVICES.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="item">Rental item</label>
-            <select id="item" name="item" defaultValue={eventFilters.item ?? ""} className="input">
-              <option value="">Any</option>
-              {RENTAL_ITEMS.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="occ">Occasion</label>
-            <select id="occ" name="occ" defaultValue={eventFilters.occasion ?? ""} className="input">
-              <option value="">Any</option>
-              {OCCASIONS.map((o) => (
-                <option key={o.id} value={o.id}>{o.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col justify-end gap-2">
-            <label className="flex items-center gap-2"><input type="checkbox" name="ins" value="1" defaultChecked={eventFilters.insured} /> Insured</label>
-            <button className="btn">Apply</button>
-          </div>
-        </form>
-        </FilterPanel>
-      )}
-
       {category && isProfessional(category) && (
-        <FilterPanel active={Object.values(proFilters).filter(Boolean).length}>
-        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Professional filters">
-          {locationInputs}
-          <input type="hidden" name="category" value={category} />
-          {q && <input type="hidden" name="q" value={q} />}
-          <div className="sm:col-span-2">
-            <label className="label" htmlFor="spec">{category === "LEGAL" ? "Practice area" : "Service"}</label>
-            <select id="spec" name="spec" defaultValue={proFilters.specialty ?? ""} className="input">
-              <option value="">Any</option>
-              {SPECIALTIES[category].map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="lang">Speaks</label>
-            <select id="lang" name="lang" defaultValue={proFilters.language ?? ""} className="input">
-              <option value="">Any language</option>
-              {LANGUAGES.map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col justify-end gap-2">
-            <label className="flex items-center gap-2"><input type="checkbox" name="free" value="1" defaultChecked={proFilters.freeConsult} /> Free consultation</label>
-            <button className="btn">Apply</button>
-          </div>
-          <p className="text-xs text-stone-500 sm:col-span-4">
-            Always check a {category === "LEGAL" ? "lawyer's license with the state bar" : "realtor's license with your state's real estate department"} before hiring.
-          </p>
-        </form>
-        </FilterPanel>
+        <p className="text-xs text-stone-500">
+          Always check a {category === "LEGAL" ? "lawyer's license with the state bar" : "realtor's license with your state's real estate department"} before hiring.
+        </p>
       )}
 
       {category === "ROOM_RENTAL" && (
@@ -373,43 +336,6 @@ export default async function Home({
             <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn py-1.5">I need a place to live</Link>
           </div>
         </div>
-      )}
-
-      {category === "ROOM_RENTAL" && (
-        <FilterPanel active={Object.values(rentalFilters).filter((v) => v != null && v !== false).length}>
-        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Rental filters">
-          {locationInputs}
-          <input type="hidden" name="category" value="ROOM_RENTAL" />
-          {q && <input type="hidden" name="q" value={q} />}
-          <div>
-            <label className="label" htmlFor="space">Space</label>
-            <select id="space" name="space" defaultValue={rentalFilters.space ?? ""} className="input">
-              <option value="">Any</option>
-              {SPACE_TYPES.map((t) => (
-                <option key={t.id} value={t.id}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="maxRent">Max rent / month</label>
-            <input id="maxRent" name="maxRent" inputMode="numeric" placeholder="e.g. 1500" className="input"
-              defaultValue={rentalFilters.maxRent ? rentalFilters.maxRent / 100 : ""} />
-          </div>
-          <div>
-            <label className="label" htmlFor="by">Move in by</label>
-            <input id="by" name="by" type="date" className="input" defaultValue={rentalFilters.availableBy ?? ""} />
-          </div>
-          <div className="flex flex-col justify-end gap-1">
-            <label className="flex items-center gap-2"><input type="checkbox" name="pbath" value="1" defaultChecked={rentalFilters.privateBath} /> Private bath</label>
-            <label className="flex items-center gap-2"><input type="checkbox" name="furn" value="1" defaultChecked={rentalFilters.furnished} /> Furnished</label>
-            <label className="flex items-center gap-2"><input type="checkbox" name="pets" value="1" defaultChecked={rentalFilters.pets} /> Pets allowed</label>
-          </div>
-          <div className="flex gap-2 sm:col-span-4">
-            <button className="btn">Apply filters</button>
-            <Link href={`/?metro=${metro}&category=ROOM_RENTAL`} className="btn-outline">Reset</Link>
-          </div>
-        </form>
-        </FilterPanel>
       )}
 
       {(q || category) && (
