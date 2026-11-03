@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DropdownCloser } from "@/components/DropdownCloser";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCurrentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal";
 import "./globals.css";
 
@@ -25,13 +26,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const savedCount = user ? await db.favorite.count({ where: { userId: user.id } }) : 0;
   return (
     <html lang="en">
       <body className={`${geistSans.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-white focus:px-3 focus:py-2">
           Skip to content
         </a>
-        <SiteHeader user={user} />
+        <SiteHeader user={user} savedCount={savedCount} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
         <footer className="border-t border-stone-200 bg-white">

@@ -12,7 +12,7 @@ const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 
 // The top bar. Desktop shows the main sections as words, with categories grouped under Browse and the
 // account behind its initial; phones get a slide-in menu with the same links.
-export function SiteHeader({ user }: { user: HeaderUser }) {
+export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCount?: number }) {
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
   return (
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
@@ -66,8 +66,12 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
         <div className="ml-auto flex items-center gap-1">
           {user && (
-            <Link href="/saved" className={navLink} aria-label="Saved listings">
-              ♡<span className="hidden sm:inline"> Saved</span>
+            <Link href="/saved" className={`${navLink} flex items-center gap-1.5`} aria-label={`Saved listings (${savedCount})`}>
+              <span aria-hidden className={savedCount ? "text-rose-500" : ""}>{savedCount ? "♥" : "♡"}</span>
+              <span className="hidden sm:inline">Saved</span>
+              {savedCount > 0 && (
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{savedCount}</span>
+              )}
             </Link>
           )}
           {user ? (

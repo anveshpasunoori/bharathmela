@@ -68,7 +68,7 @@ export default async function RoomsWantedPage({
       <FarNote far={far} metro={metro} />
       <p className="text-sm text-stone-600">{posts.length} {posts.length === 1 ? "person" : "people"} looking in {metroName(metro)}</p>
       {posts.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <WantedCard
               key={post.id}
