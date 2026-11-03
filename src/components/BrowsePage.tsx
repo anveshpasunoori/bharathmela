@@ -27,8 +27,6 @@ import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
 import { ShowAllCategories } from "@/components/ShowAllCategories";
 
-const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
-
 // A one-line reminder under results in categories where the seller needs a license.
 const LICENSE_TIPS: Record<string, string> = {
   LEGAL: "Always check a lawyer's license with the state bar before hiring.",
@@ -275,16 +273,6 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           />
           <button className="btn">Search</button>
         </form>
-        {!showingListings && (
-          <p className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
-            Popular:
-            {POPULAR.map((term) => (
-              <Link key={term} href={href(undefined, [], term)} className="rounded-full bg-white px-2.5 py-0.5 text-stone-700 ring-1 ring-stone-200 hover:text-brand">
-                {term}
-              </Link>
-            ))}
-          </p>
-        )}
         {subs && (
           <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
             {/* The picked one right after "All", so it's visible without scrolling the row. */}
