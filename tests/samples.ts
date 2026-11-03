@@ -1,6 +1,6 @@
 // Every sample listing in the dev seed should pass moderation cleanly, and every category should have samples.
 import { SAMPLE_VENDORS } from "../prisma/samples";
-import { CATEGORIES } from "../src/lib/constants";
+import { CATEGORIES, isDietTag } from "../src/lib/constants";
 import { isMetro } from "../src/lib/metros";
 import { screenListing } from "../src/lib/moderation";
 import { hasServiceTypes, parseServiceTypes } from "../src/lib/service-types";
@@ -17,9 +17,11 @@ for (const v of SAMPLE_VENDORS) {
     const r = screenListing(`${l.title}\n${l.description}`, l.category);
     if (r.block || r.flags.length) fail(`${l.title}: ${r.block ?? r.flags.join(", ")}`);
     // Service types must belong to the category, and categories that have them need at least one.
+    // Food tags also hold dietary markers.
     if (hasServiceTypes(l.category)) {
-      const valid = parseServiceTypes(l.category, `,${(l.tags ?? []).join(",")},`);
-      if (!valid.length || valid.length !== (l.tags ?? []).length) fail(`${l.title}: service types ${JSON.stringify(l.tags)}`);
+      const tags = (l.tags ?? []).filter((t) => !(l.category === "FOOD" && isDietTag(t)));
+      const valid = parseServiceTypes(l.category, `,${tags.join(",")},`);
+      if (!valid.length || valid.length !== tags.length) fail(`${l.title}: service types ${JSON.stringify(l.tags)}`);
     }
   }
 }

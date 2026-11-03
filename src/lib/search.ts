@@ -5,6 +5,7 @@
 // (Postgres full-text, Meilisearch) if a city grows past tens of thousands of listings.
 
 import { DIET_TAGS, categoryLabel } from "./constants";
+import { SERVICE_TYPES } from "./service-types";
 
 // Each group is a set of words people use for the same thing. The first entry is the canonical form.
 const SYNONYMS: string[][] = [
@@ -347,7 +348,11 @@ type Field = keyof typeof FIELD_WEIGHTS;
 type DocIndex = { fields: { field: Field; stems: string[]; canons: Set<string> }[]; words: string[] };
 
 function indexDoc(doc: Searchable): DocIndex {
-  const tagText = DIET_TAGS.filter((t) => doc.tags.includes(`,${t.id},`)).map((t) => DIET_TOKENS[t.id]).join(" ");
+  // Dietary markers and the seller's picked services ("Towing & roadside help") both count as tags.
+  const tagText = [
+    ...DIET_TAGS.filter((t) => doc.tags.includes(`,${t.id},`)).map((t) => DIET_TOKENS[t.id]),
+    ...(SERVICE_TYPES[doc.category] ?? []).filter((t) => doc.tags.includes(`,${t.id},`)).map((t) => t.label),
+  ].join(" ");
   const raw: [Field, string][] = [
     ["title", doc.title],
     ["tags", tagText],

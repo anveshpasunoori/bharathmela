@@ -90,12 +90,11 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     priceCents = Math.round(n * 100);
   }
   if (form.get("confirm") !== "on") return { error: "Please confirm the listing follows the rules and Terms." };
-  // Dietary markers for food; the services offered for categories that have service types.
-  const tags =
-    category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String)))
-    : hasServiceTypes(category) ? serializeServiceTypes(category, form.getAll("types").map(String))
-    : "";
-  if (hasServiceTypes(category) && !tags) return { error: "Pick at least one service you offer, so buyers can find you." };
+  // The services offered (subcategories), plus dietary markers for food; both live in the tags column.
+  const types = hasServiceTypes(category) ? serializeServiceTypes(category, form.getAll("types").map(String)) : "";
+  if (hasServiceTypes(category) && !types) return { error: "Pick at least one option under what you offer, so buyers can find you." };
+  const diet = category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String))) : "";
+  const tags = diet && types ? `${diet}${types.slice(1)}` : diet || types;
   if (category === "ROOM_RENTAL") {
     const rental = parseRentalForm(form);
     if ("error" in rental) return rental;

@@ -10,7 +10,7 @@ export type SampleListing = {
   priceUnit: string;
   description: string;
   featured?: boolean;
-  tags?: string[]; // dietary markers for FOOD
+  tags?: string[]; // subcategories (service types), plus dietary markers for FOOD
   details?: Record<string, unknown>; // rental, professional or event-service details
 };
 
@@ -61,10 +61,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     about: "Home cook from Vijayawada, cooking for Bay Area families since 2018. County-registered home kitchen.",
     listings: [
       { title: "Weekly Andhra meal box (5 days)", category: "FOOD", priceCents: 7500, priceUnit: "per week", featured: true,
-        tags: ["VEGETARIAN", "EGGLESS", "NUT_FREE"],
+        tags: ["VEGETARIAN", "EGGLESS", "NUT_FREE", "TIFFIN", "THALI"],
         description: "Home-style rice, dal, curry, pickle and curd. Pickup in Santa Clara or delivery within 5 miles." },
       { title: "Party orders – biryani trays", category: "FOOD", priceCents: 9000, priceUnit: "per tray (serves 10)",
-        tags: ["HALAL"],
+        tags: ["HALAL", "PARTY_ORDERS", "BIRYANI"],
         description: "Chicken or veg dum biryani. Order 3 days ahead." },
     ],
   },
@@ -73,10 +73,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "95035", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Jain & Gujarati thali – no onion, no garlic", category: "FOOD", priceCents: 1400, priceUnit: "per plate",
-        tags: ["VEGETARIAN", "JAIN", "EGGLESS"],
+        tags: ["VEGETARIAN", "JAIN", "EGGLESS", "THALI"],
         description: "Rotli, dal, shaak, kadhi, rice and a sweet. Made fresh daily; order by 10 AM for same-day pickup in Milpitas." },
       { title: "Vegan millet snack boxes", category: "FOOD", priceCents: 1800, priceUnit: "per box",
-        tags: ["VEGAN", "GLUTEN_FREE", "ORGANIC", "DAIRY_FREE"],
+        tags: ["VEGAN", "GLUTEN_FREE", "ORGANIC", "DAIRY_FREE", "SNACKS"],
         description: "Ragi chakli, jowar puffs and roasted makhana made with organic millets. Great for school lunch boxes." },
     ],
   },
@@ -85,6 +85,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "94538", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Griha Pravesh & Satyanarayan Puja", category: "PUJARI", priceCents: 25100, priceUnit: "per puja",
+        tags: ["GRIHA_PRAVESH", "SATYANARAYANA"],
         description: "Telugu, Hindi and Sanskrit. Samagri list provided; can bring samagri for an extra fee." },
     ],
   },
@@ -93,6 +94,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "95129", plan: "FREE",
     listings: [
       { title: "Bharatanatyam & Carnatic vocal classes", category: "DANCE_MUSIC", priceCents: 12000, priceUnit: "per month",
+        tags: ["BHARATANATYAM", "CARNATIC"],
         description: "Weekly group classes for ages 6+ in West San Jose. Arangetram preparation available." },
     ],
   },
@@ -101,8 +103,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "95014", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Abacus, mental math and Scratch coding for kids 6–12", category: "TUTORING", priceCents: 4000, priceUnit: "per class",
+        tags: ["ABACUS", "CODING"],
         description: "Small groups of up to 6 in Cupertino, or live online. Free trial class and a progress report every month." },
       { title: "SAT math & AP Calculus tutoring", category: "TUTORING", priceCents: 6000, priceUnit: "per hour",
+        tags: ["TEST_PREP", "MATH"],
         description: "One-on-one tutoring by a former high-school math teacher. Practice tests and weekly feedback to parents." },
     ],
   },
@@ -111,6 +115,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "94539", plan: "FREE", whatsapp: true,
     listings: [
       { title: "Experienced nanny and cook – weekdays", category: "DOMESTIC_HELP", priceCents: 2500, priceUnit: "per hour",
+        tags: ["NANNY", "COOK"],
         description: "12 years caring for babies and toddlers. I can cook South and North Indian vegetarian meals. CPR certified, references available. Speaks Tamil, Telugu, Hindi and English." },
     ],
   },
@@ -185,8 +190,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "94086", plan: "FREE",
     listings: [
       { title: "Hand-painted Madhubani and Tanjore paintings", category: "ART", priceCents: 18000, priceUnit: "per item",
+        tags: ["PAINTINGS"],
         description: "Original Madhubani on handmade paper and Tanjore-style paintings with gold foil. Custom sizes and names on request; 3–4 weeks." },
       { title: "Diwali diya and rangoli workshop for kids", category: "ART", priceCents: 3500, priceUnit: "per child",
+        tags: ["RANGOLI", "ART_CLASSES"],
         description: "2-hour hands-on workshop in Sunnyvale: paint your own clay diyas and learn a simple rangoli. All materials included." },
     ],
   },
@@ -195,8 +202,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "95136", plan: "PRO", phoneVerified: true,
     listings: [
       { title: "Kanjeevaram and soft silk sarees – home boutique", category: "CLOTHING", priceCents: 22000, priceUnit: "starting at", featured: true,
+        tags: ["SAREES"],
         description: "Pure silk sarees from Kanchipuram and Dharmavaram, with silk mark. Visit by appointment in San Jose; blouse stitching available." },
       { title: "Kids' lehengas and pattu pavadai", category: "CLOTHING", priceCents: 4500, priceUnit: "per item",
+        tags: ["KIDS_WEAR"],
         description: "Festival outfits for girls ages 2–12. Sizes in stock; alterations included." },
     ],
   },
@@ -205,6 +214,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "94555", plan: "FREE",
     listings: [
       { title: "Homemade mango avakaya and gongura pickles", category: "GOODS", priceCents: 1200, priceUnit: "per 500 g jar",
+        tags: ["PICKLES"],
         description: "Made in small batches with cold-pressed sesame oil. Also karam podi and idli podi. Pickup in Fremont or shipped in California." },
     ],
   },
@@ -223,7 +233,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "bay-area", zip: "94536", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Mobile mechanic – oil change, brakes and batteries at your home", category: "AUTO", priceCents: 6000, priceUnit: "starting at",
-        tags: ["MECHANIC", "OIL_CHANGE"],
+        tags: ["MECHANIC", "OIL_CHANGE", "BRAKES"],
         description: "ASE-certified mechanic, 14 years. Oil changes, brake pads, batteries and check-engine diagnostics in your driveway across Fremont, Newark and Union City. Written estimate first." },
       { title: "Driving lessons for new arrivals and teens", category: "AUTO", priceCents: 7000, priceUnit: "per lesson",
         tags: ["DRIVING_LESSONS"],
@@ -276,10 +286,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     about: "Andhra and Tamil home cooking in Ponte Vedra Beach. Florida cottage food registered.",
     listings: [
       { title: "Weekday tiffin service – Ponte Vedra & Nocatee", category: "FOOD", priceCents: 6500, priceUnit: "per week", featured: true,
-        tags: ["VEGETARIAN", "EGGLESS"],
+        tags: ["VEGETARIAN", "EGGLESS", "TIFFIN"],
         description: "Lunch box Monday to Friday: chapati or rice, dal, sabzi, curd and salad. Delivered to Ponte Vedra Beach, Nocatee and St. Johns." },
       { title: "Weekend dosa and idli batter", category: "FOOD", priceCents: 900, priceUnit: "per quart",
-        tags: ["VEGAN", "GLUTEN_FREE", "DAIRY_FREE"],
+        tags: ["VEGAN", "GLUTEN_FREE", "DAIRY_FREE", "SOUTH_INDIAN"],
         description: "Stone-ground batter made Friday nights. Pickup Saturday mornings in Ponte Vedra Beach." },
     ],
   },
@@ -288,7 +298,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32256", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Hyderabadi dum biryani – family packs", category: "FOOD", priceCents: 3500, priceUnit: "per family pack (serves 4)",
-        tags: ["HALAL"],
+        tags: ["HALAL", "BIRYANI", "PARTY_ORDERS"],
         description: "Chicken, goat or veg dum biryani with mirchi ka salan and raita. Order by Thursday for weekend pickup near Southside." },
     ],
   },
@@ -297,8 +307,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32259", plan: "FREE",
     listings: [
       { title: "Math and science tutoring, grades 5–12", category: "TUTORING", priceCents: 4500, priceUnit: "per hour",
+        tags: ["MATH", "SCIENCE"],
         description: "Algebra, geometry, physics and chemistry. In St. Johns or online. Helps with FAST and SAT prep." },
       { title: "Telugu reading and writing for kids", category: "TUTORING", priceCents: 8000, priceUnit: "per month",
+        tags: ["INDIAN_LANGUAGES"],
         description: "Weekend classes for ages 5–12 using the Manabadi curriculum. Small online groups." },
     ],
   },
@@ -307,8 +319,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32224", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Kuchipudi and Bollywood dance classes", category: "DANCE_MUSIC", priceCents: 9000, priceUnit: "per month",
+        tags: ["KUCHIPUDI", "BOLLYWOOD"],
         description: "Classical Kuchipudi for ages 5+, and fun Bollywood fitness for adults on Saturday mornings. Beach Blvd studio." },
       { title: "Hindustani vocal and harmonium lessons", category: "DANCE_MUSIC", priceCents: 3500, priceUnit: "per lesson",
+        tags: ["HINDUSTANI", "KEYBOARD"],
         description: "Private lessons for beginners and intermediate students, in person or on Zoom." },
     ],
   },
@@ -317,8 +331,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32257", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Housewarming, Satyanarayana Vratam and naming ceremonies", category: "PUJARI", priceCents: 20100, priceUnit: "per puja",
+        tags: ["GRIHA_PRAVESH", "SATYANARAYANA", "BABY_CEREMONIES"],
         description: "Telugu and Sanskrit pujas across Jacksonville, St. Augustine and Ponte Vedra. Samagri list sent in advance." },
       { title: "Wedding and seemantham ceremonies", category: "PUJARI", priceCents: 50100, priceUnit: "starting at",
+        tags: ["WEDDING", "BABY_CEREMONIES"],
         description: "Full wedding rituals and seemantham with explanations in English for guests. Travel within 60 miles included." },
     ],
   },
@@ -327,8 +343,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32258", plan: "FREE", whatsapp: true,
     listings: [
       { title: "Cooking help and elder care – part time", category: "DOMESTIC_HELP", priceCents: 2000, priceUnit: "per hour",
+        tags: ["COOK", "ELDER_CARE"],
         description: "Can cook daily meals and help seniors with walks and medicine reminders. 8 years of experience; references available. Speaks Telugu, Kannada and English." },
       { title: "Postpartum care and newborn help", category: "DOMESTIC_HELP", priceCents: 2800, priceUnit: "per hour",
+        tags: ["POSTPARTUM"],
         description: "Traditional postpartum meals, a traditional oil bath for the baby, and night help for the first weeks after delivery." },
     ],
   },
@@ -396,8 +414,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32082", plan: "FREE",
     listings: [
       { title: "Custom Pichwai and Kerala mural paintings", category: "ART", priceCents: 25000, priceUnit: "starting at",
+        tags: ["PAINTINGS"],
         description: "Hand-painted Pichwai and Kerala mural art on canvas, made to order for pooja rooms and living rooms." },
       { title: "Handmade golu dolls and festival decor", category: "ART", priceCents: 2500, priceUnit: "per item",
+        tags: ["FESTIVAL_DECOR", "HANDMADE"],
         description: "Clay golu dolls, toran door hangings and decorated diyas. Pickup in Ponte Vedra Beach." },
     ],
   },
@@ -406,8 +426,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32256", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Designer salwar suits, kurtis and lehengas", category: "CLOTHING", priceCents: 6000, priceUnit: "starting at",
+        tags: ["LEHENGAS"],
         description: "Latest festive and party wear in sizes XS–3XL. Home boutique near Town Center; try-ons by appointment." },
       { title: "Imitation and kundan jewelry sets", category: "CLOTHING", priceCents: 3500, priceUnit: "per set",
+        tags: ["JEWELRY"],
         description: "Necklace and earring sets, bangles and maang tikkas to match your outfit. Rental options for weddings." },
     ],
   },
@@ -416,8 +438,10 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "jacksonville", zip: "32224", plan: "FREE",
     listings: [
       { title: "Tulsi, curry leaf and jasmine plants", category: "GOODS", priceCents: 1500, priceUnit: "per plant",
+        tags: ["PLANTS"],
         description: "Healthy potted Rama and Krishna tulsi, curry leaf and mogra plants grown in Jacksonville. Tips on keeping them alive in winter." },
       { title: "Pooja items and festival supplies", category: "GOODS", priceCents: 500, priceUnit: "starting at",
+        tags: ["POOJA_ITEMS"],
         description: "Brass diyas, kalash sets, agarbatti, camphor and kumkum. Diwali and Navratri kits available." },
     ],
   },
@@ -453,6 +477,27 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
       { title: "Driving lessons – learner's permit to road test", category: "AUTO", priceCents: 6500, priceUnit: "per lesson",
         tags: ["DRIVING_LESSONS"],
         description: "Florida-licensed driving instructor with a dual-control car. Pickup from home in St. Johns and Southside. Patient lessons for newcomers, parents visiting on long stays and teens." },
+    ],
+  },
+  {
+    email: "jax.towing@bharathmela.test", name: "Ravi Kumar", businessName: "First Coast Towing & Collision", phone: "(904) 555-0153",
+    metro: "jacksonville", zip: "32216", plan: "BASIC", phoneVerified: true,
+    listings: [
+      { title: "24/7 towing, jump-starts and lockouts", category: "AUTO", priceCents: 7500, priceUnit: "starting at",
+        tags: ["TOWING"],
+        description: "Flatbed towing anywhere in Duval and St. Johns counties, day or night. Jump-starts, flat-tire changes, fuel delivery and lockouts. Licensed and insured; we tell you the price before we roll." },
+      { title: "Collision repair and insurance claims help", category: "AUTO", priceCents: null, priceUnit: "",
+        tags: ["COLLISION", "BODY_SHOP", "WINDSHIELD"],
+        description: "Body work, dent repair, paint matching and windshield replacement after an accident. We work with all insurance companies, take photos for your claim and can arrange a rental car." },
+    ],
+  },
+  {
+    email: "jax.cars@bharathmela.test", name: "Meera Iyer", businessName: "Iyer Auto Sales", phone: "(904) 555-0157",
+    metro: "jacksonville", zip: "32258", plan: "FREE", phoneVerified: true,
+    listings: [
+      { title: "Used cars for new arrivals – no US credit history needed", category: "AUTO", priceCents: 900000, priceUnit: "starting at",
+        tags: ["CAR_SALES", "CAR_BUYING"],
+        description: "Inspected used Toyotas and Hondas with a clean title report. We help newcomers on H-1B, F-1 and L-1 visas with financing, insurance and registration, and can help you lease a new car instead." },
     ],
   },
   {
@@ -506,6 +551,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "dallas", zip: "75024", plan: "FREE",
     listings: [
       { title: "Kumon-style math tutoring, grades 1–8", category: "TUTORING", priceCents: 3000, priceUnit: "per hour",
+        tags: ["MATH"],
         description: "Small groups in Plano or online. Free trial class." },
     ],
   },
@@ -514,7 +560,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "dallas", zip: "75034", plan: "BASIC", phoneVerified: true,
     listings: [
       { title: "Andhra meals and snacks – Frisco pickup", category: "FOOD", priceCents: 1300, priceUnit: "per plate",
-        tags: ["VEGETARIAN"],
+        tags: ["VEGETARIAN", "THALI", "SNACKS"],
         description: "Daily rotating menu: pappu, curry, rasam and rice. Murukku and chekkalu by the pound for festivals." },
     ],
   },
@@ -523,6 +569,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "dallas", zip: "75063", plan: "FREE",
     listings: [
       { title: "House cleaning and laundry help", category: "DOMESTIC_HELP", priceCents: 2200, priceUnit: "per hour",
+        tags: ["CLEANING"],
         description: "Weekly or every-other-week cleaning in Irving and Coppell. I bring my own supplies on request." },
     ],
   },
@@ -531,6 +578,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "dallas", zip: "75025", plan: "FREE",
     listings: [
       { title: "Pochampally ikat and handloom cotton sarees", category: "CLOTHING", priceCents: 9000, priceUnit: "per item",
+        tags: ["SAREES"],
         description: "Handloom sarees sourced directly from weavers. Home showroom in Plano on weekends." },
     ],
   },
@@ -539,7 +587,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "new-jersey", zip: "08820", plan: "PRO", phoneVerified: true,
     listings: [
       { title: "Kerala sadya and appam-stew weekend orders", category: "FOOD", priceCents: 2200, priceUnit: "per plate", featured: true,
-        tags: ["VEGETARIAN", "GLUTEN_FREE"],
+        tags: ["VEGETARIAN", "GLUTEN_FREE", "THALI", "SOUTH_INDIAN"],
         description: "Onam-style sadya on banana leaf with 16 dishes, or appam with vegetable stew. Edison and Iselin pickup." },
     ],
   },
@@ -548,6 +596,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "new-jersey", zip: "08536", plan: "FREE",
     listings: [
       { title: "Odissi dance classes in Plainsboro", category: "DANCE_MUSIC", priceCents: 11000, priceUnit: "per month",
+        tags: ["ODISSI"],
         description: "Beginner to advanced Odissi with annual recitals. Ages 7 and up." },
     ],
   },
@@ -565,6 +614,7 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     metro: "atlanta", zip: "30097", plan: "FREE",
     listings: [
       { title: "Kannada and Sanskrit pujas, homams and weddings", category: "PUJARI", priceCents: 25100, priceUnit: "per puja",
+        tags: ["HOMAM", "WEDDING"],
         description: "Ganapathi homam, Lakshmi puja, upanayanam and weddings across Duluth, Johns Creek and Alpharetta." },
     ],
   },

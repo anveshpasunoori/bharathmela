@@ -15,14 +15,13 @@ import { getCurrentUser } from "@/lib/auth";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
-import { EVENT_SERVICES, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
-import { LANGUAGES, SPECIALTIES, isProfessional } from "@/lib/professionals";
-import { SPACE_TYPES } from "@/lib/rentals";
-import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
+import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
+import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
 import { CATEGORY_PITCH, cityCategoryPath, cityPath } from "@/lib/seo";
+import { citySubcategoryPath, pickedSubcategory, subcategoriesFor } from "@/lib/subcategories";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
@@ -144,6 +143,21 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     <input type="hidden" name="metro" value={metro} />
   );
   const categoryInfo = CATEGORIES.find((c) => c.id === category);
+  // Subcategory chips (Auto Services → Oil change, Towing…). Picking one keeps the other filters; plain
+  // browsing in a city uses its clean page (/in/jacksonville/auto-services/oil-change).
+  const subs = subcategoriesFor(category);
+  const picked = pickedSubcategory(category, params);
+  const subHref = (id?: string) => {
+    const p = new URLSearchParams(pageQuery);
+    for (const k of ["ss", "from", "stay", "deleted"]) p.delete(k);
+    if (subs) p.delete(subs.param);
+    const plain = [...p.keys()].every((k) => k === "category" || k === "metro");
+    if (!nearMode && plain) return id ? citySubcategoryPath(metro, category!, id) : cityCategoryPath(metro, category!);
+    p.set("category", category!);
+    if (!nearMode) p.set("metro", metro);
+    if (id && subs) p.set(subs.param, id);
+    return `/?${p}`;
+  };
 
   // The filter bar under the search box: distance, then the filters for this category.
   const pick = (key: string, label: string, anyLabel: string, param: string, opts: readonly { id: string; label: string }[], current?: string): FilterDef => ({
@@ -164,15 +178,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       defaultIndex: RADII.indexOf(25),
     });
   }
-  if (category && hasServiceTypes(category)) {
-    filterBar.push(pick("type", typeWording(category).filter, typeWording(category).any, "type", SERVICE_TYPES[category], serviceType));
-  }
   if (category === "FOOD") {
     filterBar.push({ kind: "multi", key: "diet", param: "diet", label: "Dietary", options: DIET_TAGS, selected: diet });
   }
   if (category === "ROOM_RENTAL") {
     filterBar.push(
-      pick("space", "Space type", "Any space", "space", SPACE_TYPES, rentalFilters.space),
       { kind: "max", key: "rent", param: "maxRent", label: "Rent", suffix: "per month", value: rentalFilters.maxRent ? rentalFilters.maxRent / 100 : null, presets: [800, 1000, 1200, 1500, 2000, 2500] },
       { kind: "date", key: "by", param: "by", label: "Move-in date", prefix: "By", value: rentalFilters.availableBy ?? null },
       {
@@ -187,14 +197,12 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   }
   if (category && isProfessional(category)) {
     filterBar.push(
-      pick("spec", category === "LEGAL" ? "Practice area" : "Service", category === "LEGAL" ? "Any practice area" : "Any service", "spec", SPECIALTIES[category], proFilters.specialty),
       pick("lang", "Language", "Any language", "lang", LANGUAGES.map((l) => ({ id: l, label: `Speaks ${l}` })), proFilters.language),
       { kind: "toggle", key: "free", param: "free", label: "Free consultation", on: !!proFilters.freeConsult },
     );
   }
   if (category === "EVENT_SERVICES") {
     filterBar.push(
-      pick("svc", "Service", "Any service", "svc", EVENT_SERVICES, eventFilters.service),
       pick("item", "Rental item", "Any rental item", "item", RENTAL_ITEMS, eventFilters.item),
       pick("occ", "Occasion", "Any occasion", "occ", OCCASIONS, eventFilters.occasion),
       { kind: "toggle", key: "ins", param: "ins", label: "Insured", on: !!eventFilters.insured },
@@ -209,13 +217,17 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       <section className={showingListings ? "space-y-3" : "space-y-3 rounded-xl bg-gradient-to-br from-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"}>
         {showingListings ? (
           <div>
-            <Link href={home} className="text-sm text-stone-500 hover:text-brand">← All categories</Link>
+            {picked && categoryInfo ? (
+              <Link href={subHref()} className="text-sm text-stone-500 hover:text-brand">← All {categoryInfo.label}</Link>
+            ) : (
+              <Link href={home} className="text-sm text-stone-500 hover:text-brand">← All categories</Link>
+            )}
             <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
               {categoryInfo ? (
                 <>
                   <CategoryIcon id={categoryInfo.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
                   <span>
-                    {categoryInfo.label}{" "}
+                    {picked?.label ?? categoryInfo.label}{" "}
                     <span className="font-semibold text-stone-500">{nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}</span>
                   </span>
                 </>
@@ -223,7 +235,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <>Results for &ldquo;{q}&rdquo;</>
               )}
             </h1>
-            {categoryInfo && !q && CATEGORY_PITCH[categoryInfo.id] && (
+            {categoryInfo && !q && !picked && CATEGORY_PITCH[categoryInfo.id] && (
               <p className="mt-1 text-sm text-stone-600">
                 {CATEGORY_PITCH[categoryInfo.id]} from the Indian community {where}.
               </p>
@@ -240,6 +252,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         <form className="flex gap-2" role="search">
           {locationInputs}
           {category && <input type="hidden" name="category" value={category} />}
+          {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
           {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
           <input
             type="search"
@@ -261,6 +274,24 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               </Link>
             ))}
           </p>
+        )}
+        {subs && (
+          <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
+            {/* The picked one right after "All", so it's visible without scrolling the row. */}
+            {[{ id: undefined, label: "All" }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
+              const on = (picked?.id ?? undefined) === o.id;
+              return (
+                <Link
+                  key={o.id ?? "all"}
+                  href={subHref(o.id)}
+                  aria-current={on ? "page" : undefined}
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 ring-1 ${on ? "bg-stone-900 text-white ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
+                >
+                  {o.label}
+                </Link>
+              );
+            })}
+          </nav>
         )}
         {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
         {place && !showingListings && (
@@ -395,6 +426,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               {listings.length} result{listings.length === 1 ? "" : "s"}
               {q && <> for &ldquo;{q}&rdquo;</>}
               {category && <> in {categoryLabel(category)}</>}
+              {picked && <> · {picked.label}</>}
               {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
               {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
               {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
