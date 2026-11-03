@@ -12,6 +12,10 @@ const db = new PrismaClient();
 const DAY_MS = 86_400_000;
 
 async function main() {
+  // Sample data never goes into production; create the real admin with `npm run create-admin`.
+  if (process.env.NODE_ENV === "production" && process.env.SEED_ALLOW_PRODUCTION !== "1") {
+    throw new Error("Refusing to seed sample data in production. Use `npm run create-admin` for the admin account.");
+  }
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@bharathmela.test";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin-dev-password";
   await db.user.upsert({

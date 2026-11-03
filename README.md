@@ -13,6 +13,8 @@ npm run db:seed
 npm run dev
 ```
 
+Deploying to production: see [DEPLOY.md](DEPLOY.md). Every push runs type checks, lint, tests (including database tests against Postgres) and a build on GitHub (`.github/workflows/ci.yml`).
+
 Open http://localhost:3000. Seeded logins (dev only):
 
 - Admin: `admin@bharathmela.test` / value of `SEED_ADMIN_PASSWORD` in `.env`

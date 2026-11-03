@@ -1,0 +1,36 @@
+# Checks every push and pull request: types, lint, unit tests, database tests and a production build.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bharathmela
+          POSTGRES_PASSWORD: bharathmela
+          POSTGRES_DB: bharathmela
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bharathmela" --health-interval 2s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://bharathmela:bharathmela@localhost:5432/bharathmela
+      APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:db
+      - run: npm run build
