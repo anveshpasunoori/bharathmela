@@ -3,7 +3,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { requireVendor } from "@/lib/auth";
 import { confirmPhone, sendPhoneVerification } from "../../actions/vendor";
 
-export const metadata = { title: "Verify your phone – BharathMela" };
+export const metadata = { title: "Verify your phone", robots: { index: false } };
 
 export default async function VerifyPhonePage() {
   const { user, vendor } = await requireVendor();

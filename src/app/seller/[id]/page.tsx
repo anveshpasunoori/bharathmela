@@ -6,7 +6,10 @@ import { ListingCard } from "@/components/ListingCard";
 import { ReviewList } from "@/components/ReviewList";
 import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
+import { JsonLd } from "@/components/JsonLd";
 import { getCurrentUser } from "@/lib/auth";
+import { snippet } from "@/lib/seo";
+import { sellerSchema } from "@/lib/structured-data";
 import { db } from "@/lib/db";
 import { isNewListing } from "@/lib/time";
 import { publicEventWhere } from "@/lib/event-data";
@@ -23,7 +26,10 @@ async function getSeller(id: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const seller = await getSeller((await params).id);
-  return { title: seller ? `${seller.businessName} | BharathMela` : "Seller not found | BharathMela" };
+  if (!seller) return { title: "Seller not found", robots: { index: false } };
+  const title = `${seller.businessName} – ${metroName(seller.metro)}`;
+  const description = snippet(seller.about || `${seller.businessName} on BharathMela: listings, reviews and contact details in ${metroName(seller.metro)}.`);
+  return { title, description, alternates: { canonical: `/seller/${seller.id}` }, openGraph: { type: "profile", title, description, url: `/seller/${seller.id}` } };
 }
 
 export default async function SellerPage({ params }: { params: Promise<{ id: string }> }) {
@@ -103,6 +109,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
         <ReviewList reviews={reviews} sellerName={seller.businessName} />
         <p className="mt-2 text-xs text-stone-500">Ratings are the opinions of individual users, not of BharathMela.</p>
       </section>
+      <JsonLd data={sellerSchema(seller, summary)} />
     </div>
   );
 }

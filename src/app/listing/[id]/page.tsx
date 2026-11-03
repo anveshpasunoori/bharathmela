@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
@@ -8,6 +8,9 @@ import { HeartIcon } from "@/components/HeartIcon";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
+import { JsonLd } from "@/components/JsonLd";
+import { idFromSlugParam, listingPath, snippet } from "@/lib/seo";
+import { breadcrumbs, listingCrumbs, listingSchema } from "@/lib/structured-data";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { readGarageSale, saleWhen } from "@/lib/garage-sales";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
@@ -33,24 +36,39 @@ import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 import { messageSeller, toggleSaved } from "../../actions/buyer";
 import { submitReview } from "../../actions/review";
 
-async function getListing(id: string) {
+// The URL segment is "<id>-<title words>"; older links with just the id still work.
+async function getListing(param: string) {
   return db.listing.findFirst({
-    where: { id, ...publicListing() },
+    where: { id: idFromSlugParam(param), ...publicListing() },
     include: { vendor: true, photos: { orderBy: { position: "asc" } } },
   });
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const listing = await getListing((await params).id);
-  return listing
-    ? { title: `${listing.title} – ${listing.vendor.businessName} | BharathMela`, description: listing.description.slice(0, 160) }
-    : { title: "Listing not found | BharathMela" };
+  if (!listing) return { title: "Listing not found", robots: { index: false } };
+  const city = metroName(listing.metro);
+  const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
+  const title = `${listing.title} – ${listing.vendor.businessName}, ${city}`;
+  const description = snippet(`${price ? `${price.main} ${price.unit}. `.replace(" .", ".") : ""}${listing.description}`);
+  const path = listingPath(listing);
+  // With no photo, the generated card next to this page (opengraph-image) is used instead.
+  const images = listing.photos.length ? [{ url: listing.photos[0].url, width: listing.photos[0].width, height: listing.photos[0].height, alt: listing.title }] : undefined;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { type: "website", title, description, url: path, ...(images ? { images } : {}) },
+    twitter: { card: "summary_large_image", title, description, ...(images ? { images: images.map((i) => i.url) } : {}) },
+  };
 }
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const listing = await getListing(id);
   if (!listing) notFound();
+  // One address per listing: send id-only and outdated title URLs to the current one.
+  if (`/listing/${id}` !== listingPath(listing)) permanentRedirect(listingPath(listing));
   const buyerNote = CATEGORY_RULES[listing.category]?.buyer;
   const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
@@ -82,7 +100,9 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   }
   const summary = ratings.get(listing.vendorId);
   const mine = user ? await db.review.findUnique({ where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } } }) : null;
-  const here = `/listing/${listing.id}`;
+  const here = listingPath(listing);
+  const crumbs = listingCrumbs(listing);
+  const schema = listingSchema(listing, summary);
 
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
   const sale = listing.category === "GARAGE_SALE" ? readGarageSale(listing.details) : null;
@@ -95,7 +115,16 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   return (
     <div className="mx-auto max-w-2xl space-y-5 pb-24 sm:pb-0">
       <div className="flex items-center justify-between gap-2">
-        <Link href={`/?category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">← Back</Link>
+        <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-stone-500">
+          <ol className="flex flex-wrap items-center gap-x-1.5">
+            {crumbs.slice(1, -1).map((c, i) => (
+              <li key={c.path} className="flex items-center gap-1.5">
+                {i > 0 && <span aria-hidden>›</span>}
+                <Link href={c.path} className="hover:text-brand">{c.name}</Link>
+              </li>
+            ))}
+          </ol>
+        </nav>
         <div className="flex gap-2">
           <ShareButton title={listing.title} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} className="btn-outline whitespace-nowrap px-3 py-1.5" />
           {!own && (
@@ -260,6 +289,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} compact />
         </div>
       )}
+      <JsonLd data={schema ? [schema, breadcrumbs(crumbs)] : breadcrumbs(crumbs)} />
     </div>
   );
 }

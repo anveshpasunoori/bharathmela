@@ -7,7 +7,7 @@ import { MAX_NOTIFIED, REQUEST_CATEGORIES, REQUEST_DAYS } from "@/lib/service-re
 import { getUserLocation } from "@/lib/user-location";
 import { createRequest } from "../../actions/service-request";
 
-export const metadata = { title: "Post what you need – BharathMela" };
+export const metadata = { title: "Post what you need", robots: { index: false } };
 
 export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;

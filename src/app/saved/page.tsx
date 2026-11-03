@@ -14,7 +14,7 @@ import { newMatchCounts } from "@/lib/saved-searches";
 import { isNewListing, timeAgo } from "@/lib/time";
 import { toggleSaved } from "../actions/buyer";
 
-export const metadata = { title: "Saved listings – BharathMela" };
+export const metadata = { title: "Saved listings", robots: { index: false } };
 
 const SORTS = [
   { id: "best", label: "Recently saved" },

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/JsonLd";
+import { snippet } from "@/lib/seo";
+import { eventSchema } from "@/lib/structured-data";
 import { ContactButtons } from "@/components/ContactButtons";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,9 +19,11 @@ async function getEvent(id: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const event = await getEvent((await params).id);
-  return event
-    ? { title: `${event.title} | BharathMela Events`, description: event.description.slice(0, 160) }
-    : { title: "Event not found | BharathMela" };
+  if (!event) return { title: "Event not found", robots: { index: false } };
+  const when = formatEventTime(event.startsAt, event.endsAt, metroTimeZone(event.metro));
+  const title = `${event.title} – ${metroName(event.metro)}`;
+  const description = snippet(`${when} at ${event.venueName}. ${event.description}`);
+  return { title, description, alternates: { canonical: `/events/${event.id}` }, openGraph: { type: "website", title, description, url: `/events/${event.id}` } };
 }
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -107,6 +112,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           Report this event
         </Link>
       </div>
+      <JsonLd data={eventSchema(event)} />
     </div>
   );
 }

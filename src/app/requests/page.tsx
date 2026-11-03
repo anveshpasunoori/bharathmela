@@ -6,7 +6,7 @@ import { firstName } from "@/lib/rooms-wanted";
 import { openRequest, requestServiceLabel, requestsForVendor } from "@/lib/service-requests";
 import { timeAgo } from "@/lib/time";
 
-export const metadata = { title: "Requests – BharathMela" };
+export const metadata = { title: "Requests", robots: { index: false } };
 
 // "My requests" for buyers, and for sellers a "Near you" tab of open requests they can quote on.
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<{ tab?: string; deleted?: string }> }) {

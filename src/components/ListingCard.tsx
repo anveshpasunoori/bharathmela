@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { listingPath } from "@/lib/seo";
 import { CategoryIcon } from "./CategoryIcon";
 import { SaveHeart } from "./SaveHeart";
 import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
@@ -44,7 +45,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
   const miles = listing.distanceMiles;
   return (
     <div className="group relative">
-      <Link href={`/listing/${listing.id}`} className="block overflow-hidden rounded-xl bg-white ring-1 ring-stone-200 transition hover:shadow-md">
+      <Link href={listingPath(listing)} className="block overflow-hidden rounded-xl bg-white ring-1 ring-stone-200 transition hover:shadow-md">
         <div className="relative aspect-[4/3] bg-brand-soft">
           {listing.photos[0] ? (
             <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />

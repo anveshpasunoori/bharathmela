@@ -5,7 +5,10 @@ import { DropdownCloser } from "@/components/DropdownCloser";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { JsonLd } from "@/components/JsonLd";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal";
+import { METROS } from "@/lib/metros";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl, cityPath, siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,9 +17,27 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "BharathMela – Indian home businesses near you",
-  description: "Find home kitchens, tutors, dance and music teachers, pujaris, artists and sellers from the Indian community in your US city.",
+  metadataBase: new URL(siteUrl()),
+  title: { default: `${SITE_NAME} – ${SITE_TAGLINE}`, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: { type: "website", siteName: SITE_NAME, locale: "en_US", title: `${SITE_NAME} – ${SITE_TAGLINE}`, description: SITE_DESCRIPTION, url: "/" },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME} – ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
+  // Google Search Console's "HTML tag" verification code, when set.
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
 };
+
+// Who we are and how to search the site, for search engines (enables the sitelinks search box).
+const SITE_JSON_LD = [
+  { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: siteUrl(), logo: absoluteUrl("/icon.svg") },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: siteUrl(),
+    potentialAction: { "@type": "SearchAction", target: `${siteUrl()}/?q={search_term_string}`, "query-input": "required name=search_term_string" },
+  },
+];
 
 export const viewport: Viewport = { themeColor: "#c2410c" };
 
@@ -58,7 +79,18 @@ export default async function RootLayout({
               <Link href="/privacy" className="block text-stone-600 hover:text-brand">Privacy Policy</Link>
             </div>
           </div>
+          <nav className="mx-auto max-w-5xl border-t border-stone-100 px-4 py-5 text-sm" aria-label="Browse by city">
+            <p className="mb-2 font-semibold">Browse by city</p>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-stone-600">
+              {METROS.map((m) => (
+                <li key={m.id}>
+                  <Link href={cityPath(m.id)} className="hover:text-brand">{m.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
           <p className="mx-auto max-w-5xl px-4 pb-6 text-xs text-stone-500">{PLATFORM_DISCLAIMER}</p>
+          <JsonLd data={SITE_JSON_LD} />
         </footer>
       </body>
     </html>

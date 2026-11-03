@@ -7,7 +7,7 @@ import { DEFAULT_METRO, isMetro } from "@/lib/metros";
 import { WANTED_DAYS } from "@/lib/rooms-wanted";
 import { createWanted } from "../../actions/room-wanted";
 
-export const metadata = { title: "I need a place to live – BharathMela" };
+export const metadata = { title: "I need a place to live", robots: { index: false } };
 
 export default async function NewWantedPage({ searchParams }: { searchParams: Promise<{ metro?: string }> }) {
   const user = await requireUser("/rooms-wanted/new");

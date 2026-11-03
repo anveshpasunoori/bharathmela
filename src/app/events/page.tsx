@@ -7,7 +7,8 @@ import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 
 export const metadata = {
-  title: "Indian events near you – BharathMela",
+  title: "Indian events near you: festivals, concerts, pujas",
+  alternates: { canonical: "/events" },
   description: "Concerts, dance performances, festival celebrations, pujas and community events in your US city.",
 };
 

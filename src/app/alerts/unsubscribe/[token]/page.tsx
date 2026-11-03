@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { unsubscribeSearch } from "@/app/actions/saved-search";
 import { db } from "@/lib/db";
 
-export const metadata = { title: "Stop search alerts – BharathMela", robots: { index: false } };
+export const metadata = { title: "Stop search alerts", robots: { index: false } };
 
 // From the "Stop these emails" link in an alert. Turning alerts off takes a button press, not just the
 // visit, so mail scanners that open links don't unsubscribe people by accident.

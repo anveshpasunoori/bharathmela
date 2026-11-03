@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Safety tips – BharathMela" };
+export const metadata = { title: "Safety tips" };
 
 const SECTIONS = [
   {

@@ -14,7 +14,7 @@ import { requestServiceLabel } from "@/lib/service-requests";
 import { timeAgo } from "@/lib/time";
 import { closeRequest, deleteRequest, sendQuote } from "../../actions/service-request";
 
-export const metadata = { title: "Request – BharathMela", robots: { index: false } };
+export const metadata = { title: "Request", robots: { index: false } };
 
 const money = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 

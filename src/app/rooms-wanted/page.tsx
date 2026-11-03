@@ -9,7 +9,7 @@ import { SPACE_TYPES } from "@/lib/rentals";
 import { browseWanted, firstName, wantedNeeds, wantedSpaceLabels } from "@/lib/rooms-wanted";
 
 export const metadata = {
-  title: "People looking for a room – BharathMela",
+  title: "People looking for a room",
   description: "Renters from the Indian community looking for rooms, paying-guest stays and apartments in your city.",
 };
 

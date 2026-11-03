@@ -1,0 +1,41 @@
+import type { MetadataRoute } from "next";
+import { db } from "@/lib/db";
+import { publicEventWhere } from "@/lib/event-data";
+import { publicListing } from "@/lib/listings";
+import { METROS } from "@/lib/metros";
+import { ALL_CITY_CATEGORY_PAGES, absoluteUrl, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
+
+// Built on request from the live database (not at deploy time, so builds don't need a database).
+export const dynamic = "force-dynamic";
+
+// Every public page search engines should know about: city and city-category pages, live listings,
+// upcoming events and seller pages. City-category pages with live listings come first.
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+  const [listings, events, sellers, counts] = await Promise.all([
+    db.listing.findMany({ where: publicListing(), select: { id: true, title: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 45_000 }),
+    db.event.findMany({ where: publicEventWhere(now), select: { id: true, updatedAt: true }, take: 5_000 }),
+    db.vendorProfile.findMany({
+      where: { user: { suspendedAt: null, deletedAt: null }, listings: { some: publicListing() } },
+      select: { id: true },
+      take: 20_000,
+    }),
+    db.listing.groupBy({ by: ["metro", "category"], where: publicListing(), _count: true, _max: { updatedAt: true } }),
+  ]);
+  const live = new Map(counts.map((c) => [`${c.metro}|${c.category}`, c._max.updatedAt ?? now]));
+
+  return [
+    { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
+    { url: absoluteUrl("/events"), changeFrequency: "daily", priority: 0.8 },
+    { url: absoluteUrl("/rooms-wanted"), changeFrequency: "daily", priority: 0.5 },
+    ...["/pricing", "/safety", "/terms", "/privacy"].map((p) => ({ url: absoluteUrl(p), changeFrequency: "monthly" as const, priority: 0.3 })),
+    ...METROS.map((m) => ({ url: absoluteUrl(cityPath(m.id)), changeFrequency: "daily" as const, priority: 0.8 })),
+    ...ALL_CITY_CATEGORY_PAGES().map(({ metro, category }) => {
+      const updated = live.get(`${metro}|${category}`);
+      return { url: absoluteUrl(cityCategoryPath(metro, category)), lastModified: updated, changeFrequency: "daily" as const, priority: updated ? 0.9 : 0.4 };
+    }),
+    ...listings.map((l) => ({ url: absoluteUrl(listingPath(l)), lastModified: l.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
+    ...events.map((e) => ({ url: absoluteUrl(`/events/${e.id}`), lastModified: e.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
+    ...sellers.map((s) => ({ url: absoluteUrl(`/seller/${s.id}`), changeFrequency: "weekly" as const, priority: 0.5 })),
+  ];
+}

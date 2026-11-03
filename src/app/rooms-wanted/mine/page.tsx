@@ -7,7 +7,7 @@ import { formatUSD } from "@/lib/plans";
 import { MAX_ACTIVE_WANTED } from "@/lib/rooms-wanted";
 import { deleteWanted, renewWanted, setWantedVisibility } from "../../actions/room-wanted";
 
-export const metadata = { title: "My room requests – BharathMela" };
+export const metadata = { title: "My room requests", robots: { index: false } };
 
 const STATUS: Record<string, [string, string]> = {
   ACTIVE: ["Live", "bg-green-100 text-green-800"],

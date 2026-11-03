@@ -5,6 +5,7 @@ import { db } from "./db";
 import { sendEmail } from "./email";
 import { browseListings } from "./listings";
 import { priceLabel } from "./plans";
+import { listingPath, siteUrl } from "./seo";
 
 export const MAX_SAVED_SEARCHES = 20;
 const DAY_MS = 86_400_000;
@@ -16,7 +17,7 @@ export const ALERT_OPTIONS = [
 ] as const;
 export const isAlertOption = (v: string) => ALERT_OPTIONS.some((o) => o.id === v);
 
-export const appUrl = () => (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+export const appUrl = siteUrl;
 
 type Location = { metro: string; nearLat: number | null; nearLng: number | null; radiusMiles: number | null };
 
@@ -77,7 +78,7 @@ export async function runSearchAlerts(now = new Date()) {
     const base = appUrl();
     const lines = fresh.slice(0, 5).map((l) => {
       const price = l.priceCents != null ? priceLabel(l.priceCents, l.priceUnit) : null;
-      return `• ${l.title}${price ? ` – ${price.main} ${price.unit}`.trimEnd() : ""}\n  ${l.vendor.businessName} · ${base}/listing/${l.id}`;
+      return `• ${l.title}${price ? ` – ${price.main} ${price.unit}`.trimEnd() : ""}\n  ${l.vendor.businessName} · ${base}${listingPath(l)}`;
     });
     const more = fresh.length > 5 ? `\n…and ${fresh.length - 5} more.` : "";
     await sendEmail(
