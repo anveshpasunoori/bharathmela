@@ -70,6 +70,16 @@ const SYNONYMS: string[][] = [
   ["maid", "housekeeper", "housekeeping", "cleaning", "cleaner", "house cleaning", "bai"],
   ["caregiver", "elder care", "eldercare", "senior care", "attendant"],
   ["cook", "chef", "home cook", "cooking"],
+  // Realtors and lawyers
+  ["realtor", "real estate agent", "realty", "real estate", "broker", "listing agent", "buyers agent", "realtors"],
+  ["buy home", "buy a home", "buy house", "home buying", "house hunting", "first home"],
+  ["sell home", "sell my home", "sell house", "home selling", "list my house"],
+  ["lawyer", "attorney", "advocate", "counsel", "law firm", "legal", "lawyers", "attorneys"],
+  ["immigration", "h1b", "h-1b", "green card", "citizenship", "naturalization", "visa", "eb2", "eb3", "perm labor"],
+  ["divorce", "family law", "custody", "separation"],
+  ["wills", "estate planning", "probate", "living trust", "make a will", "write a will"],
+  ["llc", "incorporation", "business formation", "contracts", "startup"],
+  ["nri", "india property", "power of attorney", "poa", "oci"],
   // Rentals
   ["room", "rooms", "bedroom", "private room", "shared room"],
   ["rent", "rental", "for rent", "lease", "sublet", "sublease", "renting"],
@@ -99,6 +109,8 @@ const CATEGORY_HINTS: Record<string, string[]> = {
   PUJARI: ["puja", "pujari", "homam", "griha pravesh", "satyanarayan", "wedding", "temple", "astrology", "jathakam", "muhurtham"],
   DOMESTIC_HELP: ["nanny", "maid", "caregiver", "cook", "help", "helper"],
   ROOM_RENTAL: ["room", "rent", "roommate", "apartment"],
+  REALTOR: ["realtor", "buy home", "sell home"],
+  LEGAL: ["lawyer", "immigration", "divorce", "wills", "llc", "nri"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],
 };

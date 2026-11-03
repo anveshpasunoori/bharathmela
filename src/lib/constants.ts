@@ -5,6 +5,8 @@ export const CATEGORIES = [
   { id: "PUJARI", label: "Pujari & Religious Services", priceHint: "per puja" },
   { id: "DOMESTIC_HELP", label: "Domestic Help & Nannies", priceHint: "per hour" },
   { id: "ROOM_RENTAL", label: "Room Rentals", priceHint: "per month" },
+  { id: "REALTOR", label: "Realtors & Real Estate", priceHint: "" },
+  { id: "LEGAL", label: "Lawyers & Legal Services", priceHint: "per hour" },
   { id: "ART", label: "Art & Crafts", priceHint: "per item" },
   { id: "CLOTHING", label: "Clothing & Jewelry", priceHint: "per item" },
   { id: "GOODS", label: "Other Goods & Services", priceHint: "" },

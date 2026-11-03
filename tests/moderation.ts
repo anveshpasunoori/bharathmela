@@ -19,6 +19,16 @@ const cases: [string, string, string][] = [
   ["PUJARI", "Brahmin priest for all pujas, Telugu and Sanskrit", "ok"],
   ["DOMESTIC_HELP", "Need a Hindu cook for our home", "block"],
   ["DOMESTIC_HELP", "Experienced nanny, 10 years, CPR certified", "ok"],
+  ["REALTOR", "Helping families buy homes in the Indian neighborhoods of Fremont", "block"],
+  ["REALTOR", "Find a home in an area with lots of Indians and temples nearby", "block"],
+  ["REALTOR", "Serving the Indian community for 12 years. Top schools, short commutes to Apple and Google.", "ok"],
+  ["REALTOR", "Guaranteed sale in 30 days or I sell it for free", "block"],
+  ["REALTOR", "First-time buyer specialist. 1% commission rebate to buyers.", "flag"],
+  ["ROOM_RENTAL", "Room in a quiet desi area near the temple", "block"],
+  ["LEGAL", "Immigration lawyer. Guaranteed green card approval!", "block"],
+  ["LEGAL", "Notario services for H-1B and green card paperwork", "block"],
+  ["LEGAL", "H-1B, green card and citizenship cases. 15 years of experience. Free 30-minute consultation.", "ok"],
+  ["LEGAL", "Certified specialist in family law", "flag"],
 ];
 let bad = 0;
 for (const [cat, text, want] of cases) {

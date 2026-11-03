@@ -72,7 +72,40 @@ export type Screening = { block?: string; flags: string[] };
 // Housing and hiring ads are where preference wording is clearly illegal, so it's
 // blocked there. Elsewhere ("girls-only dance batch", "taught in Telugu only")
 // it can be legitimate, so it goes to a human instead.
-const STRICT_CATEGORIES = new Set(["ROOM_RENTAL", "DOMESTIC_HELP"]);
+const STRICT_CATEGORIES = new Set(["ROOM_RENTAL", "DOMESTIC_HELP", "REALTOR"]);
+
+// Steering: describing where to live by who lives there. Blocked in housing ads.
+const STEERING_GROUPS =
+  "indian|desi|hindu|muslim|christian|sikh|jain|jewish|telugu|tamil|gujarati|punjabi|marathi|bengali|malayali|kannada|" +
+  "south indian|north indian|asian|white|black|hispanic|latino|immigrant";
+const STEERING: RegExp[] = [
+  new RegExp(`\\b(${STEERING_GROUPS})\\s+(neighbou?rhoods?|areas?|localit(y|ies)|enclaves?|pockets?|subdivisions?)\\b`, "i"),
+  new RegExp(`\\b(predominantly|mostly|largely|heavily|lots of|full of|many)\\s+(${STEERING_GROUPS})s?\\b`, "i"),
+];
+
+// Advertising rules for licensed professionals.
+const PROFESSIONAL_BLOCKS: Record<string, { pattern: RegExp; message: string }[]> = {
+  LEGAL: [
+    {
+      pattern: /\b(guarantee[ds]?|guaranteeing|100\s*%|assured|sure[- ]shot)\b.{0,30}\b(green ?cards?|visas?|h-?1b|approvals?|wins?|results?|outcomes?|acquittals?|divorces?|citizenship|cases?|success|settlements?)\b/i,
+      message: "Lawyer ads can't guarantee outcomes (visas, green cards, case results). Describe your experience instead.",
+    },
+    {
+      pattern: /\b(notario|notaria|immigration consultants?|visa consultants?|visa agents?)\b/i,
+      message: "Immigration legal help must come from a licensed lawyer or DOJ-accredited representative. \"Notario\" and consultant offers of legal advice aren't allowed.",
+    },
+  ],
+  REALTOR: [
+    {
+      pattern: /\b(guarantee[ds]?|100\s*%)\b.{0,30}\b(sale|sold|offer|approval|loan|price|appreciation|returns?)\b/i,
+      message: "Real estate ads can't guarantee sales, prices or returns.",
+    },
+  ],
+};
+const PROFESSIONAL_FLAGS: Record<string, { pattern: RegExp; reason: string }[]> = {
+  LEGAL: [{ pattern: /\b(certified specialist|board[- ]certified|specialist)\b/i, reason: "specialist claim (check certification)" }],
+  REALTOR: [{ pattern: /\b(rebate|cash back|commission refund)\b/i, reason: "rebate offer (restricted in some states)" }],
+};
 
 export function screenListing(text: string, category: string): Screening {
   const normalized = text.replace(/\s+/g, " ");
@@ -90,11 +123,27 @@ export function screenListing(text: string, category: string): Screening {
     preferenceFlags.push(`preference wording: "${m[0].trim()}"`);
     break;
   }
+  if (strict && category !== "DOMESTIC_HELP") {
+    for (const re of STEERING) {
+      const m = normalized.match(re);
+      if (m) {
+        return {
+          block: `Your listing says "${m[0].trim()}". Housing ads can't describe or steer people toward areas by religion, national origin or community. Describe the home, schools and commute instead.`,
+          flags: [],
+        };
+      }
+    }
+  }
+  for (const { pattern, message } of PROFESSIONAL_BLOCKS[category] ?? []) {
+    if (pattern.test(normalized)) return { block: message, flags: [] };
+  }
   for (const { pattern, reason } of PROHIBITED) {
     const m = normalized.match(pattern);
     if (m) return { block: `Listings for ${reason} aren't allowed on DesiBazaar (found "${m[0]}").`, flags: [] };
   }
-  const flags = SUSPICIOUS.filter(({ pattern }) => pattern.test(normalized)).map((s) => s.reason);
+  const flags = [...SUSPICIOUS, ...(PROFESSIONAL_FLAGS[category] ?? [])]
+    .filter(({ pattern }) => pattern.test(normalized))
+    .map((s) => s.reason);
   return { flags: [...preferenceFlags, ...flags] };
 }
 

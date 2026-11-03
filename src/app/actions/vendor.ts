@@ -9,6 +9,7 @@ import { getVendorPlan } from "@/lib/billing";
 import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
+import { isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
 import { screenListing } from "@/lib/moderation";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
@@ -83,12 +84,18 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     if (priceCents == null || priceCents < 5000) return { error: "Enter the monthly rent." };
     return { title, description, category, priceCents, priceUnit: "per month", tags, details: JSON.stringify(rental) };
   }
+  if (isProfessional(category)) {
+    const pro = parseProfessionalForm(form, category);
+    if ("error" in pro) return pro;
+    return { title, description, category, priceCents, priceUnit, tags, details: JSON.stringify(pro) };
+  }
   return { title, description, category, priceCents, priceUnit, tags, details: "{}" };
 }
 
 // Decides whether a listing can go live right away or must wait for an admin.
 async function moderate(input: ListingInput, vendorId: string) {
-  const neighborhood = input.details !== "{}" ? (JSON.parse(input.details).neighborhood ?? "") : "";
+  const extra = JSON.parse(input.details);
+  const neighborhood = [extra.neighborhood, extra.firm].filter(Boolean).join("\n");
   const screening = screenListing(`${input.title}\n${input.description}\n${input.priceUnit}\n${neighborhood}`, input.category);
   if (screening.block) return { error: screening.block } as const;
   const reasons = [...screening.flags];

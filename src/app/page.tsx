@@ -9,6 +9,7 @@ import { upcomingEvents } from "@/lib/event-data";
 import { browseListings } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
 
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
@@ -28,6 +29,9 @@ export default async function Home({
     pbath?: string;
     furn?: string;
     pets?: string;
+    spec?: string;
+    lang?: string;
+    free?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -50,8 +54,17 @@ export default async function Home({
       : {};
 
   await syncExpirations();
+  // Specialty, language and free-consultation filters for realtors and lawyers.
+  const proFilters: ProfessionalFilters =
+    category && isProfessional(category)
+      ? {
+          specialty: SPECIALTIES[category].some((s) => s.id === params.spec) ? params.spec : undefined,
+          language: (LANGUAGES as readonly string[]).includes(params.lang ?? "") ? params.lang : undefined,
+          freeConsult: params.free === "1",
+        }
+      : {};
   const [{ listings, search }, events] = await Promise.all([
-    browseListings(metro, category, q, diet, rentalFilters),
+    browseListings(metro, category, q, diet, rentalFilters, proFilters),
     q || category ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
   ]);
 
@@ -151,6 +164,39 @@ export default async function Home({
             );
           })}
         </nav>
+      )}
+
+      {category && isProfessional(category) && (
+        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Professional filters">
+          <input type="hidden" name="metro" value={metro} />
+          <input type="hidden" name="category" value={category} />
+          {q && <input type="hidden" name="q" value={q} />}
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="spec">{category === "LEGAL" ? "Practice area" : "Service"}</label>
+            <select id="spec" name="spec" defaultValue={proFilters.specialty ?? ""} className="input">
+              <option value="">Any</option>
+              {SPECIALTIES[category].map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="lang">Speaks</label>
+            <select id="lang" name="lang" defaultValue={proFilters.language ?? ""} className="input">
+              <option value="">Any language</option>
+              {LANGUAGES.map((l) => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col justify-end gap-2">
+            <label className="flex items-center gap-2"><input type="checkbox" name="free" value="1" defaultChecked={proFilters.freeConsult} /> Free consultation</label>
+            <button className="btn">Apply</button>
+          </div>
+          <p className="text-xs text-stone-500 sm:col-span-4">
+            Always check a {category === "LEGAL" ? "lawyer's license with the state bar" : "realtor's license with your state's real estate department"} before hiring.
+          </p>
+        </form>
       )}
 
       {category === "ROOM_RENTAL" && (

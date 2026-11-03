@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { approveEvent, approveListing, approveWanted, rejectEvent, rejectListing, rejectWanted } from "../../actions/admin";
 import { DietBadges } from "@/components/DietBadges";
+import { isProfessional, licenseLine, licenseLookupUrl, readProfessional } from "@/lib/professionals";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { eventTypeLabel, formatEventTime } from "@/lib/events";
@@ -50,6 +51,20 @@ export default async function AdminListingsPage() {
             </div>
             <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">Why it&apos;s here: {l.moderationNote}</p>
             <DietBadges tags={l.tags} />
+            {isProfessional(l.category) && (() => {
+              const pro = readProfessional(l.details);
+              return pro ? (
+                <div className="rounded-md bg-sky-50 px-3 py-2 text-sm text-sky-900">
+                  <b>Check the license before approving:</b> {licenseLine(l.category, pro)} · {pro.firm} ·{" "}
+                  <a href={licenseLookupUrl(l.category, pro)} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                    look up with the state ↗
+                  </a>
+                  <span className="block text-xs">Confirm the name matches &ldquo;{l.vendor.businessName}&rdquo; and the license is active.</span>
+                </div>
+              ) : (
+                <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">No license details. Reject.</p>
+              );
+            })()}
             <p className="whitespace-pre-line text-sm text-stone-700">{l.description}</p>
             {l.priceCents != null && (
               <p className="text-sm font-semibold">

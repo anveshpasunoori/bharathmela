@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { ratingsFor } from "./reviews";
+import { type ProfessionalFilters, isProfessional, matchesProfessionalFilters, professionalSearchText, readProfessional } from "./professionals";
 import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
 import { parseQuery, rankListings, suggestQuery } from "./search";
 
@@ -24,6 +25,7 @@ export async function browseListings(
   query = "",
   diet: string[] = [],
   rentalFilters: RentalFilters = {},
+  proFilters: ProfessionalFilters = {},
 ) {
   const now = new Date();
   const filters: Prisma.ListingWhereInput = {
@@ -40,18 +42,23 @@ export async function browseListings(
     where: { ...filters, metro },
     include: withPlans(now),
     orderBy: { createdAt: "desc" },
-    take: searching || filteringRentals ? 5000 : 200,
+    take: searching || filteringRentals || Object.values(proFilters).some(Boolean) ? 5000 : 200,
   });
-  const candidates = filteringRentals
-    ? fetched.filter((l) => matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters))
-    : fetched;
+  const filteringPros = !!category && isProfessional(category) && Object.values(proFilters).some(Boolean);
+  const candidates = fetched.filter(
+    (l) =>
+      (!filteringRentals || matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters)) &&
+      (!filteringPros || matchesProfessionalFilters(readProfessional(l.details), proFilters)),
+  );
   // Rental details (space type, neighborhood, amenities) are searchable too.
   const scored = searching
     ? rankListings(
         parsed,
         candidates.map((l) => {
           const rental = l.category === "ROOM_RENTAL" ? readRental(l.details) : null;
-          return { ...l, description: rental ? `${l.description} ${rentalSearchText(rental)}` : l.description, original: l };
+          const pro = isProfessional(l.category) ? readProfessional(l.details) : null;
+          const extra = rental ? rentalSearchText(rental) : pro ? professionalSearchText(l.category, pro) : "";
+          return { ...l, description: `${l.description} ${extra}`, original: l };
         }),
       ).map(({ item, score }) => ({ item: item.original, score }))
     : candidates.map((item) => ({ item, score: 0 }));

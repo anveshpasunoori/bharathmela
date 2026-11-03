@@ -87,8 +87,8 @@ export default async function VendorDashboard({
       )}
       {params.review && (
         <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Your {params.review === "event" ? "event" : "listing"} was sent for review. We check first posts, rentals, domestic help, unfamiliar
-          ticket links and anything our filters flag, usually within 1 business day. You&apos;ll see it go live here.
+          Your {params.review === "event" ? "event" : "listing"} was sent for review. We check first posts, rentals, domestic help, realtor and
+          lawyer licenses, unfamiliar ticket links and anything our filters flag, usually within 1 business day. You&apos;ll see it go live here.
         </p>
       )}
       {(params.published || params.updated || params.eventPublished) && (

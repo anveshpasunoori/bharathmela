@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
+import type { ProfessionalDetails } from "@/lib/professionals";
 import type { RentalDetails } from "@/lib/rentals";
 import { CategorySelect } from "./CategorySelect";
+import { ProfessionalFields } from "./ProfessionalFields";
 import { RentalFields } from "./RentalFields";
 
 // Listing inputs plus the AI ad writer, which fills them in from the seller's rough idea.
@@ -15,10 +17,12 @@ export function ListingFields({
   canUseAI,
   initial,
   initialRental,
+  initialProfessional,
 }: {
   canUseAI: boolean;
   initial?: ListingValues;
   initialRental?: RentalDetails | null;
+  initialProfessional?: ProfessionalDetails | null;
 }) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -117,6 +121,10 @@ export function ListingFields({
           </div>
           <p className="mt-1 text-xs text-stone-500">Vegan also marks Vegetarian, Eggless and Dairy-free; Jain also marks Vegetarian.</p>
         </fieldset>
+      )}
+
+      {(category === "REALTOR" || category === "LEGAL") && (
+        <ProfessionalFields key={category} category={category} initial={initialProfessional} />
       )}
 
       {rental ? (

@@ -89,6 +89,16 @@ Rental listings have structured details (`src/lib/rentals.ts`, stored as JSON in
 - **Filters:** space type, max rent, move-in date, private bath, furnished, pets allowed.
 - **Search:** covers rental details too ("attached bath", "PG", "wifi", neighborhood names).
 
+## Realtors and lawyers
+
+Two licensed-professional categories, `REALTOR` and `LEGAL` (`src/lib/professionals.ts`):
+- **Required details:** license number, issuing state, and firm (brokerage or law firm). Sellers also pick services or practice areas (immigration, family, wills, NRI matters and more) and languages (Hindi, Telugu, Tamil and others), and can offer a free consultation.
+- **Review:** every listing goes to admin review. The queue shows the license with a lookup link and asks the admin to confirm the name matches.
+- **Ad rules:**
+  - *Lawyers:* outcome guarantees and "notario" or immigration-consultant offers are blocked; "certified specialist" claims are flagged. Pages carry attorney-advertising disclaimers.
+  - *Realtors:* sale or price guarantees are blocked and rebate offers are flagged. Fair-housing screening applies, including steering like "Indian neighborhood".
+- **Browse:** filter by service or practice area, language and free consultation. Search understands "attorney", "green card lawyer", "h1b", "real estate agent" and "buy a home".
+
 ## "I need a place to live" (room requests)
 
 Renters post what they're looking for at `/rooms-wanted/new`. Owners browse at `/rooms-wanted`, which also appears as a tab under Room Rentals.

@@ -7,6 +7,7 @@ import { getVendorPlan } from "@/lib/billing";
 import { parseTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { AI_WRITER_PLANS } from "@/lib/plans";
+import { readProfessional } from "@/lib/professionals";
 import { readRental } from "@/lib/rentals";
 import { updateListing } from "../../../../actions/vendor";
 
@@ -41,6 +42,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
           <ListingFields
             canUseAI={AI_WRITER_PLANS.includes(plan.id)}
             initialRental={readRental(listing.details)}
+            initialProfessional={readProfessional(listing.details)}
             initial={{
               category: listing.category,
               title: listing.title,

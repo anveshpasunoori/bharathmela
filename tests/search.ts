@@ -10,6 +10,8 @@ const docs = [
   L("puja", "PUJARI", "Griha Pravesh & Satyanarayan Puja", "Telugu, Hindi and Sanskrit. Samagri list provided.", 25100, "per puja", "", "Pandit Ravi Sharma"),
   L("math", "TUTORING", "Kumon-style math tutoring, grades 1–8", "Small groups in Plano or online. Free trial class.", 3000, "per hour"),
   L("room", "ROOM_RENTAL", "Private room in 3BR house near Lawrence Expwy", "Furnished room with shared bath, utilities and Wi-Fi included.", 140000, "per month"),
+  L("realtor", "REALTOR", "Your Bay Area home buying partner", "First-time buyers and relocations. Coldwell Banker. Hindi and Telugu.", null, "", "", "Priya Nair Realty"),
+  L("lawyer", "LEGAL", "Immigration and family law attorney", "H-1B, green card, citizenship and divorce cases. Free consultation.", 25000, "per hour", "", "Rao Law"),
   L("art", "ART", "Madhubani paintings on canvas", "Hand-painted Madhubani art. Custom orders welcome.", 8500, "per painting"),
 ];
 const cases: [string, string[], string[]?][] = [
@@ -40,6 +42,12 @@ const cases: [string, string[], string[]?][] = [
   ["pickles", ["mealbox"]],
   ["lakshmi", ["mealbox", "biryani"]],
   ["xyzzy", []],
+  ["real estate agent", ["realtor"]],
+  ["buy a home", ["realtor"]],
+  ["attorney", ["lawyer"]],
+  ["green card lawyer", ["lawyer"]],
+  ["h1b", ["lawyer"]],
+  ["estate planning", [], ["laddu", "mealbox", "dance"]],
 ];
 let fail = 0;
 for (const [q, mustInclude, mustExclude = []] of cases) {

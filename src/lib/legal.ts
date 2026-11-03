@@ -42,6 +42,27 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
       "DesiBazaar does not screen, employ or background-check anyone listed here. Run your own background check and check references. " +
       "If you hire someone, you may have employer obligations (taxes, minimum wage, work authorization) under federal and state law.",
   },
+  REALTOR: {
+    requiresReview: true,
+    seller: [
+      "You must hold an active real estate license in the state where you work, and list your license number and supervising brokerage. Many states require both in every ad.",
+      "Fair housing law applies to you as an agent: don't describe or steer buyers toward neighborhoods by religion, national origin or community (\"Indian neighborhood\", \"desi area\"). Describe homes, schools and commutes instead.",
+      "Don't promise results (\"guaranteed sale in 7 days\") or advertise rebates or commissions where your state restricts them.",
+    ],
+    buyer:
+      "Check the agent's license with your state's real estate department before signing anything. DesiBazaar checks that a license number was provided but doesn't guarantee it's current or in good standing. Never wire earnest money without calling the title or escrow company at a number you looked up yourself.",
+  },
+  LEGAL: {
+    requiresReview: true,
+    seller: [
+      "Only lawyers licensed in a US state may offer legal services here. List your bar number and state; listings are checked before going live.",
+      "Follow your state bar's advertising rules: no guarantees of outcomes, no misleading claims, and only say \"certified specialist\" if a recognized body has certified you.",
+      "Immigration help must come from a lawyer or a DOJ-accredited representative. \"Notario\" and \"immigration consultant\" offers of legal advice aren't allowed.",
+      "You're responsible for your own conflict checks, engagement letters and client trust accounts.",
+    ],
+    buyer:
+      "Check the lawyer's license with the state bar before hiring. Contacting a lawyer through DesiBazaar doesn't create an attorney-client relationship, and what you send isn't confidential until you've hired them. Beware of anyone who guarantees a visa, green card or court result.",
+  },
   ROOM_RENTAL: {
     requiresReview: true,
     seller: [

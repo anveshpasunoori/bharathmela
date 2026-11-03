@@ -2,12 +2,14 @@ import Link from "next/link";
 import { categoryLabel } from "@/lib/constants";
 import type { BrowseListing } from "@/lib/listings";
 import { formatUSD } from "@/lib/plans";
+import { isProfessional, licenseLine, readProfessional } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
 import { DietBadges } from "./DietBadges";
 import { Stars } from "./Stars";
 
 export function ListingCard({ listing }: { listing: BrowseListing }) {
   const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
+  const pro = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   return (
     <Link
       href={`/listing/${listing.id}`}
@@ -26,6 +28,12 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
         <p className="mt-1 line-clamp-2 text-sm text-stone-600">{listing.description}</p>
       )}
       <DietBadges tags={listing.tags} className="mt-2" />
+      {pro && (
+        <p className="mt-2 text-xs text-stone-600">
+          {pro.firm} · {licenseLine(listing.category, pro)} · {pro.languages.join(", ")}
+          {pro.freeConsultation && <span className="badge ml-1 bg-green-50 text-green-800">Free consultation</span>}
+        </p>
+      )}
       <div className="mt-3 flex items-baseline justify-between text-sm">
         <span className="text-stone-500">{listing.vendor.businessName}</span>
         {listing.priceCents != null && (

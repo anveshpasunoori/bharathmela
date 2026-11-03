@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
+import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
 import { RentalDetailsView, RentalScamWarning } from "@/components/RentalDetailsView";
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
@@ -14,6 +15,7 @@ import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { PUBLIC_LISTING } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { isProfessional, readProfessional } from "@/lib/professionals";
 import { readRental } from "@/lib/rentals";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 import { submitReview } from "../../actions/review";
@@ -35,6 +37,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   if (!listing) notFound();
   const buyerNote = CATEGORY_RULES[listing.category]?.buyer;
   const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
+  const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
 
   const [user, reviews, ratings, sellerSince] = await Promise.all([
     getCurrentUser(),
@@ -71,6 +74,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </p>
         )}
         {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
+        {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
         <p className="text-xs text-stone-400">Updated {listing.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
       </article>
