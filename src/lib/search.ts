@@ -53,7 +53,7 @@ const SYNONYMS: string[][] = [
   ["kathak", "katthak"],
   ["carnatic", "karnatic", "karnataka music", "carnatic music"],
   ["hindustani", "hindustani music", "hindustani classical"],
-  ["music", "sangeetham", "sangeet", "sangeetam", "singing", "vocal", "vocals", "voice lessons"],
+  ["music", "sangeetham", "sangeetam", "singing", "vocal", "vocals", "voice lessons"],
   ["dance", "dancing", "nritya", "natyam"],
   ["bollywood", "bollywood dance", "filmy dance"],
   ["veena", "vina"],
@@ -109,7 +109,7 @@ const SYNONYMS: string[][] = [
   ["mehndi", "mehendi", "henna", "mehandi"],
   ["rangoli", "kolam", "muggulu"],
   ["painting", "paintings", "art", "artwork", "canvas"],
-  ["saree", "sari", "sarees", "saris", "saree draping"],
+  ["saree", "sari", "sarees", "saris"],
   ["lehenga", "lehnga", "lengha", "ghagra", "chaniya choli"],
   ["kurta", "kurti", "kurtis", "salwar", "salwar kameez", "churidar", "anarkali"],
   ["jewelry", "jewellery", "jewels", "bangles", "earrings", "necklace", "jhumka", "jhumkas"],
@@ -117,16 +117,17 @@ const SYNONYMS: string[][] = [
   ["tailor", "tailoring", "stitching", "alterations", "alteration"],
 ];
 
-// Words that hint at a category, used to rank that category higher (not to filter).
+// Words that hint at a category: they rank that category higher, and a search that clearly belongs to
+// another category moves the visitor there. A word can hint at several ("wedding": pujaris and event vendors).
 const CATEGORY_HINTS: Record<string, string[]> = {
-  FOOD: ["food", "tiffin", "biryani", "dosa", "idli", "pickle", "sweets", "laddu", "snacks", "catering", "curry", "roti", "chai", "samosa", "paneer", "meal", "kitchen", "home food"],
+  FOOD: ["food", "cook", "tiffin", "biryani", "dosa", "idli", "pickle", "sweets", "laddu", "snacks", "catering", "curry", "roti", "chai", "samosa", "paneer", "meal", "kitchen", "home food"],
   TUTORING: ["tutor", "math", "coding", "sat", "science", "english", "homework", "reading", "physics", "chemistry"],
   DANCE_MUSIC: ["dance", "music", "bharatanatyam", "kuchipudi", "kathak", "carnatic", "hindustani", "bollywood", "veena", "mridangam", "tabla", "violin", "flute", "harmonium", "keyboard", "guitar"],
   PUJARI: ["puja", "pujari", "homam", "griha pravesh", "satyanarayan", "wedding", "temple", "astrology", "jathakam", "muhurtham"],
   DOMESTIC_HELP: ["nanny", "maid", "caregiver", "cook", "help", "helper"],
   ROOM_RENTAL: ["room", "rent", "roommate", "apartment"],
   REALTOR: ["realtor", "buy home", "sell home"],
-  EVENT_SERVICES: ["photographer", "videographer", "dj", "bartender", "decorator", "makeup", "dhol", "emcee", "choreographer", "planner", "photo booth", "party rentals"],
+  EVENT_SERVICES: ["photographer", "videographer", "dj", "bartender", "decorator", "makeup", "dhol", "emcee", "choreographer", "planner", "photo booth", "party rentals", "wedding", "sangeet", "mehndi", "decor", "catering", "cake"],
   LEGAL: ["lawyer", "immigration", "divorce", "wills", "llc", "nri"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],
@@ -213,9 +214,13 @@ const CATEGORY_CANON: Record<string, Map<string, string>> = {
 };
 const canonIn = (category: string, canon: string) => CATEGORY_CANON[category]?.get(canon) ?? canon;
 
-const HINT_INDEX = new Map<string, string>();
+const HINT_INDEX = new Map<string, string[]>();
 for (const [cat, words] of Object.entries(CATEGORY_HINTS)) {
-  for (const w of words) HINT_INDEX.set(canonical(stem(w.replace(/ /g, ""))), cat);
+  for (const w of words) {
+    const canon = canonical(stem(w.replace(/ /g, "")));
+    const cats = HINT_INDEX.get(canon) ?? [];
+    if (!cats.includes(cat)) HINT_INDEX.set(canon, [...cats, cat]);
+  }
 }
 
 // Damerau-Levenshtein distance with an early exit once it passes `max`.
@@ -249,9 +254,12 @@ export type ParsedQuery = {
   maxPriceCents?: number;
   minPriceCents?: number;
   hintedCategory?: string;
+  // How many query words point at each category.
+  categoryHints: Map<string, number>;
 };
 
-export function parseQuery(query: string): ParsedQuery {
+// `browsing` is the category the visitor is in; it wins ties, so "wedding" in event services stays there.
+export function parseQuery(query: string, browsing?: string): ParsedQuery {
   let q = normalize(query);
   let maxPriceCents: number | undefined;
   let minPriceCents: number | undefined;
@@ -278,9 +286,25 @@ export function parseQuery(query: string): ParsedQuery {
     seen.add(canon);
     terms.push({ raw, stem: s, canon });
   }
-  const hintedCategory = terms.map((t) => HINT_INDEX.get(t.canon)).find(Boolean);
+  const categoryHints = new Map<string, number>();
+  for (const t of terms) for (const cat of HINT_INDEX.get(t.canon) ?? []) categoryHints.set(cat, (categoryHints.get(cat) ?? 0) + 1);
+  // The most-hinted category; ties go to the one being browsed, then to the earliest word's.
+  let hintedCategory: string | undefined;
+  for (const [cat, n] of categoryHints) {
+    const best = hintedCategory ? categoryHints.get(hintedCategory)! : 0;
+    if (n > best || (n === best && cat === browsing)) hintedCategory = cat;
+  }
   if (hintedCategory) for (const t of terms) t.canon = canonIn(hintedCategory, t.canon);
-  return { terms: terms.slice(0, 8), maxPriceCents, minPriceCents, hintedCategory };
+  return { terms: terms.slice(0, 8), maxPriceCents, minPriceCents, hintedCategory, categoryHints };
+}
+
+// Categories a search clearly belongs to instead of `current`: those its words point at more than at
+// `current`, best first. Empty when the words fit `current` at least as well, or point nowhere.
+export function betterCategories(query: ParsedQuery, current: string) {
+  const here = query.categoryHints.get(current) ?? 0;
+  const top = Math.max(0, ...query.categoryHints.values());
+  if (top <= here) return [];
+  return [...query.categoryHints].filter(([, n]) => n === top).map(([cat]) => cat);
 }
 
 // ---------- matching and ranking ----------

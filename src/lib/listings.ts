@@ -7,7 +7,7 @@ import { ratingsFor } from "./reviews";
 import { type EventServiceFilters, eventServiceSearchText, matchesEventServiceFilters, readEventService } from "./event-services";
 import { type ProfessionalFilters, isProfessional, matchesProfessionalFilters, professionalSearchText, readProfessional } from "./professionals";
 import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
-import { parseQuery, rankListings, suggestQuery } from "./search";
+import { betterCategories, parseQuery, rankListings, suggestQuery } from "./search";
 
 // Listings stay up this long after being posted or renewed, so stale ads drop off on their own.
 export const LISTING_DAYS = 90;
@@ -83,7 +83,7 @@ export async function browseListings({
     // Every chosen dietary marker must be on the listing.
     AND: diet.map((tag) => ({ tags: { contains: `,${tag},` } })),
   };
-  const parsed = parseQuery(query);
+  const parsed = parseQuery(query, category);
   const searching = parsed.terms.length > 0 || parsed.maxPriceCents != null || parsed.minPriceCents != null;
 
   const filteringRentals = category === "ROOM_RENTAL" && Object.values(rentalFilters).some((v) => v != null && v !== false);
@@ -217,4 +217,22 @@ export async function categoryCounts(metro: string, near?: { lat: number; lng: n
     counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
   }
   return counts;
+}
+
+// When someone searches inside a category for something that belongs elsewhere ("pujari" while in Home
+// Food), the category to take them to, or null to stay. Words that point at another category decide it;
+// with no such words, a search with no results here goes where its matches are.
+export async function categoryForSearch(opts: { metro: string; category: string; query: string; near?: BrowseOptions["near"] }) {
+  const parsed = parseQuery(opts.query, opts.category);
+  if (!parsed.terms.length) return null;
+  const better = betterCategories(parsed, opts.category);
+  if (better.length === 1) return better[0];
+  // Ambiguous words, or none: count where the matches are, nearby first.
+  const { listings } = await browseListings({ metro: opts.metro, query: opts.query, near: opts.near });
+  const counts = new Map<string, number>();
+  for (const l of listings) counts.set(l.category, (counts.get(l.category) ?? 0) + 1);
+  if (better.length > 1) return [...better].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))[0];
+  if (counts.get(opts.category)) return null;
+  const [top] = [...counts].sort((a, b) => b[1] - a[1]);
+  return top?.[0] ?? null;
 }

@@ -190,6 +190,7 @@ Sellers can add up to 6 photos per listing (`src/lib/photos.ts`).
 - **Matching:** plurals, typos (1 letter from 5-letter words, 2 from 8+), and half-typed words of 4+ letters.
 - **Price limits** like "under $20" or "over $100".
 - **Ranking:** title, diet markers and business name count more than the description. A category the query hints at gets a boost, and so do featured and Pro listings.
+- **Searching from the wrong category:** a search inside one category for something that belongs in another ("pujari" while in Home Food) moves to that category, with a link back ("Search Home Food instead", `stay=1`). Category hint words decide it (`CATEGORY_HINTS`); a word can point at several categories, and the current one wins ties, so "wedding" stays in Event Services. With no hint words, a search with no results here goes where its matches are.
 - **When results are thin:** "Did you mean" suggestions built from words in real listings, and result counts in other cities when yours has none.
 
 Add spelling variants to `SYNONYMS` as you see real searches. `npm test` runs the search and listing-screening checks.

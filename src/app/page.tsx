@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { EventCard } from "@/components/EventCard";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ListingCard } from "@/components/ListingCard";
@@ -8,7 +9,7 @@ import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
-import { SORTS, type SortId, browseListings, categoryCounts } from "@/lib/listings";
+import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
@@ -44,6 +45,8 @@ export default async function Home({
     ins?: string;
     radius?: string;
     sort?: string;
+    from?: string;
+    stay?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -91,6 +94,21 @@ export default async function Home({
       : {};
   const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
+  // Searching for something that belongs in another category ("pujari" while in Home Food) moves there.
+  // `stay` is set when the visitor asked to search the category they were in after all.
+  if (category && q && params.stay !== "1") {
+    const target = await categoryForSearch({ metro, category, query: q, near });
+    if (target) {
+      const p = new URLSearchParams(nearMode ? { radius: String(radius) } : { metro });
+      p.set("category", target);
+      p.set("q", q);
+      if (sort !== "best") p.set("sort", sort);
+      p.set("from", category);
+      redirect(`/?${p}`);
+    }
+  }
+  const movedFrom = CATEGORIES.some((c) => c.id === params.from) && params.from !== category ? params.from : undefined;
+
   // The home page shows categories first; listings appear once a category is picked or a search is made.
   const showingListings = !!(category || q);
   const [{ listings, search }, events, counts] = await Promise.all([
@@ -414,6 +432,14 @@ export default async function Home({
             {" · "}
             <Link href={home} className="text-brand">Clear</Link>
           </p>
+          {movedFrom && q && (
+            <p>
+              Switched here from {categoryLabel(movedFrom)} for this search.{" "}
+              <Link href={`${href(movedFrom, [], q)}&stay=1`} className="font-semibold text-brand">
+                Search {categoryLabel(movedFrom)} instead
+              </Link>
+            </p>
+          )}
           {search.suggestion && (
             <p>
               Did you mean{" "}

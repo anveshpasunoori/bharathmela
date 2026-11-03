@@ -1,5 +1,5 @@
 // Run with `npm test`. Each case: query, listing ids that must appear (first = top result), ids that must not.
-import { parseQuery, rankListings, suggestQuery, type Searchable } from "../src/lib/search";
+import { betterCategories, parseQuery, rankListings, suggestQuery, type Searchable } from "../src/lib/search";
 const L = (id: string, category: string, title: string, description: string, priceCents: number | null, priceUnit = "", tags = "", biz = "Seller"): Searchable =>
   ({ id, title, description, category, priceCents, priceUnit, tags, vendor: { businessName: biz } });
 const docs = [
@@ -64,6 +64,28 @@ for (const [q, mustInclude, mustExclude = []] of cases) {
   const ok = mustInclude.every((id) => ids.includes(id)) && mustExclude.every((id) => !ids.includes(id)) && (mustInclude.length ? ids[0] === mustInclude[0] || mustInclude.includes(ids[0]) : true);
   if (!ok) fail++;
   console.log(ok ? "PASS" : "FAIL", JSON.stringify(q).padEnd(28), "->", ids.join(", ") || "(none)", pq.hintedCategory ? `[hint ${pq.hintedCategory}]` : "");
+}
+// Searching inside a category for something that belongs elsewhere: where the words point instead of here.
+const moves: [string, string, string[]][] = [
+  ["pujari", "FOOD", ["PUJARI"]],
+  ["biryani", "TUTORING", ["FOOD"]],
+  ["math tutor", "DANCE_MUSIC", ["TUTORING"]],
+  ["room for rent", "EVENT_SERVICES", ["ROOM_RENTAL"]],
+  ["immigration lawyer", "REALTOR", ["LEGAL"]],
+  ["saree", "ART", ["CLOTHING"]],
+  ["wedding photographer", "FOOD", ["EVENT_SERVICES"]],
+  ["wedding", "FOOD", ["PUJARI", "EVENT_SERVICES"]], // ambiguous: decided by where the listings are
+  ["wedding", "EVENT_SERVICES", []], // fits here too, so stay
+  ["mehndi", "ART", []],
+  ["tent rental", "EVENT_SERVICES", []],
+  ["vegan", "FOOD", []],
+  ["xyzzy", "FOOD", []], // no hint words: decided by where the listings are
+];
+for (const [q, current, want] of moves) {
+  const got = betterCategories(parseQuery(q, current), current);
+  const ok = JSON.stringify([...got].sort()) === JSON.stringify([...want].sort());
+  if (!ok) fail++;
+  console.log(ok ? "PASS" : "FAIL", `${JSON.stringify(q)} in ${current}`.padEnd(40), "->", got.join(", ") || "(stay)");
 }
 for (const q of ["biriyaani", "bharatnatyam clases", "madubani", "pandit"]) console.log("suggest", q, "->", suggestQuery(parseQuery(q), docs));
 console.log(fail ? `${fail} failed` : "all passed");
