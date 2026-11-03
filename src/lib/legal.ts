@@ -92,6 +92,7 @@ export const REPORT_REASONS = [
   { id: "ILLEGAL", label: "Illegal item or service" },
   { id: "SAFETY", label: "Safety concern" },
   { id: "MISLEADING", label: "Misleading or wrong information" },
+  { id: "PHOTO", label: "Inappropriate or stolen photo" },
   { id: "COPYRIGHT", label: "Uses my photos, text or trademark" },
   { id: "OTHER", label: "Something else" },
 ] as const;

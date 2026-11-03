@@ -13,6 +13,7 @@ import { parseEventServiceForm } from "@/lib/event-services";
 import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
 import { screenListing } from "@/lib/moderation";
+import { checkPhotos, deleteListingFiles, deletePhotos, savePhotos, uploadedFiles } from "@/lib/photos";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
 import { AI_DAILY_LIMIT, AI_WRITER_PLANS, PLANS, boostOption, isPaidPlan } from "@/lib/plans";
 
@@ -127,8 +128,12 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
   }
   const decision = await moderate(input, vendor.id);
   if ("error" in decision) return decision;
+  const photos = uploadedFiles(form, "photos");
+  const photoProblem = await checkPhotos(photos, 0);
+  if (photoProblem) return { error: photoProblem };
 
-  await db.listing.create({ data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip } });
+  const created = await db.listing.create({ data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip } });
+  await savePhotos(created.id, photos);
   revalidatePath("/vendor");
   redirect(`/vendor?${decision.status === "PENDING_REVIEW" ? "review=1" : "published=1"}`);
 }
@@ -143,19 +148,31 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
 
   const decision = await moderate(input, vendor.id);
   if ("error" in decision) return decision;
+  const removeIds = form.getAll("removePhotos").map(String);
+  const photos = uploadedFiles(form, "photos");
+  const existing = await db.listingPhoto.count({ where: { listingId: listing.id, id: { notIn: removeIds } } });
+  const photoProblem = await checkPhotos(photos, existing);
+  if (photoProblem) return { error: photoProblem };
+  // New photos from newer sellers on an approved listing get a second look, so a clean listing
+  // can't be approved and then have its pictures swapped.
+  const sellerAgeDays = (Date.now() - vendor.createdAt.getTime()) / 86_400_000;
+  const photoReview = photos.length > 0 && sellerAgeDays < 30;
   // A clean edit keeps a hidden listing hidden; a rejected one goes back for review.
   const status =
-    decision.status === "PENDING_REVIEW" || listing.status === "REJECTED" || listing.status === "PENDING_REVIEW"
+    decision.status === "PENDING_REVIEW" || photoReview || listing.status === "REJECTED" || listing.status === "PENDING_REVIEW"
       ? "PENDING_REVIEW"
       : listing.status;
+  const note = decision.moderationNote || (photoReview ? "new photos from a newer seller" : "");
   if (status === "PENDING_REVIEW" && listing.status !== "PENDING_REVIEW" && listing.status !== "REJECTED") {
     const { ok } = await hasRoomForListing(vendor.id, listing.id);
     if (!ok) return { error: "You're at your plan's listing limit. Hide another listing first." };
   }
   await db.listing.update({
     where: { id: listing.id },
-    data: { ...input, status, moderationNote: status === "PENDING_REVIEW" ? decision.moderationNote || "edited after rejection" : "" },
+    data: { ...input, status, moderationNote: status === "PENDING_REVIEW" ? note || "edited after rejection" : "" },
   });
+  if (removeIds.length) await deletePhotos(listing.id, removeIds);
+  await savePhotos(listing.id, photos);
   revalidatePath("/vendor");
   revalidatePath(`/listing/${listing.id}`);
   redirect(`/vendor?${status === "PENDING_REVIEW" ? "review=1" : "updated=1"}`);
@@ -203,6 +220,7 @@ export async function deleteListing(listingId: string) {
   const { vendor } = await requireVendor();
   await ownListing(vendor.id, listingId);
   await db.listing.delete({ where: { id: listingId } });
+  await deleteListingFiles(listingId);
   revalidatePath("/vendor");
 }
 

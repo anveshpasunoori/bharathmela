@@ -141,9 +141,26 @@ Sellers can also post events as organizers at `/vendor/events/new`: concerts, da
 - **Browsing:** with a saved location, the home page browses "near you" within 5/10/25/50 miles across metros, sorts by distance, and labels cards "N mi away". "All of <metro>" switches back to metro browsing.
 - **Far from every metro** (e.g. Columbus, OH): the visitor sees their own city plus a link to the nearest metro and its distance.
 
-## Home page
+## Buyer experience
 
-Home shows upcoming events and category tiles (with live counts for the area). Listings appear only after picking a category or searching.
+- **Home:** search, a one-line location ("📍 Fremont, CA · within 25 mi · Change"), category tiles with live counts, then upcoming events. Listings appear after picking a category or searching.
+- **Category pages:** a compact header and scrollable category and dietary chips on phones. Sort by Recommended, Nearest, price (both directions), Top rated or Newest.
+- **Paid placement:** labeled "Sponsored" (featured ads) or "Pro" (paid plan), with a note that Recommended order includes paid placement.
+- **Listing pages:**
+  - A photo gallery, plus Share (the phone's share sheet or a copied link) and Save (♡, shortlist at `/saved`).
+  - Distance from the buyer.
+  - "Ask the seller a question": a message relayed by email with the buyer as reply-to, rate-limited and logged.
+  - On phones, a sticky Call/Text/WhatsApp bar.
+- **Prices:** shown as "From $2,500" for starting prices.
+
+## Listing photos
+
+Sellers can add up to 6 photos per listing (`src/lib/photos.ts`).
+- **Accepted files:** the image data must be JPEG, PNG or WebP, at least 300 px, up to 8 MB.
+- **Processing:** photos are resized to 1600 px plus a 600×450 thumbnail, converted to WebP, and stripped of all metadata, including GPS.
+- **Moderation:** admins see photos in the review queue. New photos from sellers under 30 days old send a live listing back to review. "Inappropriate or stolen photo" is a report reason.
+- **Storage:** files live under `public/uploads/` for local development. **Move storage to S3 or Cloudflare R2 before production.**
+- **iPhones:** HEIC photos are converted to JPEG by the phone when uploading to the site.
 
 ## Search
 

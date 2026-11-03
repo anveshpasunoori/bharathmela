@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { ListingFields } from "@/components/ListingFields";
+import { PhotoField } from "@/components/PhotoField";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { parseTags } from "@/lib/constants";
@@ -15,7 +16,7 @@ import { updateListing } from "../../../../actions/vendor";
 export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { vendor } = await requireVendor();
   const { id } = await params;
-  const listing = await db.listing.findUnique({ where: { id } });
+  const listing = await db.listing.findUnique({ where: { id }, include: { photos: { orderBy: { position: "asc" } } } });
   if (!listing || listing.vendorId !== vendor.id) notFound();
   const { plan } = await getVendorPlan(vendor.id);
 
@@ -54,6 +55,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
               tags: parseTags(listing.tags),
             }}
           />
+          <PhotoField existing={listing.photos} />
           <label className="flex gap-2 text-sm text-stone-700">
             <input type="checkbox" name="confirm" required className="mt-0.5" />
             <span>

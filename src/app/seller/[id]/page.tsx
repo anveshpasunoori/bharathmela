@@ -30,7 +30,11 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
 
   const now = new Date();
   const [listings, reviews, ratings, pro, events] = await Promise.all([
-    db.listing.findMany({ where: { vendorId: id, ...PUBLIC_LISTING }, include: { vendor: true }, orderBy: { createdAt: "desc" } }),
+    db.listing.findMany({
+      where: { vendorId: id, ...PUBLIC_LISTING },
+      include: { vendor: true, photos: { orderBy: { position: "asc" }, take: 1, select: { thumbUrl: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
     db.review.findMany({ where: { vendorId: id, ...PUBLIC_REVIEW }, include: { buyer: { select: { name: true } } }, orderBy: { updatedAt: "desc" }, take: 50 }),
     ratingsFor([id]),
     db.subscription.count({ where: { vendorId: id, plan: "PRO", status: "ACTIVE", endsAt: { gt: now } } }),
@@ -44,7 +48,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
         <div>
           <p className="text-xs text-stone-500">Independent seller</p>
           <h1 className="text-2xl font-bold">
-            {seller.businessName} {pro > 0 && <span className="badge bg-amber-100 align-middle text-amber-800">Pro seller</span>}
+            {seller.businessName} {pro > 0 && <span className="badge bg-amber-100 align-middle text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
           </h1>
           <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
             {summary ? <Stars rating={summary.average} count={summary.count} /> : <span>No ratings yet</span>}

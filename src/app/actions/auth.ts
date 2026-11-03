@@ -10,6 +10,7 @@ import { checkEmailDomain } from "@/lib/email";
 import { TERMS_VERSION } from "@/lib/legal";
 import { isMetro } from "@/lib/metros";
 import { passwordProblem } from "@/lib/password";
+import { deleteListingFiles } from "@/lib/photos";
 import { TOO_MANY, clientIp, hit } from "@/lib/rate-limit";
 import { checkVerificationCode, sendVerificationCode } from "@/lib/verification";
 
@@ -154,9 +155,11 @@ export async function deleteAccount(_: FormState, form: FormData): Promise<FormS
   }
   if (field(form, "confirm") !== "DELETE") return { error: 'Type DELETE to confirm.' };
 
+  let listingIds: string[] = [];
   await db.$transaction(async (tx) => {
     await tx.review.deleteMany({ where: { buyerId: user.id } });
     if (user.vendor) {
+      listingIds = (await tx.listing.findMany({ where: { vendorId: user.vendor.id }, select: { id: true } })).map((l) => l.id);
       await tx.listing.deleteMany({ where: { vendorId: user.vendor.id } });
       await tx.review.deleteMany({ where: { vendorId: user.vendor.id } });
       await tx.vendorProfile.update({
@@ -176,6 +179,7 @@ export async function deleteAccount(_: FormState, form: FormData): Promise<FormS
       },
     });
   });
+  for (const id of listingIds) await deleteListingFiles(id);
   await destroySession();
   redirect("/?deleted=1");
 }

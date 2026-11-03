@@ -3,11 +3,12 @@ import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { LocationPicker } from "@/components/LocationPicker";
 import { RentalTabs } from "@/components/RentalTabs";
+import { SortSelect } from "@/components/SortSelect";
 import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
-import { browseListings, categoryCounts } from "@/lib/listings";
+import { SORTS, type SortId, browseListings, categoryCounts } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
@@ -41,6 +42,7 @@ export default async function Home({
     occ?: string;
     ins?: string;
     radius?: string;
+    sort?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -87,12 +89,13 @@ export default async function Home({
           insured: params.ins === "1",
         }
       : {};
+  const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
   // The home page shows categories first; listings appear once a category is picked or a search is made.
   const showingListings = !!(category || q);
   const [{ listings, search }, events, counts] = await Promise.all([
     showingListings
-      ? browseListings({ metro, category, query: q, diet, rentalFilters, proFilters, eventFilters, near })
+      ? browseListings({ metro, category, query: q, diet, rentalFilters, proFilters, eventFilters, near, sort })
       : Promise.resolve({ listings: [], search: { active: false, suggestion: null, otherMetros: [], hintedCategory: undefined, maxPriceCents: undefined, minPriceCents: undefined } }),
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
@@ -120,6 +123,7 @@ export default async function Home({
   ) : (
     <input type="hidden" name="metro" value={metro} />
   );
+  const categoryInfo = CATEGORIES.find((c) => c.id === category);
   const toggleDiet = (id: DietTag) => href("FOOD", diet.includes(id) ? diet.filter((d) => d !== id) : [...diet, id]);
 
   return (
@@ -127,12 +131,21 @@ export default async function Home({
       {params.deleted && (
         <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">Your account has been deleted.</p>
       )}
-      <section className="rounded-xl bg-gradient-to-br from-brand-soft to-white p-6 ring-1 ring-orange-100 sm:p-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">Home businesses from our community, near you</h1>
-        <p className="mt-1 text-stone-600">
-          Home food, tutors, dance and music teachers, pujaris, event vendors and more {where}.
-        </p>
-        <form className="mt-4 flex flex-col gap-2 sm:flex-row" role="search">
+      <section className={showingListings ? "space-y-3" : "space-y-3 rounded-xl bg-gradient-to-br from-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"}>
+        {showingListings ? (
+          <div>
+            <Link href={home} className="text-sm text-stone-500 hover:text-brand">← All categories</Link>
+            <h1 className="mt-1 text-xl font-bold sm:text-2xl">
+              {categoryInfo ? `${categoryInfo.icon} ${categoryInfo.label}` : <>Results for &ldquo;{q}&rdquo;</>}
+            </h1>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">Home businesses from our community, near you</h1>
+            <p className="mt-1 text-stone-600">Home food, tutors, pujaris, event vendors, rooms and more {where}.</p>
+          </div>
+        )}
+        <form className="flex gap-2" role="search">
           {locationInputs}
           {category && <input type="hidden" name="category" value={category} />}
           {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
@@ -142,13 +155,13 @@ export default async function Home({
             defaultValue={q}
             maxLength={100}
             className="input flex-1"
-            placeholder="Try “biryani”, “pooja for housewarming”, “vegan snacks under $20”"
+            placeholder={categoryInfo ? `Search ${categoryInfo.label.toLowerCase()}…` : "Try “biryani”, “pooja”, “photographer”"}
             aria-label="Search listings"
           />
           <button className="btn">Search</button>
         </form>
-        {!q && (
-          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
+        {!showingListings && (
+          <p className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
             Popular:
             {POPULAR.map((term) => (
               <Link key={term} href={href(undefined, [], term)} className="rounded-full bg-white px-2.5 py-0.5 text-stone-700 ring-1 ring-stone-200 hover:text-brand">
@@ -157,37 +170,69 @@ export default async function Home({
             ))}
           </p>
         )}
-        <div className="mt-3">
-          <LocationPicker metro={metro} place={place} />
-        </div>
-        {place && (
-          <nav className="mt-3 flex flex-wrap items-center gap-2 text-sm" aria-label="Distance">
-            <span className="text-stone-500">Near {place.city}:</span>
-            {RADII.map((r) => {
-              const p = new URLSearchParams(locationParams());
-              p.delete("metro");
-              p.set("radius", String(r));
-              if (category) p.set("category", category);
-              if (q) p.set("q", q);
-              const on = nearMode && radius === r;
+        {/* Location stays one line until the buyer wants to change it. */}
+        <details className="group text-sm">
+          <summary className="cursor-pointer list-none text-stone-700">
+            📍 <b>{place && nearMode ? `${place.city}, ${place.state}` : metroName(metro)}</b>
+            {nearMode && <> · within {radius} mi</>} ·{" "}
+            <span className="font-semibold text-brand group-open:hidden">{place ? "Change" : "Use my location"}</span>
+            <span className="hidden font-semibold text-brand group-open:inline">Close</span>
+          </summary>
+          <div className="mt-3 space-y-3">
+            <LocationPicker metro={metro} place={place} />
+            {place && (
+              <nav className="flex flex-wrap items-center gap-2" aria-label="Distance">
+                <span className="text-stone-500">Near {place.city}:</span>
+                {RADII.map((r) => {
+                  const p = new URLSearchParams(locationParams());
+                  p.delete("metro");
+                  p.set("radius", String(r));
+                  if (category) p.set("category", category);
+                  if (q) p.set("q", q);
+                  const on = nearMode && radius === r;
+                  return (
+                    <Link key={r} href={`/?${p}`} className={`rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                      {r} mi
+                    </Link>
+                  );
+                })}
+                <Link href={href(category, diet, q, metro)} className={`rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                  All of {metroName(metro)}
+                </Link>
+              </nav>
+            )}
+          </div>
+        </details>
+      </section>
+
+      {!showingListings && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">What are you looking for?</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {CATEGORIES.map((c) => {
+              const n = counts.get(c.id) ?? 0;
               return (
-                <Link key={r} href={`/?${p}`} className={`rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                  {r} mi
+                <Link key={c.id} href={href(c.id)} className="card flex items-center gap-3 p-3 transition hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:p-4">
+                  <span className="text-2xl sm:text-3xl" aria-hidden>{c.icon}</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold leading-tight sm:text-base">{c.label}</span>
+                    <span className="text-xs text-stone-500">{n ? `${n} listing${n === 1 ? "" : "s"}` : "Be the first"}</span>
+                  </span>
                 </Link>
               );
             })}
-            <Link href={href(category, diet, q, metro)} className={`rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-              All of {metroName(metro)}
-            </Link>
-          </nav>
-        )}
-      </section>
+          </div>
+          <p className="mt-3 text-sm text-stone-600">
+            Need a room? <Link href={`/rooms-wanted/new?metro=${metro}`} className="font-semibold text-brand">Post what you&apos;re looking for</Link>
+          </p>
+        </section>
+      )}
 
       {events.length > 0 && (
         <section>
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-lg font-semibold">Upcoming events</h2>
-            <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">See all events →</Link>
+            <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">See all →</Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {events.map((e) => (
@@ -197,50 +242,25 @@ export default async function Home({
         </section>
       )}
 
-      {!showingListings && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Browse by category</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {CATEGORIES.map((c) => {
-              const n = counts.get(c.id) ?? 0;
-              return (
-                <Link key={c.id} href={href(c.id)} className="card flex items-center gap-3 p-4 transition hover:shadow-md hover:ring-1 hover:ring-brand/30">
-                  <span className="text-3xl" aria-hidden>{c.icon}</span>
-                  <span>
-                    <span className="block font-semibold leading-tight">{c.label}</span>
-                    <span className="text-xs text-stone-500">{n ? `${n} listing${n === 1 ? "" : "s"}` : "Be the first"}</span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-          <p className="mt-3 text-sm text-stone-600">
-            Looking for a room? <Link href={`/rooms-wanted/new?metro=${metro}`} className="font-semibold text-brand">Post what you need</Link>
-            {" · "}Hosting something? <Link href="/vendor/events/new" className="font-semibold text-brand">Post an event</Link>
-          </p>
-        </section>
-      )}
-
       {showingListings && (
-      <nav className="flex flex-wrap gap-2 text-sm" aria-label="Categories">
-        <Link href={href(undefined, [], "")} className="badge bg-white px-3 py-1.5 ring-1 ring-stone-200">
-          ← All categories
-        </Link>
-        {CATEGORIES.map((c) => (
-          <Link
-            key={c.id}
-            href={href(c.id)}
-            className={`badge px-3 py-1.5 ${category === c.id ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}
-          >
-            {c.icon} {c.label}
-          </Link>
-        ))}
-      </nav>
+        // One scrollable row on phones instead of a wall of wrapped chips.
+        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Categories">
+          {CATEGORIES.map((c) => (
+            <Link
+              key={c.id}
+              href={href(c.id)}
+              aria-current={category === c.id ? "page" : undefined}
+              className={`badge shrink-0 whitespace-nowrap px-3 py-1.5 ${category === c.id ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}
+            >
+              {c.icon} {c.label}
+            </Link>
+          ))}
+        </nav>
       )}
 
       {category === "FOOD" && (
-        <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Dietary filters">
-          <span className="text-stone-500">Dietary:</span>
+        <nav className="-mx-4 flex items-center gap-2 overflow-x-auto whitespace-nowrap px-4 pb-1 text-sm" aria-label="Dietary filters">
+          <span className="shrink-0 text-stone-500">Dietary:</span>
           {DIET_TAGS.map((t) => {
             const on = diet.includes(t.id);
             return (
@@ -248,7 +268,7 @@ export default async function Home({
                 key={t.id}
                 href={toggleDiet(t.id)}
                 aria-pressed={on}
-                className={`rounded-full px-3 py-1 ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-200"}`}
+                className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-200"}`}
               >
                 {on ? "✓ " : ""}
                 {t.label}
@@ -377,6 +397,14 @@ export default async function Home({
 
       {(q || category) && (
         <div className="space-y-1 text-sm text-stone-600">
+          {listings.length > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />
+              <span className="text-xs text-stone-500" title="Sponsored listings paid to appear first. Pro sellers pay for a higher spot in Recommended.">
+                Recommended order includes paid placement · <Link href="/pricing" className="underline">how it works</Link>
+              </span>
+            </div>
+          )}
           <p>
             {listings.length} result{listings.length === 1 ? "" : "s"}
             {q && <> for &ldquo;{q}&rdquo;</>}

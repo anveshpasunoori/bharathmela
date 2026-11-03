@@ -29,7 +29,7 @@ export const PLANS = {
       "Up to 25 active listings",
       "Up to 10 upcoming events",
       "AI ad writer: turn your idea into a ready-to-post ad",
-      "\"Pro seller\" badge on every listing",
+      "\"Pro\" badge on every listing",
       "Ranked above Free and Basic listings",
     ],
   },
@@ -54,6 +54,12 @@ export const BOOSTS = [
 
 export function boostOption(days: number) {
   return BOOSTS.find((b) => b.days === days);
+}
+
+// A listing price for buyers: "From $2,500" for starting prices, otherwise "$12 per plate".
+export function priceLabel(cents: number, unit: string) {
+  const u = unit.trim();
+  return /^(starting at|starts at|from)$/i.test(u) ? { main: `From ${formatUSD(cents)}`, unit: "" } : { main: formatUSD(cents), unit: u };
 }
 
 // "$1,400" for whole dollars, "$9.99" otherwise.

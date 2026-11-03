@@ -1,7 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
-import { categoryLabel } from "@/lib/constants";
+import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import type { BrowseListing } from "@/lib/listings";
-import { formatUSD } from "@/lib/plans";
+import { priceLabel } from "@/lib/plans";
 import { readEventService, rentalItemLabels, serviceLabels } from "@/lib/event-services";
 import { isProfessional, licenseLine, readProfessional } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
@@ -15,11 +16,21 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className={`card block transition hover:shadow-md ${listing.isFeatured ? "border-brand ring-1 ring-brand/30" : ""}`}
+      className={`card block overflow-hidden transition hover:shadow-md ${listing.isFeatured ? "border-stone-400" : ""}`}
     >
+      <div className="-mx-5 -mt-5 mb-3 aspect-[4/3] overflow-hidden rounded-t-lg bg-brand-soft">
+        {listing.photos[0] ? (
+          <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />
+        ) : (
+          <div className="grid h-full place-items-center text-5xl opacity-70" aria-hidden>
+            {CATEGORIES.find((c) => c.id === listing.category)?.icon}
+          </div>
+        )}
+      </div>
       <div className="mb-2 flex flex-wrap gap-1.5">
-        {listing.isFeatured && <span className="badge bg-brand text-white">Featured</span>}
-        {listing.isPro && <span className="badge bg-amber-100 text-amber-800">Pro seller</span>}
+        {/* Paid placement is labeled as such (FTC guidance on search ads). */}
+        {listing.isFeatured && <span className="badge bg-stone-800 text-white" title="This seller paid to show this listing first">Sponsored</span>}
+        {listing.isPro && <span className="badge bg-amber-100 text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
         <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
       </div>
       <h3 className="font-semibold">{listing.title}</h3>
@@ -53,7 +64,8 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
         </span>
         {listing.priceCents != null && (
           <span className="font-semibold">
-            {formatUSD(listing.priceCents)} <span className="font-normal text-stone-500">{listing.priceUnit}</span>
+            {priceLabel(listing.priceCents, listing.priceUnit).main}{" "}
+            <span className="font-normal text-stone-500">{priceLabel(listing.priceCents, listing.priceUnit).unit}</span>
           </span>
         )}
       </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
+import { PhotoGallery } from "@/components/PhotoGallery";
+import { ShareButton } from "@/components/ShareButton";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
@@ -10,20 +12,26 @@ import { RentalDetailsView, RentalScamWarning } from "@/components/RentalDetails
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { getCurrentUser } from "@/lib/auth";
+import { milesBetween, zipCoords } from "@/lib/geo";
+import { getUserLocation } from "@/lib/user-location";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { PUBLIC_LISTING } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
-import { formatUSD } from "@/lib/plans";
+import { priceLabel } from "@/lib/plans";
 import { readEventService } from "@/lib/event-services";
 import { isProfessional, readProfessional } from "@/lib/professionals";
 import { readRental } from "@/lib/rentals";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
+import { messageSeller, toggleSaved } from "../../actions/buyer";
 import { submitReview } from "../../actions/review";
 
 async function getListing(id: string) {
-  return db.listing.findFirst({ where: { id, ...PUBLIC_LISTING }, include: { vendor: true } });
+  return db.listing.findFirst({
+    where: { id, ...PUBLIC_LISTING },
+    include: { vendor: true, photos: { orderBy: { position: "asc" } } },
+  });
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -42,7 +50,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const eventService = listing.category === "EVENT_SERVICES" ? readEventService(listing.details) : null;
 
-  const [user, reviews, ratings, sellerSince] = await Promise.all([
+  const [user, reviews, ratings, sellerSince, place] = await Promise.all([
     getCurrentUser(),
     db.review.findMany({
       where: { vendorId: listing.vendorId, ...PUBLIC_REVIEW },
@@ -52,7 +60,12 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     }),
     ratingsFor([listing.vendorId]),
     db.user.findUnique({ where: { id: listing.vendor.userId }, select: { createdAt: true } }),
+    getUserLocation(),
   ]);
+  const saved = user ? !!(await db.favorite.findUnique({ where: { userId_listingId: { userId: user.id, listingId: listing.id } } })) : false;
+  const coords = place && zipCoords(listing.zip);
+  const miles = place && coords ? Math.round(milesBetween(place, coords)) : null;
+  const own = user?.id === listing.vendor.userId;
   // Count views from everyone except the seller.
   if (user?.id !== listing.vendor.userId) {
     await db.listing.update({ where: { id: listing.id }, data: { views: { increment: 1 } } });
@@ -62,18 +75,32 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const here = `/listing/${listing.id}`;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <Link href={`/?metro=${listing.metro}&category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">
-        ← {categoryLabel(listing.category)} in {metroName(listing.metro)}
-      </Link>
+    <div className="mx-auto max-w-2xl space-y-4 pb-20 sm:pb-0">
+      <div className="flex items-center justify-between gap-2">
+        <Link href={`/?category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">
+          ← {categoryLabel(listing.category)}
+        </Link>
+        <div className="flex gap-2">
+          <ShareButton title={listing.title} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} className="btn-outline whitespace-nowrap px-3 py-1.5" />
+          {!own && (
+            <form action={toggleSaved.bind(null, listing.id)}>
+              <button className={`btn-outline whitespace-nowrap px-3 py-1.5 ${saved ? "text-brand" : ""}`} aria-pressed={saved}>
+                {saved ? "♥ Saved" : "♡ Save"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
       {rental && <RentalScamWarning />}
       <article className="card space-y-3">
+        <PhotoGallery photos={listing.photos} title={listing.title} />
         <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
         <h1 className="text-2xl font-bold">{listing.title}</h1>
         <DietBadges tags={listing.tags} />
         {listing.priceCents != null && (
           <p className="text-lg font-semibold">
-            {formatUSD(listing.priceCents)} <span className="text-base font-normal text-stone-500">{listing.priceUnit}</span>
+            {priceLabel(listing.priceCents, listing.priceUnit).main}{" "}
+            <span className="text-base font-normal text-stone-500">{priceLabel(listing.priceCents, listing.priceUnit).unit}</span>
           </p>
         )}
         {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
@@ -91,11 +118,34 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </Link>
           <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
             {summary && <Stars rating={summary.average} count={summary.count} />}
-            <span>{metroName(listing.metro)} · ZIP {listing.zip}</span>
+            <span>
+              {metroName(listing.metro)} · ZIP {listing.zip}
+              {miles != null && <> · 📍 {miles < 1 ? "under 1 mi" : `${miles} mi`} from you</>}
+            </span>
             {sellerSince && <span>On BharathMela since {sellerSince.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
           </div>
         </div>
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
+        {!own && (
+          <details id="message" className="rounded-md bg-stone-50 p-3 ring-1 ring-stone-200">
+            <summary className="cursor-pointer text-sm font-semibold text-brand">✉ Prefer to message? Ask the seller a question</summary>
+            <div className="mt-3">
+              {!user ? (
+                <p className="text-sm text-stone-600">
+                  <Link href={`/login?next=${here}`} className="font-semibold text-brand">Log in</Link> or{" "}
+                  <Link href={`/signup?next=${here}`} className="font-semibold text-brand">create a free account</Link> to message the seller.
+                </p>
+              ) : (
+                <ActionForm action={messageSeller} submitLabel="Send message" className="space-y-2">
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <textarea className="input min-h-24" name="message" required minLength={10} maxLength={2000} aria-label="Message"
+                    placeholder="Hi! Is this available on Saturday the 14th? How many people does it serve?" />
+                  <p className="text-xs text-stone-500">We email your message to the seller; they&apos;ll reply to your email. Your email isn&apos;t shown on the site.</p>
+                </ActionForm>
+              )}
+            </div>
+          </details>
+        )}
         <p className="text-xs text-stone-500">
           Tip: agree on price and details in writing, and pay only after you receive the item or service.{" "}
           <Link href="/safety" className="underline">Safety tips</Link>
@@ -153,6 +203,13 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           Report this listing
         </Link>
       </div>
+
+      {!own && (
+        // Contact stays in reach on phones while the buyer reads the listing.
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 p-3 backdrop-blur sm:hidden">
+          <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} compact />
+        </div>
+      )}
     </div>
   );
 }

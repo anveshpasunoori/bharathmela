@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import { ListingFields } from "@/components/ListingFields";
+import { PhotoField } from "@/components/PhotoField";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { AI_WRITER_PLANS } from "@/lib/plans";
@@ -15,6 +16,7 @@ export default async function NewListingPage() {
       <div className="card">
         <ActionForm action={createListing} submitLabel="Publish listing">
           <ListingFields canUseAI={AI_WRITER_PLANS.includes(plan.id)} />
+          <PhotoField />
           <label className="flex gap-2 text-sm text-stone-700">
             <input type="checkbox" name="confirm" required className="mt-0.5" />
             <span>

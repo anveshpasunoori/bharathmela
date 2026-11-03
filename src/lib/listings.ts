@@ -17,6 +17,7 @@ export const PUBLIC_LISTING: Prisma.ListingWhereInput = {
 const withPlans = (now: Date) =>
   ({
     vendor: { include: { subscriptions: { where: { status: "ACTIVE", endsAt: { gt: now } }, select: { plan: true } } } },
+    photos: { orderBy: { position: "asc" }, take: 1, select: { thumbUrl: true } },
   }) satisfies Prisma.ListingInclude;
 
 export type BrowseOptions = {
@@ -30,7 +31,18 @@ export type BrowseOptions = {
   // The visitor's location. With radiusMiles, listings within that distance are shown from any metro;
   // without it, the metro is browsed and listings just get a distance.
   near?: { lat: number; lng: number; radiusMiles: number | null };
+  sort?: SortId;
 };
+
+export const SORTS = [
+  { id: "best", label: "Recommended" },
+  { id: "near", label: "Nearest" },
+  { id: "price_asc", label: "Price: low to high" },
+  { id: "price_desc", label: "Price: high to low" },
+  { id: "rating", label: "Top rated" },
+  { id: "new", label: "Newest" },
+] as const;
+export type SortId = (typeof SORTS)[number]["id"];
 
 // Browse a city or the area around the visitor. Without a search: featured (paid boost) first, then
 // nearest (when we know where they are), then Pro sellers, then newest. With a search: best matches
@@ -44,6 +56,7 @@ export async function browseListings({
   proFilters = {},
   eventFilters = {},
   near,
+  sort = "best",
 }: BrowseOptions) {
   const now = new Date();
   const byRadius = near?.radiusMiles != null;
@@ -107,13 +120,24 @@ export async function browseListings({
       score: score * (isFeatured ? 1.15 : 1) * (isPro ? 1.05 : 1) * nearby,
     };
   });
-  listings.sort((a, b) =>
+  const recommended = (a: (typeof listings)[number], b: (typeof listings)[number]) =>
     searching
       ? b.score - a.score
       : Number(b.isFeatured) - Number(a.isFeatured) ||
         (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) ||
-        Number(b.isPro) - Number(a.isPro),
-  );
+        Number(b.isPro) - Number(a.isPro);
+  // Listings without a price go last when sorting by price.
+  const price = (l: (typeof listings)[number], dir: 1 | -1) => (l.priceCents == null ? Infinity : dir * l.priceCents);
+  const comparators: Record<SortId, (a: (typeof listings)[number], b: (typeof listings)[number]) => number> = {
+    best: recommended,
+    near: (a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) || recommended(a, b),
+    price_asc: (a, b) => price(a, 1) - price(b, 1) || recommended(a, b),
+    price_desc: (a, b) => price(a, -1) - price(b, -1) || recommended(a, b),
+    rating: (a, b) =>
+      (b.rating?.average ?? 0) - (a.rating?.average ?? 0) || (b.rating?.count ?? 0) - (a.rating?.count ?? 0) || recommended(a, b),
+    new: (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  };
+  listings.sort(comparators[sort] ?? recommended);
 
   // Help when a search comes up short: a spelling fix, or the same search in other cities.
   let suggestion: string | null = null;

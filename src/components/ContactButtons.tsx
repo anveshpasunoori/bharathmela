@@ -1,12 +1,12 @@
 // Call and WhatsApp buttons for a seller's US phone number.
-export function ContactButtons({ phone, whatsapp, name }: { phone: string; whatsapp: boolean; name: string }) {
+export function ContactButtons({ phone, whatsapp, name, compact = false }: { phone: string; whatsapp: boolean; name: string; compact?: boolean }) {
   const digits = phone.replace(/\D/g, "");
   const intl = digits.length === 10 ? `1${digits}` : digits;
   const text = encodeURIComponent(`Hi ${name}, I saw your listing on BharathMela.`);
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={compact ? "grid grid-flow-col gap-2" : "flex flex-wrap gap-2"}>
       <a href={`tel:+${intl}`} className="btn">
-        Call {phone}
+        {compact ? "📞 Call" : `Call ${phone}`}
       </a>
       <a href={`sms:+${intl}`} className="btn-outline">
         Text

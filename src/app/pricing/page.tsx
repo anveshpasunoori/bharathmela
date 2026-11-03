@@ -27,9 +27,9 @@ export default function PricingPage() {
       </div>
 
       <div className="card">
-        <h2 className="text-lg font-semibold">Featured ads</h2>
+        <h2 className="text-lg font-semibold">Sponsored placement</h2>
         <p className="mt-1 text-sm text-stone-600">
-          Pin one listing to the top of your city and category, with a &ldquo;Featured&rdquo; badge.
+          Pin one listing to the top of your city and category. Buyers see it labeled &ldquo;Sponsored&rdquo;, as US advertising rules expect.
         </p>
         <ul className="mt-3 flex flex-wrap gap-3 text-sm">
           {BOOSTS.map((b) => (

@@ -27,6 +27,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Listing forms carry up to 6 photos of 8 MB each.
+  experimental: { serverActions: { bodySizeLimit: "50mb" } },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

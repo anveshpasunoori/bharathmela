@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { approveEvent, approveListing, approveWanted, rejectEvent, rejectListing, rejectWanted } from "../../actions/admin";
 import { DietBadges } from "@/components/DietBadges";
@@ -6,7 +7,7 @@ import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { eventTypeLabel, formatEventTime } from "@/lib/events";
 import { metroName, metroTimeZone } from "@/lib/metros";
-import { formatUSD } from "@/lib/plans";
+import { formatUSD, priceLabel } from "@/lib/plans";
 
 const fmtDate = (d: Date) => d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
@@ -14,7 +15,10 @@ export default async function AdminListingsPage() {
   const [pending, pendingEvents, pendingWanted] = await Promise.all([
     db.listing.findMany({
       where: { status: "PENDING_REVIEW" },
-      include: { vendor: { include: { user: { select: { email: true, createdAt: true } } } } },
+      include: {
+        vendor: { include: { user: { select: { email: true, createdAt: true } } } },
+        photos: { orderBy: { position: "asc" }, select: { id: true, url: true, thumbUrl: true } },
+      },
       orderBy: { updatedAt: "asc" },
     }),
     db.event.findMany({
@@ -34,7 +38,7 @@ export default async function AdminListingsPage() {
       <div>
         <h1 className="text-xl font-bold">Listings to review</h1>
         <p className="text-sm text-stone-600">
-          Held because they&apos;re a seller&apos;s first listing, in a reviewed category (rentals, domestic help), or flagged by the filters.
+          Check every photo too. Held because they&apos;re a seller&apos;s first listing, in a reviewed category (rentals, domestic help), or flagged by the filters.
           Check for discriminatory wording, scams, prohibited items and misleading claims.
         </p>
       </div>
@@ -50,6 +54,15 @@ export default async function AdminListingsPage() {
               <span className="text-sm text-stone-500">{fmtDate(l.updatedAt)}</span>
             </div>
             <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">Why it&apos;s here: {l.moderationNote}</p>
+            {l.photos.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {l.photos.map((p) => (
+                  <a key={p.id} href={p.url} target="_blank" rel="noopener">
+                    <Image src={p.thumbUrl} alt="Listing photo" width={120} height={90} className="h-20 w-28 rounded object-cover ring-1 ring-stone-200" />
+                  </a>
+                ))}
+              </div>
+            )}
             <DietBadges tags={l.tags} />
             {isProfessional(l.category) && (() => {
               const pro = readProfessional(l.details);
@@ -68,7 +81,7 @@ export default async function AdminListingsPage() {
             <p className="whitespace-pre-line text-sm text-stone-700">{l.description}</p>
             {l.priceCents != null && (
               <p className="text-sm font-semibold">
-                {formatUSD(l.priceCents)} {l.priceUnit}
+                {priceLabel(l.priceCents, l.priceUnit).main} {priceLabel(l.priceCents, l.priceUnit).unit}
               </p>
             )}
             <p className="text-sm text-stone-500">

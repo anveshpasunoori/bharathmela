@@ -21,6 +21,7 @@ model User {
   emailCodes   EmailCode[]
   reviews      Review[]
   roomsWanted  RoomWanted[]
+  favorites    Favorite[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
@@ -127,6 +128,9 @@ model Listing {
   createdAt     DateTime      @default(now())
   boosts        AdBoost[]
   reports       Report[]
+  favorites     Favorite[]
+  messages      Message[]
+  photos        ListingPhoto[]
 
   @@index([metro, category, status])
 }
@@ -273,7 +277,7 @@ model RoomWanted {
   @@index([metro, status, expiresAt])
 }
 
-// A message relayed by email between users (owner → renter), kept for abuse checks.
+// A message relayed by email between users (owner → renter, buyer → seller), kept for abuse checks.
 model Message {
   id           String      @id @default(cuid())
   fromUserId   String
@@ -282,8 +286,36 @@ model Message {
   toUser       User        @relation("ReceivedMessages", fields: [toUserId], references: [id], onDelete: Cascade)
   roomWantedId String?
   roomWanted   RoomWanted? @relation(fields: [roomWantedId], references: [id], onDelete: SetNull)
+  listingId    String?
+  listing      Listing?    @relation(fields: [listingId], references: [id], onDelete: SetNull)
   body         String
   createdAt    DateTime    @default(now())
 
   @@index([fromUserId, createdAt])
+}
+
+// A buyer's shortlist.
+model Favorite {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, listingId])
+}
+
+// Listing photos, resized and stripped of metadata (including GPS) on upload. position 0 is the cover.
+model ListingPhoto {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url       String // full-size image, e.g. /uploads/listings/<listingId>/<id>.webp
+  thumbUrl  String
+  width     Int
+  height    Int
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([listingId, position])
 }
