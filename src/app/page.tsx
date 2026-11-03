@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EventCard } from "@/components/EventCard";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { FilterBar, type FilterDef } from "@/components/FilterBar";
 import { ListingCard } from "@/components/ListingCard";
 import { RentalTabs } from "@/components/RentalTabs";
@@ -205,8 +206,15 @@ export default async function Home({
         {showingListings ? (
           <div>
             <Link href={home} className="text-sm text-stone-500 hover:text-brand">← All categories</Link>
-            <h1 className="mt-1 text-xl font-bold sm:text-2xl">
-              {categoryInfo ? `${categoryInfo.icon} ${categoryInfo.label}` : <>Results for &ldquo;{q}&rdquo;</>}
+            <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
+              {categoryInfo ? (
+                <>
+                  <CategoryIcon id={categoryInfo.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
+                  {categoryInfo.label}
+                </>
+              ) : (
+                <>Results for &ldquo;{q}&rdquo;</>
+              )}
             </h1>
           </div>
         ) : (
@@ -276,7 +284,7 @@ export default async function Home({
               const n = counts.get(c.id) ?? 0;
               return (
                 <Link key={c.id} href={href(c.id)} className="card flex items-center gap-3 p-3 transition hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:p-4">
-                  <span className="text-2xl sm:text-3xl" aria-hidden>{c.icon}</span>
+                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 sm:h-14 sm:w-14" />
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold leading-tight sm:text-base">{c.label}</span>
                     <span className="text-xs text-stone-500">{n ? `${n} listing${n === 1 ? "" : "s"}` : "Be the first"}</span>

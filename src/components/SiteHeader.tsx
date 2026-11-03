@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/app/actions/auth";
 import { NAV_GROUPS } from "@/lib/nav";
+import { CategoryIcon } from "./CategoryIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
 
@@ -36,7 +37,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                       {g.items.map((c) => (
                         <li key={c.id}>
                           <Link href={c.href} className="flex gap-2 rounded-md px-2 py-1.5 hover:bg-stone-50">
-                            <span aria-hidden className="text-lg leading-6">{c.icon}</span>
+                            <CategoryIcon id={c.id} size={36} className="h-9 w-9" />
                             <span>
                               <span className="block font-medium text-stone-800">{c.label}</span>
                               <span className="block text-xs text-stone-500">{c.blurb}</span>
@@ -126,7 +127,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
             <div className="grid grid-cols-2 gap-1.5">
               {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
                 <Link key={c.id} href={c.href} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm hover:bg-stone-100">
-                  <span aria-hidden className="text-lg">{c.icon}</span>
+                  <CategoryIcon id={c.id} size={32} className="h-8 w-8" />
                   <span className="leading-tight">{c.label}</span>
                 </Link>
               ))}

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CATEGORIES, categoryLabel, parseTags, tagLabel } from "@/lib/constants";
+import { CategoryIcon } from "./CategoryIcon";
+import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
 import { readEventService, serviceLabels } from "@/lib/event-services";
 import type { BrowseListing } from "@/lib/listings";
 import { priceLabel } from "@/lib/plans";
@@ -35,8 +36,8 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
         {listing.photos[0] ? (
           <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />
         ) : (
-          <div className="grid h-full place-items-center text-5xl opacity-60" aria-hidden>
-            {CATEGORIES.find((c) => c.id === listing.category)?.icon}
+          <div className="grid h-full place-items-center">
+            <CategoryIcon id={listing.category} size={112} className="h-24 w-24 opacity-90 transition group-hover:scale-105 sm:h-28 sm:w-28" />
           </div>
         )}
         <div className="absolute left-2 top-2 flex gap-1">
