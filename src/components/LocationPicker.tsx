@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { METROS, nearestMetro } from "@/lib/metros";
 
-export function LocationPicker({ metro }: { metro: string }) {
+export function LocationPicker({ metro, basePath = "/" }: { metro: string; basePath?: string }) {
   const router = useRouter();
   const params = useSearchParams();
   const [status, setStatus] = useState("");
@@ -12,7 +12,7 @@ export function LocationPicker({ metro }: { metro: string }) {
   function go(id: string) {
     const next = new URLSearchParams(params);
     next.set("metro", id);
-    router.push(`/?${next}`);
+    router.push(`${basePath}?${next}`);
   }
 
   function useMyLocation() {

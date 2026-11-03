@@ -78,6 +78,15 @@ DesiBazaar is set up as a neutral listing platform. The Terms of Service and Pri
 **Security headers**
 - Content Security Policy, no framing, nosniff, a strict referrer policy and a permissions policy, plus HSTS in production (`next.config.ts`).
 
+## Events
+
+Sellers can also post events as organizers at `/vendor/events/new`: concerts, dance performances, festival celebrations, pujas, community events, workshops, kids' events and comedy/film/theatre. Each event can be tagged with a festival (Diwali, Navratri/Garba, Holi, Ganesh Chaturthi and more).
+- **Plan limits:** Free gets 1 upcoming event, Basic 3, Pro 10.
+- **Moderation:** the same screening as listings. An organizer's first event, and any ticket link outside well-known ticketing sites, go to admin review. Events can be reported, and 3 reports put an event on hold.
+- **Browse at `/events`:** filter by date (today, this weekend, next 7 or 30 days), type, festival and free entry, with search.
+- **Event pages:** Google Calendar, Apple/Outlook (.ics) and map links.
+- **Times:** stored in UTC and shown in each city's time zone (`src/lib/events.ts`).
+
 ## Search
 
 `src/lib/search.ts` ranks one city's listings in memory:

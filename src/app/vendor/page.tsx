@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { deleteEvent, setEventVisibility } from "../actions/event";
 import { deleteListing, setListingVisibility } from "../actions/vendor";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { metroName } from "@/lib/metros";
+import { formatEventTime } from "@/lib/events";
+import { metroName, metroTimeZone } from "@/lib/metros";
 import { PLANS, formatUSD } from "@/lib/plans";
 import { ratingsFor } from "@/lib/reviews";
 import { ConfirmButton } from "@/components/ConfirmButton";
@@ -15,13 +17,20 @@ const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day
 export default async function VendorDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ submitted?: string; error?: string; review?: string; published?: string; updated?: string }>;
+  searchParams: Promise<{
+    submitted?: string;
+    error?: string;
+    review?: string;
+    published?: string;
+    updated?: string;
+    eventPublished?: string;
+  }>;
 }) {
   const { vendor } = await requireVendor();
   const params = await searchParams;
   await syncExpirations();
 
-  const [{ plan, subscription }, listings, payments, ratings] = await Promise.all([
+  const [{ plan, subscription }, listings, payments, ratings, events] = await Promise.all([
     getVendorPlan(vendor.id),
     db.listing.findMany({ where: { vendorId: vendor.id }, orderBy: { createdAt: "desc" } }),
     db.payment.findMany({
@@ -31,8 +40,11 @@ export default async function VendorDashboard({
       take: 10,
     }),
     ratingsFor([vendor.id]),
+    db.event.findMany({ where: { vendorId: vendor.id }, orderBy: { startsAt: "desc" }, take: 50 }),
   ]);
+  const tz = metroTimeZone(vendor.metro);
   const now = new Date();
+  const upcomingEventCount = events.filter((e) => e.endsAt > now && (e.status === "ACTIVE" || e.status === "PENDING_REVIEW")).length;
   const activeCount = listings.filter((l) => l.status === "ACTIVE").length;
   const usedCount = listings.filter((l) => l.status === "ACTIVE" || l.status === "PENDING_REVIEW").length;
   const canAdd = usedCount < plan.maxListings;
@@ -75,13 +87,18 @@ export default async function VendorDashboard({
       )}
       {params.review && (
         <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Your listing was sent for review. We check new sellers, rentals, domestic help and anything our filters flag, usually within 1
-          business day. You&apos;ll see it go live here.
+          Your {params.review === "event" ? "event" : "listing"} was sent for review. We check first posts, rentals, domestic help, unfamiliar
+          ticket links and anything our filters flag, usually within 1 business day. You&apos;ll see it go live here.
         </p>
       )}
-      {(params.published || params.updated) && (
+      {(params.published || params.updated || params.eventPublished) && (
         <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
-          {params.published ? "Your listing is live." : "Your changes are saved."}
+          {params.published ? "Your listing is live." : params.eventPublished ? "Your event is live." : "Your changes are saved."}
+        </p>
+      )}
+      {params.error === "eventLimit" && (
+        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+          You&apos;ve reached your plan&apos;s limit of upcoming events. Hide another event or upgrade.
         </p>
       )}
       {params.error === "limit" && (
@@ -165,6 +182,64 @@ export default async function VendorDashboard({
                     </form>
                   )}
                   <ConfirmButton action={deleteListing.bind(null, l.id)} message={`Delete "${l.title}"? This can't be undone.`}>
+                    Delete
+                  </ConfirmButton>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section id="events" className="scroll-mt-20">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Your events</h2>
+            <p className="text-sm text-stone-500">
+              {upcomingEventCount} of {plan.maxEvents} upcoming events used
+            </p>
+          </div>
+          {upcomingEventCount < plan.maxEvents ? (
+            <Link href="/vendor/events/new" className="btn">+ New event</Link>
+          ) : (
+            <span className="text-sm text-stone-500">Limit reached – upgrade to add more</span>
+          )}
+        </div>
+        {events.length === 0 && (
+          <p className="card text-stone-600">Hosting a concert, dance show, festival celebration or workshop? Post it here.</p>
+        )}
+        <ul className="space-y-3">
+          {events.map((e) => {
+            const past = e.endsAt <= now;
+            return (
+              <li key={e.id} className={`card flex flex-wrap items-center justify-between gap-3 ${past ? "opacity-60" : ""}`}>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">{e.title}</span>
+                    {past ? <span className="badge bg-stone-200 text-stone-700">Ended</span> : <ListingStatus status={e.status} />}
+                  </div>
+                  <p className="text-sm text-stone-500">
+                    {formatEventTime(e.startsAt, e.endsAt, tz)} · {e.views.toLocaleString()} view{e.views === 1 ? "" : "s"}
+                  </p>
+                  {(e.status === "REJECTED" || e.status === "REMOVED") && e.moderationNote && (
+                    <p className="mt-1 text-sm text-red-700">Reason: {e.moderationNote}</p>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  {e.status === "ACTIVE" && !past && (
+                    <Link href={`/events/${e.id}`} className="btn-outline py-1.5">View</Link>
+                  )}
+                  {e.status !== "REMOVED" && !past && (
+                    <Link href={`/vendor/events/${e.id}/edit`} className="btn-outline py-1.5">
+                      {e.status === "REJECTED" ? "Fix & resubmit" : "Edit"}
+                    </Link>
+                  )}
+                  {(e.status === "ACTIVE" || e.status === "HIDDEN") && !past && (
+                    <form action={setEventVisibility.bind(null, e.id, e.status !== "ACTIVE")}>
+                      <button className="btn-outline py-1.5">{e.status === "ACTIVE" ? "Hide" : "Show"}</button>
+                    </form>
+                  )}
+                  <ConfirmButton action={deleteEvent.bind(null, e.id)} message={`Delete "${e.title}"? This can't be undone.`}>
                     Delete
                   </ConfirmButton>
                 </div>

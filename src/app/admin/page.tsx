@@ -23,7 +23,10 @@ export default async function AdminPage() {
     }),
     db.report.findMany({
       where: { status: "OPEN" },
-      include: { listing: { include: { vendor: { select: { businessName: true } } } } },
+      include: {
+        listing: { include: { vendor: { select: { businessName: true } } } },
+        event: { include: { vendor: { select: { businessName: true } } } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     db.payment.findMany({
@@ -76,33 +79,40 @@ export default async function AdminPage() {
         </p>
         {reports.length === 0 && <p className="card text-stone-600">No open reports.</p>}
         <ul className="space-y-3">
-          {reports.map((r) => (
+          {reports.map((r) => {
+            const target = r.listing ?? r.event;
+            if (!target) return null;
+            const kind = r.listing ? "listing" : "event";
+            const url = r.listing ? `/listing/${target.id}` : `/events/${target.id}`;
+            return (
             <li key={r.id} className="card space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="font-semibold">
                   <span className="badge mr-2 bg-red-100 text-red-800">{reportReasonLabel(r.reason)}</span>
-                  <Link href={`/listing/${r.listingId}`} className="hover:text-brand" target="_blank">
-                    {r.listing.title}
+                  <span className="badge mr-2 bg-stone-100 text-stone-600">{kind}</span>
+                  <Link href={url} className="hover:text-brand" target="_blank">
+                    {target.title}
                   </Link>
                 </p>
                 <p className="text-sm text-stone-500">{fmtDate(r.createdAt)}</p>
               </div>
               <p className="text-sm text-stone-600">
-                Seller: {r.listing.vendor.businessName} · Listing status: {r.listing.status.toLowerCase().replace("_", " ")}
+                Seller: {target.vendor.businessName} · Status: {target.status.toLowerCase().replace("_", " ")}
                 {r.reporterEmail && <> · Reporter: {r.reporterEmail}</>}
               </p>
               {r.details && <p className="rounded-md bg-stone-50 px-3 py-2 text-sm">{r.details}</p>}
               <div className="flex flex-wrap gap-2">
                 <form action={resolveReport.bind(null, r.id, true)} className="flex flex-1 gap-2">
                   <input name="note" className="input" placeholder="Reason (shown to seller)" />
-                  <button className="btn whitespace-nowrap">Remove listing</button>
+                  <button className="btn whitespace-nowrap">Remove {kind}</button>
                 </form>
                 <form action={resolveReport.bind(null, r.id, false)}>
                   <button className="btn-outline">Dismiss</button>
                 </form>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
 

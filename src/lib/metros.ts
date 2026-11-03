@@ -1,20 +1,20 @@
 // US metros with large Indian communities. Listings belong to one metro;
 // "Use my location" picks the nearest one.
 export const METROS = [
-  { id: "bay-area", name: "SF Bay Area", state: "CA", lat: 37.55, lng: -122.0 },
-  { id: "los-angeles", name: "Los Angeles", state: "CA", lat: 34.05, lng: -118.24 },
-  { id: "seattle", name: "Seattle", state: "WA", lat: 47.61, lng: -122.33 },
-  { id: "dallas", name: "Dallas–Fort Worth", state: "TX", lat: 32.9, lng: -96.9 },
-  { id: "houston", name: "Houston", state: "TX", lat: 29.76, lng: -95.37 },
-  { id: "austin", name: "Austin", state: "TX", lat: 30.27, lng: -97.74 },
-  { id: "chicago", name: "Chicago", state: "IL", lat: 41.88, lng: -87.63 },
-  { id: "atlanta", name: "Atlanta", state: "GA", lat: 33.75, lng: -84.39 },
-  { id: "new-jersey", name: "New York / New Jersey", state: "NJ", lat: 40.52, lng: -74.41 },
-  { id: "dc", name: "Washington DC", state: "VA", lat: 38.9, lng: -77.2 },
-  { id: "boston", name: "Boston", state: "MA", lat: 42.36, lng: -71.06 },
-  { id: "raleigh", name: "Raleigh–Durham", state: "NC", lat: 35.85, lng: -78.8 },
-  { id: "phoenix", name: "Phoenix", state: "AZ", lat: 33.45, lng: -112.07 },
-  { id: "detroit", name: "Detroit", state: "MI", lat: 42.48, lng: -83.2 },
+  { id: "bay-area", name: "SF Bay Area", state: "CA", lat: 37.55, lng: -122.0, tz: "America/Los_Angeles" },
+  { id: "los-angeles", name: "Los Angeles", state: "CA", lat: 34.05, lng: -118.24, tz: "America/Los_Angeles" },
+  { id: "seattle", name: "Seattle", state: "WA", lat: 47.61, lng: -122.33, tz: "America/Los_Angeles" },
+  { id: "dallas", name: "Dallas–Fort Worth", state: "TX", lat: 32.9, lng: -96.9, tz: "America/Chicago" },
+  { id: "houston", name: "Houston", state: "TX", lat: 29.76, lng: -95.37, tz: "America/Chicago" },
+  { id: "austin", name: "Austin", state: "TX", lat: 30.27, lng: -97.74, tz: "America/Chicago" },
+  { id: "chicago", name: "Chicago", state: "IL", lat: 41.88, lng: -87.63, tz: "America/Chicago" },
+  { id: "atlanta", name: "Atlanta", state: "GA", lat: 33.75, lng: -84.39, tz: "America/New_York" },
+  { id: "new-jersey", name: "New York / New Jersey", state: "NJ", lat: 40.52, lng: -74.41, tz: "America/New_York" },
+  { id: "dc", name: "Washington DC", state: "VA", lat: 38.9, lng: -77.2, tz: "America/New_York" },
+  { id: "boston", name: "Boston", state: "MA", lat: 42.36, lng: -71.06, tz: "America/New_York" },
+  { id: "raleigh", name: "Raleigh–Durham", state: "NC", lat: 35.85, lng: -78.8, tz: "America/New_York" },
+  { id: "phoenix", name: "Phoenix", state: "AZ", lat: 33.45, lng: -112.07, tz: "America/Phoenix" },
+  { id: "detroit", name: "Detroit", state: "MI", lat: 42.48, lng: -83.2, tz: "America/Detroit" },
 ] as const;
 
 export const DEFAULT_METRO = "bay-area";
@@ -22,6 +22,10 @@ export const DEFAULT_METRO = "bay-area";
 export function metroName(id: string) {
   const m = METROS.find((m) => m.id === id);
   return m ? `${m.name}, ${m.state}` : id;
+}
+
+export function metroTimeZone(id: string) {
+  return METROS.find((m) => m.id === id)?.tz ?? "America/Los_Angeles";
 }
 
 export function isMetro(id: string | undefined): id is string {

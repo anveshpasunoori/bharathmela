@@ -37,6 +37,16 @@ const SYNONYMS: string[][] = [
   ["griha pravesh", "gruhapravesam", "gruha pravesam", "housewarming", "house warming", "grihapravesh"],
   ["satyanarayan", "satyanarayana", "sathyanarayana", "satyanarayan katha", "vratham", "vratam"],
   ["wedding", "marriage", "vivah", "kalyanam", "shaadi"],
+  // Festivals and events
+  ["diwali", "deepavali", "divali", "deepawali", "dipawali"],
+  ["navratri", "navaratri", "garba", "dandiya", "dandiya raas", "raas garba"],
+  ["ganesh", "ganesha", "ganpati", "ganapati", "vinayaka", "vinayaka chavithi", "ganesh chaturthi"],
+  ["sankranti", "sankranthi", "pongal", "lohri", "makar sankranti", "bhogi"],
+  ["ugadi", "yugadi", "gudi padwa"],
+  ["holi", "rang panchami", "color festival", "festival of colors"],
+  ["durga", "durga puja", "pujo", "durgotsav"],
+  ["concert", "kutcheri", "katcheri", "recital", "live music", "performance"],
+  ["mela", "fair", "festival fair", "bazaar", "utsav"],
   // Dance & music
   ["bharatanatyam", "bharathanatyam", "bharatnatyam", "bharatnatyam", "bharata natyam", "baratanatyam"],
   ["kuchipudi", "kuchipudi dance"],

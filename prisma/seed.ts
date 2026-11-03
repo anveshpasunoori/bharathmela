@@ -2,6 +2,7 @@
 // Sample vendor logins all use the password "vendor-dev-password".
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { localToUtc } from "../src/lib/events";
 
 const db = new PrismaClient();
 const DAY_MS = 86_400_000;
@@ -162,6 +163,48 @@ async function main() {
         },
       },
     });
+  }
+
+  // Sample events, a few days to weeks out, at local times in each city.
+  if (!(await db.event.count())) {
+    const vendorBy = async (email: string) => (await db.user.findUnique({ where: { email }, include: { vendor: true } }))?.vendor;
+    const day = (offset: number, time: string, tz: string) => {
+      const d = new Date(Date.now() + offset * DAY_MS).toISOString().slice(0, 10);
+      return localToUtc(`${d}T${time}`, tz)!;
+    };
+    const PT = "America/Los_Angeles";
+    const CT = "America/Chicago";
+    const events = [
+      { email: "lakshmi@desibazaar.test", metro: "bay-area", tz: PT, offset: 5, start: "11:00", end: "20:00",
+        title: "Diwali Mela 2026 – food stalls, dance & fireworks show", type: "FESTIVAL", festival: "Diwali",
+        description: "Family Diwali celebration with 30+ food and shopping stalls, classical and Bollywood dance performances, rangoli contest for kids and a fireworks show at 7:30 PM. Free parking.",
+        venueName: "Santa Clara Convention Center", address: "5001 Great America Pkwy, Santa Clara, CA 95054", isFree: false, priceCents: 1000,
+        ticketUrl: "https://www.eventbrite.com/e/diwali-mela-sample" },
+      { email: "sruthi.arts@desibazaar.test", metro: "bay-area", tz: PT, offset: 9, start: "17:30", end: "20:30",
+        title: "Carnatic vocal concert & student Bharatanatyam recital", type: "CONCERT", festival: "",
+        description: "Annual recital by students of Sruthi Laya Kala Kendra, followed by a Carnatic vocal concert with violin and mridangam accompaniment. All are welcome.",
+        venueName: "Cupertino Community Hall", address: "10350 Torre Ave, Cupertino, CA 95014", isFree: true, priceCents: null, ticketUrl: "" },
+      { email: "pandit.sharma@desibazaar.test", metro: "bay-area", tz: PT, offset: 3, start: "10:00", end: "13:00",
+        title: "Community Satyanarayan Puja & prasadam", type: "RELIGIOUS", festival: "",
+        description: "Monthly community Satyanarayan Vratham with katha in Telugu and Hindi. Families can sponsor a kalasham. Prasadam lunch served after the puja.",
+        venueName: "Fremont Community Center", address: "40204 Paseo Padre Pkwy, Fremont, CA 94538", isFree: true, priceCents: null, ticketUrl: "" },
+      { email: "meena.tutor@desibazaar.test", metro: "dallas", tz: CT, offset: 12, start: "19:00", end: "23:00",
+        title: "Navratri Garba & Dandiya Night", type: "FESTIVAL", festival: "Navratri / Garba / Dandiya",
+        description: "Live dhol and singers, garba and dandiya raas for all ages, dandiya sticks available at the door, Gujarati snacks on sale.",
+        venueName: "Plano Event Center", address: "2000 E Spring Creek Pkwy, Plano, TX 75074", isFree: false, priceCents: 1500,
+        ticketUrl: "https://www.eventbrite.com/e/garba-night-sample" },
+    ];
+    for (const e of events) {
+      const vendor = await vendorBy(e.email);
+      if (!vendor) continue;
+      await db.event.create({
+        data: {
+          vendorId: vendor.id, metro: e.metro, title: e.title, type: e.type, festival: e.festival, description: e.description,
+          startsAt: day(e.offset, e.start, e.tz), endsAt: day(e.offset, e.end, e.tz), venueName: e.venueName, address: e.address,
+          isFree: e.isFree, priceCents: e.priceCents, ticketUrl: e.ticketUrl,
+        },
+      });
+    }
   }
 }
 

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactButtons } from "@/components/ContactButtons";
+import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { db } from "@/lib/db";
+import { publicEventWhere } from "@/lib/event-data";
 import { PUBLIC_LISTING } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
@@ -27,11 +29,12 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
   if (!seller) notFound();
 
   const now = new Date();
-  const [listings, reviews, ratings, pro] = await Promise.all([
+  const [listings, reviews, ratings, pro, events] = await Promise.all([
     db.listing.findMany({ where: { vendorId: id, ...PUBLIC_LISTING }, include: { vendor: true }, orderBy: { createdAt: "desc" } }),
     db.review.findMany({ where: { vendorId: id, ...PUBLIC_REVIEW }, include: { buyer: { select: { name: true } } }, orderBy: { updatedAt: "desc" }, take: 50 }),
     ratingsFor([id]),
     db.subscription.count({ where: { vendorId: id, plan: "PRO", status: "ACTIVE", endsAt: { gt: now } } }),
+    db.event.findMany({ where: { vendorId: id, ...publicEventWhere(now) }, include: { vendor: true }, orderBy: { startsAt: "asc" }, take: 10 }),
   ]);
   const summary = ratings.get(id);
 
@@ -68,6 +71,17 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
           </div>
         )}
       </section>
+
+      {events.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">Upcoming events ({events.length})</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {events.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="card">
         <h2 className="mb-2 font-semibold">Ratings</h2>

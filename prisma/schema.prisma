@@ -57,6 +57,7 @@ model VendorProfile {
   payments      Payment[]
   aiDrafts      AiDraft[]
   reviews       Review[]
+  events        Event[]
 }
 
 // One-time code emailed to prove the user owns their address.
@@ -125,11 +126,13 @@ model Listing {
   @@index([metro, category, status])
 }
 
-// A user's complaint about a listing. Admins review and hide or dismiss.
+// A user's complaint about a listing or an event (exactly one is set).
 model Report {
   id            String    @id @default(cuid())
-  listingId     String
-  listing       Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId     String?
+  listing       Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  eventId       String?
+  event         Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   reason        String // see REPORT_REASONS in src/lib/legal.ts
   details       String    @default("")
   reporterEmail String    @default("")
@@ -201,4 +204,33 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// A dated happening posted by a seller acting as organizer: concerts, dance shows,
+// festival celebrations, pujas, community meetups. Goes through the same moderation as listings.
+model Event {
+  id             String        @id @default(cuid())
+  vendorId       String
+  vendor         VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  type           String // see EVENT_TYPES in src/lib/events.ts
+  festival       String        @default("") // see FESTIVALS in src/lib/events.ts
+  startsAt       DateTime
+  endsAt         DateTime
+  venueName      String
+  address        String
+  metro          String
+  isFree         Boolean       @default(true)
+  priceCents     Int? // lowest ticket price when not free
+  ticketUrl      String        @default("")
+  // ACTIVE | HIDDEN (by organizer) | PENDING_REVIEW | REJECTED | REMOVED (by admin)
+  status         String        @default("ACTIVE")
+  moderationNote String        @default("")
+  views          Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  reports        Report[]
+
+  @@index([metro, status, startsAt])
 }

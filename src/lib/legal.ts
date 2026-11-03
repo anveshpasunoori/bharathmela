@@ -67,3 +67,14 @@ export const REPORT_REASONS = [
 export function reportReasonLabel(id: string) {
   return REPORT_REASONS.find((r) => r.id === id)?.label ?? id;
 }
+
+// Shown to organizers when they post an event.
+export const EVENT_RULES = [
+  "Event details must be accurate: date, venue, price, performers. Update or hide the event if anything changes or it's cancelled.",
+  "You're responsible for venue permits, insurance, food permits, and licenses for any alcohol, raffles or fireworks.",
+  "Public events can't turn people away based on race, religion, national origin, sex or disability. Don't write \"Indians only\" or similar.",
+  "You handle tickets, refunds and attendee safety. DesiBazaar doesn't sell tickets or run events.",
+];
+
+export const EVENT_DISCLAIMER =
+  "Events are organized by independent organizers, not DesiBazaar. We don't sell tickets, verify performers or guarantee that an event happens. Check the organizer's details before buying tickets.";

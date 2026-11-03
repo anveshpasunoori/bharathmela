@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { LocationPicker } from "@/components/LocationPicker";
 import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
+import { upcomingEvents } from "@/lib/event-data";
 import { browseListings } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
@@ -22,7 +24,10 @@ export default async function Home({
   const diet = category === "FOOD" ? (params.diet ?? "").split(",").filter(isDietTag) : [];
 
   await syncExpirations();
-  const { listings, search } = await browseListings(metro, category, q, diet);
+  const [{ listings, search }, events] = await Promise.all([
+    browseListings(metro, category, q, diet),
+    q || category ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
+  ]);
 
   const href = (cat?: string, dietTags: string[] = [], query = q, city = metro) => {
     const p = new URLSearchParams({ metro: city });
@@ -72,6 +77,20 @@ export default async function Home({
           <LocationPicker metro={metro} />
         </div>
       </section>
+
+      {events.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold">Upcoming events</h2>
+            <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">See all events →</Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {events.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <nav className="flex flex-wrap gap-2 text-sm" aria-label="Categories">
         <Link href={href()} className={`badge px-3 py-1.5 ${!category ? "bg-brand text-white" : "bg-white ring-1 ring-stone-200"}`}>

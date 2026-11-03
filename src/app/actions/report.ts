@@ -31,3 +31,25 @@ export async function reportListing(_: FormState, form: FormData): Promise<FormS
   }
   redirect(`/listing/${listingId}/report?sent=1`);
 }
+
+export async function reportEvent(_: FormState, form: FormData): Promise<FormState> {
+  const eventId = String(form.get("eventId") ?? "");
+  const reason = String(form.get("reason") ?? "");
+  const details = String(form.get("details") ?? "").trim().slice(0, 2000);
+  const reporterEmail = String(form.get("email") ?? "").trim().slice(0, 200);
+
+  if (!hit("report", await clientIp())) return { error: TOO_MANY };
+  if (!REPORT_REASONS.some((r) => r.id === reason)) return { error: "Choose a reason." };
+  const event = await db.event.findUnique({ where: { id: eventId }, select: { id: true, status: true } });
+  if (!event) return { error: "This event no longer exists." };
+
+  await db.report.create({ data: { eventId, reason, details, reporterEmail } });
+  const open = await db.report.count({ where: { eventId, status: "OPEN" } });
+  if (open >= AUTO_HOLD_REPORTS && event.status === "ACTIVE") {
+    await db.event.update({
+      where: { id: eventId },
+      data: { status: "PENDING_REVIEW", moderationNote: `held automatically after ${open} reports` },
+    });
+  }
+  redirect(`/events/${eventId}/report?sent=1`);
+}

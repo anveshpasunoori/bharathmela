@@ -22,27 +22,49 @@ export async function reject(paymentId: string, form: FormData) {
   revalidatePath("/admin");
 }
 
-// Removing a reported listing closes every open report on it. Sellers can't restore removed listings.
-export async function resolveReport(reportId: string, removeListing: boolean, form: FormData) {
+// Removing a reported listing or event closes every open report on it. Sellers can't restore removed items.
+export async function resolveReport(reportId: string, remove: boolean, form: FormData) {
   const admin = await requireAdmin();
   const report = await db.report.findUnique({ where: { id: reportId } });
   if (!report) return;
   const now = new Date();
-  if (removeListing) {
+  if (remove) {
     const reason = note(form) || "reported and found to break our rules";
-    await db.$transaction([
-      db.listing.update({ where: { id: report.listingId }, data: { status: "REMOVED", moderationNote: reason } }),
-      db.report.updateMany({
-        where: { listingId: report.listingId, status: "OPEN" },
-        data: { status: "ACTIONED", resolvedAt: now },
-      }),
-    ]);
-    await audit(admin.id, "listing.remove", "listing", report.listingId, reason);
+    const removed = { status: "REMOVED", moderationNote: reason };
+    const closeReports = { status: "ACTIONED", resolvedAt: now };
+    if (report.listingId) {
+      await db.$transaction([
+        db.listing.update({ where: { id: report.listingId }, data: removed }),
+        db.report.updateMany({ where: { listingId: report.listingId, status: "OPEN" }, data: closeReports }),
+      ]);
+      await audit(admin.id, "listing.remove", "listing", report.listingId, reason);
+    } else if (report.eventId) {
+      await db.$transaction([
+        db.event.update({ where: { id: report.eventId }, data: removed }),
+        db.report.updateMany({ where: { eventId: report.eventId, status: "OPEN" }, data: closeReports }),
+      ]);
+      await audit(admin.id, "event.remove", "event", report.eventId, reason);
+    }
   } else {
     await db.report.update({ where: { id: reportId }, data: { status: "DISMISSED", resolvedAt: now } });
     await audit(admin.id, "report.dismiss", "report", reportId);
   }
   revalidatePath("/admin");
+}
+
+export async function approveEvent(eventId: string) {
+  const admin = await requireAdmin();
+  await db.event.update({ where: { id: eventId }, data: { status: "ACTIVE", moderationNote: "" } });
+  await audit(admin.id, "event.approve", "event", eventId);
+  revalidatePath("/admin/listings");
+}
+
+export async function rejectEvent(eventId: string, form: FormData) {
+  const admin = await requireAdmin();
+  const reason = note(form) || "doesn't meet our event rules";
+  await db.event.update({ where: { id: eventId }, data: { status: "REJECTED", moderationNote: reason } });
+  await audit(admin.id, "event.reject", "event", eventId, reason);
+  revalidatePath("/admin/listings");
 }
 
 export async function approveListing(listingId: string) {
