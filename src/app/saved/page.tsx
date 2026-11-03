@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { HeartIcon } from "@/components/HeartIcon";
 import { ListingCard } from "@/components/ListingCard";
 import { SortSelect } from "@/components/SortSelect";
 import { requireUser } from "@/lib/auth";
@@ -70,10 +71,12 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
   if (!saved.length) {
     return (
       <div className="mx-auto max-w-2xl py-6 text-center">
-        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-rose-50 text-4xl text-rose-500 ring-8 ring-rose-50/50" aria-hidden>♥</div>
+        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-rose-50 ring-8 ring-rose-50/50">
+          <HeartIcon filled className="h-10 w-10" />
+        </div>
         <h1 className="mt-5 text-2xl font-bold">Save what you like</h1>
         <p className="mx-auto mt-2 max-w-md text-stone-600">
-          Tap the <span className="text-rose-500">♡</span> on any listing to keep it here. Compare tiffins, tutors or rooms side by side and
+          Tap the <HeartIcon filled={false} className="inline h-4 w-4 -translate-y-px text-rose-500" /> on any listing to keep it here. Compare tiffins, tutors or rooms side by side and
           come back when you&apos;re ready to call.
         </p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -133,13 +136,13 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
                   isNew: isNewListing(listing.createdAt),
                 }}
               />
-              <form action={toggleSaved.bind(null, listing.id)} className="absolute right-3 top-3">
+              <form action={toggleSaved.bind(null, listing.id)} className="absolute right-2 top-2">
                 <button
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/95 text-lg leading-none text-rose-500 shadow-md ring-1 ring-black/5 transition hover:scale-110"
+                  className="grid h-10 w-10 place-items-center rounded-full transition hover:scale-110"
                   aria-label={`Remove “${listing.title}” from saved`}
                   title="Remove from saved"
                 >
-                  ♥
+                  <HeartIcon filled overlay className="h-8 w-8" />
                 </button>
               </form>
               <p className="mt-1.5 px-1 text-xs text-stone-500">Saved {timeAgo(createdAt, now.getTime())}</p>

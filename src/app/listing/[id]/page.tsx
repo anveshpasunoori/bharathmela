@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
+import { HeartIcon } from "@/components/HeartIcon";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
@@ -96,8 +97,9 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <ShareButton title={listing.title} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} className="btn-outline whitespace-nowrap px-3 py-1.5" />
           {!own && (
             <form action={toggleSaved.bind(null, listing.id)}>
-              <button className={`btn-outline whitespace-nowrap px-3 py-1.5 ${saved ? "text-brand" : ""}`} aria-pressed={saved}>
-                {saved ? "♥ Saved" : "♡ Save"}
+              <button className={`btn-outline gap-1.5 whitespace-nowrap px-3 py-1.5 ${saved ? "text-rose-600" : ""}`} aria-pressed={saved}>
+                <HeartIcon filled={saved} className="h-[18px] w-[18px]" />
+                {saved ? "Saved" : "Save"}
               </button>
             </form>
           )}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { logout } from "@/app/actions/auth";
 import { NAV_GROUPS } from "@/lib/nav";
 import { CategoryIcon } from "./CategoryIcon";
+import { HeartIcon } from "./HeartIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
 
@@ -67,7 +68,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
         <div className="ml-auto flex items-center gap-1">
           {user && (
             <Link href="/saved" className={`${navLink} flex items-center gap-1.5`} aria-label={`Saved listings (${savedCount})`}>
-              <span aria-hidden className={savedCount ? "text-rose-500" : ""}>{savedCount ? "♥" : "♡"}</span>
+              <HeartIcon filled={savedCount > 0} className="h-5 w-5" />
               <span className="hidden sm:inline">Saved</span>
               {savedCount > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{savedCount}</span>
