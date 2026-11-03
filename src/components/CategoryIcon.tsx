@@ -3,7 +3,10 @@ import { CATEGORIES } from "@/lib/constants";
 
 // Categories with an illustration in public/categories/<CATEGORY>.webp. The rest show their emoji on a
 // matching tile until they get one.
-const ILLUSTRATED = new Set(["ROOM_RENTAL", "TUTORING", "FOOD", "LEGAL", "DOMESTIC_HELP", "DANCE_MUSIC", "REALTOR", "EVENT_SERVICES"]);
+const ILLUSTRATED = new Set([
+  "FOOD", "TUTORING", "DANCE_MUSIC", "PUJARI", "EVENT_SERVICES", "DOMESTIC_HELP",
+  "ROOM_RENTAL", "REALTOR", "LEGAL", "ART", "CLOTHING", "GOODS",
+]);
 
 // Decorative: the category name is always shown next to it.
 export function CategoryIcon({ id, size, className = "" }: { id: string; size: number; className?: string }) {
