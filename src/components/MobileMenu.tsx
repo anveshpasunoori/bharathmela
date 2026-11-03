@@ -14,6 +14,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!open) return;
+    const opener = openRef.current;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -22,7 +23,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
-      openRef.current?.focus();
+      opener?.focus();
     };
   }, [open]);
 

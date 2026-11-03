@@ -23,6 +23,7 @@ model User {
   reviews      Review[]
   roomsWanted  RoomWanted[]
   favorites    Favorite[]
+  savedSearches SavedSearch[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
@@ -340,3 +341,33 @@ model ListingPhoto {
 
   @@index([listingId, position])
 }
+
+// A search a user saved to come back to, with optional email alerts for new matches. `params` is the
+// results page's query string (category, keywords, filters); the location is kept here because the
+// visitor's own location lives only in a cookie on their device.
+model SavedSearch {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  params        String    @default("")
+  metro         String
+  // Set for "within N miles of" searches, rounded like the location cookie (~1 km).
+  nearLat       Float?
+  nearLng       Float?
+  nearCity      String    @default("")
+  radiusMiles   Int?
+  alerts        String    @default("DAILY") // DAILY | WEEKLY | OFF
+  // Listings published after this were not in an alert yet.
+  alertedUntil  DateTime  @default(now())
+  lastAlertAt   DateTime?
+  // Listings published after this count as "new" on the Saved page.
+  viewedAt      DateTime  @default(now())
+  // For one-click unsubscribe links in alert emails.
+  unsubscribeToken String @unique @default(cuid())
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([alerts, lastAlertAt])
+}
+

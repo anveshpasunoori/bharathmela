@@ -29,7 +29,8 @@ export async function checkEmailDomain(email: string): Promise<string | null> {
 }
 
 // Sends through Resend when RESEND_API_KEY is set; otherwise prints to the server log (development).
-export async function sendEmail(to: string, subject: string, text: string, replyTo?: string) {
+// `headers` is for extras such as List-Unsubscribe on alert emails.
+export async function sendEmail(to: string, subject: string, text: string, replyTo?: string, headers?: Record<string, string>) {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.log(`\n[email to ${to}${replyTo ? `, reply-to ${replyTo}` : ""}] ${subject}\n${text}\n`);
@@ -44,6 +45,7 @@ export async function sendEmail(to: string, subject: string, text: string, reply
       subject,
       text,
       ...(replyTo ? { reply_to: replyTo } : {}),
+      ...(headers ? { headers } : {}),
     }),
   });
   if (!res.ok) throw new Error(`Email send failed: ${res.status} ${await res.text()}`);

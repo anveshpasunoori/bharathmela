@@ -11,7 +11,8 @@ const ILLUSTRATED = new Set([
 // Decorative: the category name is always shown next to it.
 export function CategoryIcon({ id, size, className = "" }: { id: string; size: number; className?: string }) {
   if (ILLUSTRATED.has(id)) {
-    return <Image src={`/categories/${id}.webp`} alt="" width={size} height={size} unoptimized className={`shrink-0 ${className}`} />;
+    // Square tiles: the class sets the width and the height follows.
+    return <Image src={`/categories/${id}.webp`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
   }
   return (
     <span

@@ -5,22 +5,25 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { FilterBar, type FilterDef } from "@/components/FilterBar";
 import { ListingCard } from "@/components/ListingCard";
 import { RentalTabs } from "@/components/RentalTabs";
+import { SaveSearchButton } from "@/components/SaveSearchButton";
 import { SortSelect } from "@/components/SortSelect";
 import { syncExpirations } from "@/lib/billing";
-import { CATEGORIES, DIET_TAGS, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
+import { CATEGORIES, DIET_TAGS, categoryLabel, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
 import { getCurrentUser } from "@/lib/auth";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
-import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
-import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
-import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
+import { EVENT_SERVICES, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
+import { LANGUAGES, SPECIALTIES, isProfessional } from "@/lib/professionals";
+import { SPACE_TYPES } from "@/lib/rentals";
+import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
+import { db } from "@/lib/db";
+import { sameLocation } from "@/lib/saved-searches";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 
-const RADII = [5, 10, 25, 50, 100];
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
 export default async function Home({
@@ -49,6 +52,7 @@ export default async function Home({
     sort?: string;
     from?: string;
     stay?: string;
+    ss?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -57,43 +61,8 @@ export default async function Home({
   const nearMode = !!place && !isMetro(params.metro);
   const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
   const placeMetro = place ? metroFor(place) : null;
-  const category = CATEGORIES.some((c) => c.id === params.category) ? params.category : undefined;
-  const q = (params.q ?? "").slice(0, 100);
-  // Dietary filters only apply to food.
-  const diet = category === "FOOD" ? (params.diet ?? "").split(",").filter(isDietTag) : [];
-  // Rental filters only apply to room rentals.
-  const rentalFilters: RentalFilters =
-    category === "ROOM_RENTAL"
-      ? {
-          space: SPACE_TYPES.some((t) => t.id === params.space) ? params.space : undefined,
-          maxRent: Number(params.maxRent) > 0 ? Math.round(Number(params.maxRent) * 100) : undefined,
-          availableBy: /^\d{4}-\d{2}-\d{2}$/.test(params.by ?? "") ? params.by : undefined,
-          privateBath: params.pbath === "1",
-          furnished: params.furn === "1",
-          pets: params.pets === "1",
-        }
-      : {};
-
+  const { category, q, diet, rentalFilters, proFilters, eventFilters } = parseFilters(params);
   await syncExpirations();
-  // Specialty, language and free-consultation filters for realtors and lawyers.
-  const proFilters: ProfessionalFilters =
-    category && isProfessional(category)
-      ? {
-          specialty: SPECIALTIES[category].some((s) => s.id === params.spec) ? params.spec : undefined,
-          language: (LANGUAGES as readonly string[]).includes(params.lang ?? "") ? params.lang : undefined,
-          freeConsult: params.free === "1",
-        }
-      : {};
-  // Service, rental item, occasion and insurance filters for wedding and event vendors.
-  const eventFilters: EventServiceFilters =
-    category === "EVENT_SERVICES"
-      ? {
-          service: EVENT_SERVICES.some((s) => s.id === params.svc) ? params.svc : undefined,
-          item: RENTAL_ITEMS.some((s) => s.id === params.item) ? params.item : undefined,
-          occasion: OCCASIONS.some((o) => o.id === params.occ) ? params.occ : undefined,
-          insured: params.ins === "1",
-        }
-      : {};
   const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
   // Searching for something that belongs in another category ("pujari" while in Home Food) moves there.
@@ -123,6 +92,14 @@ export default async function Home({
   // Hearts on the cards: which results the visitor saved; none on a seller's own listings.
   const viewer = await getCurrentUser();
   const savedIds = await savedListingIds(viewer?.id, listings.map((l) => l.id));
+  // "Save search": whether this search, at this location, is already saved. Opening a saved search
+  // (marked with `ss`) resets its count of new listings.
+  const searchQuery = searchQueryString(params);
+  const here = { metro, nearLat: nearMode ? place!.lat : null, nearLng: nearMode ? place!.lng : null, radiusMiles: nearMode ? radius : null };
+  const mySearches = viewer && showingListings ? await db.savedSearch.findMany({ where: { userId: viewer.id } }) : [];
+  const searchSaved = mySearches.some((s) => s.params === searchQuery && sameLocation(s, here));
+  if (viewer && params.ss) await db.savedSearch.updateMany({ where: { id: params.ss, userId: viewer.id }, data: { viewedAt: new Date() } });
+  const pageQuery = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => typeof e[1] === "string")).toString();
   const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
 
   // Links keep the current location mode: "near you" (radius) or a picked metro.
@@ -360,16 +337,19 @@ export default async function Home({
               </span>
             </div>
           )}
-          <p>
-            {listings.length} result{listings.length === 1 ? "" : "s"}
-            {q && <> for &ldquo;{q}&rdquo;</>}
-            {category && <> in {categoryLabel(category)}</>}
-            {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
-            {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
-            {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
-            {" · "}
-            <Link href={home} className="text-brand">Clear</Link>
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p>
+              {listings.length} result{listings.length === 1 ? "" : "s"}
+              {q && <> for &ldquo;{q}&rdquo;</>}
+              {category && <> in {categoryLabel(category)}</>}
+              {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
+              {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
+              {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
+              {" · "}
+              <Link href={home} className="text-brand">Clear</Link>
+            </p>
+            <SaveSearchButton query={pageQuery} saved={searchSaved} />
+          </div>
           {movedFrom && q && (
             <p>
               Switched here from {categoryLabel(movedFrom)} for this search.{" "}
