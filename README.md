@@ -15,7 +15,10 @@ npm run dev
 Open http://localhost:3000. Seeded logins (dev only):
 
 - Admin: `admin@bharathmela.test` / value of `SEED_ADMIN_PASSWORD` in `.env`
-- Sample vendors: see `prisma/seed.ts`
+- Sample vendors: any email in `prisma/samples.ts` / `vendor-dev-password`
+- Sample buyers: `shreya.buyer@bharathmela.test` (and others in `prisma/samples.ts`) / `buyer-dev-password`
+
+The sample data (`prisma/samples.ts`) has listings in every category for the SF Bay Area and Jacksonville, a spread across Dallas, New Jersey, Atlanta, Chicago and Seattle, plus reviews, weekend events and room requests. Re-running `npm run db:seed` only adds what's missing. `tests/samples.ts` checks that every sample passes moderation.
 
 ## Revenue model
 
