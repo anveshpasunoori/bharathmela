@@ -9,7 +9,7 @@ import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
 import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
-import { RentalDetailsView, RentalScamWarning } from "@/components/RentalDetailsView";
+import { RentalDetailsView } from "@/components/RentalDetailsView";
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { getCurrentUser } from "@/lib/auth";
@@ -18,7 +18,7 @@ import { timeAgo } from "@/lib/time";
 import { getUserLocation } from "@/lib/user-location";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
+import { CATEGORY_RULES } from "@/lib/legal";
 import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { formatUSD, priceLabel } from "@/lib/plans";
@@ -81,12 +81,17 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const mine = user ? await db.review.findUnique({ where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } } }) : null;
   const here = `/listing/${listing.id}`;
 
+  const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
+  const facts = [
+    categoryLabel(listing.category),
+    miles != null ? `${miles < 1 ? "under 1" : miles} mi away` : metroName(listing.metro),
+    `posted ${timeAgo(listing.createdAt)}`,
+  ];
+
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-20 sm:pb-0">
+    <div className="mx-auto max-w-2xl space-y-5 pb-24 sm:pb-0">
       <div className="flex items-center justify-between gap-2">
-        <Link href={`/?category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">
-          ← {categoryLabel(listing.category)}
-        </Link>
+        <Link href={`/?category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">← Back</Link>
         <div className="flex gap-2">
           <ShareButton title={listing.title} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} className="btn-outline whitespace-nowrap px-3 py-1.5" />
           {!own && (
@@ -98,137 +103,136 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           )}
         </div>
       </div>
-      {rental && <RentalScamWarning />}
-      <article className="card space-y-3">
-        <PhotoGallery photos={listing.photos} title={listing.title} />
-        <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
-        <h1 className="text-2xl font-bold">{listing.title}</h1>
-        <DietBadges tags={listing.tags} />
-        {listing.priceCents != null && (
-          <p className="text-lg font-semibold">
-            {priceLabel(listing.priceCents, listing.priceUnit).main}{" "}
-            <span className="text-base font-normal text-stone-500">{priceLabel(listing.priceCents, listing.priceUnit).unit}</span>
-          </p>
-        )}
-        {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
-        {rent && (
-          <p className={`rounded-md px-3 py-2 text-sm ${rent.suspiciouslyLow ? "bg-red-50 text-red-900" : "bg-stone-50 text-stone-700"}`}>
-            Typical rent for a {spaceTypeLabel(rental!.spaceType).toLowerCase()} within 15 mi:{" "}
-            <b>{formatUSD(rent.typicalCents)}/mo</b> (from {rent.count} listings). This one is{" "}
-            {rent.percent === 0 ? "about the same" : `${Math.abs(rent.percent)}% ${rent.percent < 0 ? "lower" : "higher"}`}.
-            {rent.suspiciouslyLow && (
-              <> <b>Far below typical rent is a common scam sign.</b> See the place in person before paying anything.</>
-            )}
-          </p>
-        )}
-        {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
-        {eventService && <EventServiceDetailsView details={eventService} />}
-        <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
-        <p className="text-xs text-stone-400">
-          Posted {listing.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · updated {timeAgo(listing.updatedAt)}
-        </p>
-      </article>
 
-      <div className="card space-y-3">
-        <div>
-          <p className="text-xs text-stone-500">Posted by an independent seller</p>
-          <Link href={`/seller/${listing.vendorId}`} className="text-lg font-semibold hover:text-brand">
-            {listing.vendor.businessName}
-          </Link>
-          <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
-            {summary && <Stars rating={summary.average} count={summary.count} />}
-            <span>
-              {metroName(listing.metro)} · ZIP {listing.zip}
-              {miles != null && <> · 📍 {miles < 1 ? "under 1 mi" : `${miles} mi`} from you</>}
-            </span>
-            {sellerSince && <span>On BharathMela since {sellerSince.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
-          </div>
-        </div>
-        {sellerSince && (
-          <TrustBadges
-            emailVerified={!!sellerSince.emailVerifiedAt}
-            phoneVerified={!!sellerSince.phoneVerifiedAt}
-            lastSeenAt={sellerSince.lastSeenAt}
-          />
+      <PhotoGallery photos={listing.photos} title={listing.title} />
+
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold leading-tight">{listing.title}</h1>
+        {price && (
+          <p className="text-xl">
+            <b>{price.main}</b> <span className="text-base text-stone-500">{price.unit}</span>
+          </p>
         )}
+        <p className="text-sm text-stone-500">{facts.join(" · ")}</p>
+        <DietBadges tags={listing.tags} className="pt-1" />
+      </header>
+
+      {rental && (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-900">
+          <b>Rental tip:</b> see the place before paying anything, and never wire money or pay with gift cards.
+        </p>
+      )}
+
+      <section className="card space-y-3" aria-label="Seller">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <Link href={`/seller/${listing.vendorId}`} className="text-lg font-semibold hover:text-brand">{listing.vendor.businessName}</Link>
+            {summary && <div><Stars rating={summary.average} count={summary.count} /></div>}
+          </div>
+          {sellerSince && (
+            <TrustBadges
+              emailVerified={!!sellerSince.emailVerifiedAt}
+              phoneVerified={!!sellerSince.phoneVerifiedAt}
+              lastSeenAt={sellerSince.lastSeenAt}
+            />
+          )}
+        </div>
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
         {!own && (
-          <details id="message" className="rounded-md bg-stone-50 p-3 ring-1 ring-stone-200">
-            <summary className="cursor-pointer text-sm font-semibold text-brand">✉ Prefer to message? Ask the seller a question</summary>
+          <details id="message" className="text-sm">
+            <summary className="cursor-pointer font-semibold text-brand">✉ Message instead</summary>
             <div className="mt-3">
               {!user ? (
-                <p className="text-sm text-stone-600">
+                <p className="text-stone-600">
                   <Link href={`/login?next=${here}`} className="font-semibold text-brand">Log in</Link> or{" "}
-                  <Link href={`/signup?next=${here}`} className="font-semibold text-brand">create a free account</Link> to message the seller.
+                  <Link href={`/signup?next=${here}`} className="font-semibold text-brand">sign up free</Link> to message the seller.
                 </p>
               ) : (
                 <ActionForm action={messageSeller} submitLabel="Send message" className="space-y-2">
                   <input type="hidden" name="listingId" value={listing.id} />
                   <textarea className="input min-h-24" name="message" required minLength={10} maxLength={2000} aria-label="Message"
-                    placeholder="Hi! Is this available on Saturday the 14th? How many people does it serve?" />
-                  <p className="text-xs text-stone-500">We email your message to the seller; they&apos;ll reply to your email. Your email isn&apos;t shown on the site.</p>
+                    placeholder="Hi! Is this available on Saturday the 14th?" />
+                  <p className="text-xs text-stone-500">The seller replies to your email. Your email isn&apos;t shown on the site.</p>
                 </ActionForm>
               )}
             </div>
           </details>
         )}
-        <p className="text-xs text-stone-500">
-          Tip: agree on price and details in writing, and pay only after you receive the item or service.{" "}
-          <Link href="/safety" className="underline">Safety tips</Link>
-        </p>
-      </div>
-
-      <section className="card space-y-4">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-semibold">Ratings for {listing.vendor.businessName}</h2>
-          {summary && summary.count > reviews.length && (
-            <Link href={`/seller/${listing.vendorId}`} className="text-sm text-brand">See all {summary.count}</Link>
-          )}
-        </div>
-        {!user && (
-          <p className="text-sm text-stone-600">
-            <Link href={`/login?next=${here}`} className="font-semibold text-brand">Log in</Link> or{" "}
-            <Link href={`/signup?next=${here}`} className="font-semibold text-brand">create a free account</Link> to rate this seller.
-          </p>
-        )}
-        {user?.role === "BUYER" && !user.emailVerifiedAt && (
-          <p className="text-sm text-stone-600">
-            <Link href={`/verify?next=${here}`} className="font-semibold text-brand">Verify your email</Link> to rate this seller.
-          </p>
-        )}
-        {user?.role === "BUYER" && user.emailVerifiedAt && (
-          <ActionForm action={submitReview} submitLabel={mine ? "Update my rating" : "Post rating"} className="space-y-3">
-            <input type="hidden" name="listingId" value={listing.id} />
-            <fieldset>
-              <legend className="label">Your rating</legend>
-              <div className="flex flex-wrap gap-3">
-                {[5, 4, 3, 2, 1].map((n) => (
-                  <label key={n} className="flex items-center gap-1 text-sm">
-                    <input type="radio" name="rating" value={n} required defaultChecked={mine?.rating === n} />
-                    <span className="text-amber-500">{"★".repeat(n)}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <textarea className="input min-h-20" name="comment" maxLength={1000} defaultValue={mine?.comment}
-              placeholder="What was your experience? (optional)" aria-label="Comment" />
-            <label className="flex gap-2 text-sm text-stone-700">
-              <input type="checkbox" name="honest" required className="mt-0.5" />
-              <span>This is my honest opinion from my own dealings with this seller. I&apos;m not related to them and wasn&apos;t paid for it.</span>
-            </label>
-          </ActionForm>
-        )}
-        <ReviewList reviews={reviews} sellerName={listing.vendor.businessName} />
-        <p className="text-xs text-stone-500">Ratings are the opinions of individual users, not of BharathMela.</p>
       </section>
 
-      <div className="rounded-md border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
-        {buyerNote && <p className="mb-2 font-medium text-stone-800">{buyerNote}</p>}
-        <p>{PLATFORM_DISCLAIMER}</p>
-        <Link href={`/listing/${listing.id}/report`} className="mt-2 inline-block font-semibold text-red-700 hover:underline">
-          Report this listing
-        </Link>
-      </div>
+      <section className="space-y-3" aria-label="Details">
+        <h2 className="font-semibold">About</h2>
+        {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
+        {rent && (
+          <p className={`rounded-md px-3 py-2 text-sm ${rent.suspiciouslyLow ? "bg-red-50 text-red-900" : "bg-stone-50 text-stone-700"}`}>
+            Typical rent for a {spaceTypeLabel(rental!.spaceType).toLowerCase()} within 15 mi is <b>{formatUSD(rent.typicalCents)}/mo</b>; this one is{" "}
+            {rent.percent === 0 ? "about the same" : `${Math.abs(rent.percent)}% ${rent.percent < 0 ? "lower" : "higher"}`}.
+            {rent.suspiciouslyLow && <> <b>Far below typical rent is a common scam sign.</b></>}
+          </p>
+        )}
+        {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
+        {eventService && <EventServiceDetailsView details={eventService} />}
+        <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
+      </section>
+
+      <section className="space-y-3 border-t border-stone-200 pt-5" aria-label="Reviews">
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-semibold">Reviews {summary && <span className="font-normal text-stone-500">({summary.count})</span>}</h2>
+          {summary && summary.count > reviews.length && (
+            <Link href={`/seller/${listing.vendorId}`} className="text-sm text-brand">See all</Link>
+          )}
+        </div>
+        <ReviewList reviews={reviews} sellerName={listing.vendor.businessName} />
+        {!own && (
+          <details className="text-sm" open={!!mine}>
+            <summary className="cursor-pointer font-semibold text-brand">{mine ? "Edit your review" : "Write a review"}</summary>
+            <div className="mt-3">
+              {!user ? (
+                <p className="text-stone-600">
+                  <Link href={`/login?next=${here}`} className="font-semibold text-brand">Log in</Link> or{" "}
+                  <Link href={`/signup?next=${here}`} className="font-semibold text-brand">sign up free</Link> to review this seller.
+                </p>
+              ) : user.role !== "BUYER" ? (
+                <p className="text-stone-600">Reviews are written from buyer accounts.</p>
+              ) : !user.emailVerifiedAt ? (
+                <p className="text-stone-600">
+                  <Link href={`/verify?next=${here}`} className="font-semibold text-brand">Verify your email</Link> to review this seller.
+                </p>
+              ) : (
+                <ActionForm action={submitReview} submitLabel={mine ? "Update review" : "Post review"} className="space-y-3">
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <fieldset>
+                    <legend className="label">Your rating</legend>
+                    <div className="flex flex-wrap gap-3">
+                      {[5, 4, 3, 2, 1].map((n) => (
+                        <label key={n} className="flex items-center gap-1">
+                          <input type="radio" name="rating" value={n} required defaultChecked={mine?.rating === n} />
+                          <span className="text-amber-500">{"★".repeat(n)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <textarea className="input min-h-20" name="comment" maxLength={1000} defaultValue={mine?.comment}
+                    placeholder="What was your experience? (optional)" aria-label="Comment" />
+                  <label className="flex gap-2 text-stone-700">
+                    <input type="checkbox" name="honest" required className="mt-0.5" />
+                    <span>This is my honest experience. I&apos;m not related to the seller and wasn&apos;t paid for it.</span>
+                  </label>
+                </ActionForm>
+              )}
+            </div>
+          </details>
+        )}
+      </section>
+
+      <footer className="space-y-1 border-t border-stone-200 pt-4 text-xs text-stone-500">
+        {buyerNote && <p>{buyerNote}</p>}
+        <p>
+          Listed by an independent seller. BharathMela doesn&apos;t verify sellers or take part in deals.{" "}
+          <Link href="/safety" className="underline">Safety tips</Link> ·{" "}
+          <Link href={`/listing/${listing.id}/report`} className="font-semibold text-red-700 underline">Report</Link>
+        </p>
+      </footer>
 
       {!own && (
         // Contact stays in reach on phones while the buyer reads the listing.

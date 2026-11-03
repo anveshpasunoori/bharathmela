@@ -1,14 +1,5 @@
 import { type RentalDetails, amenityLabels, houseRuleLabels, rentalFacts } from "@/lib/rentals";
 
-export function RentalScamWarning() {
-  return (
-    <div className="rounded-md border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900" role="note">
-      <b>Avoid rental scams.</b> See the place in person (or on a live video call) before paying anything. Never wire money, pay with gift
-      cards, or deal with a landlord who is &ldquo;out of the country&rdquo; and will mail you the keys.
-    </div>
-  );
-}
-
 export function RentalDetailsView({ details, zip }: { details: RentalDetails; zip: string }) {
   const amenities = amenityLabels(details);
   const rules = houseRuleLabels(details);
