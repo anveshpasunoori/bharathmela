@@ -144,7 +144,7 @@ export async function createEvent(_: FormState, form: FormData): Promise<FormSta
 
   await db.event.create({ data: { vendorId: vendor.id, metro: vendor.metro, ...input, ...decision } });
   revalidatePath("/vendor");
-  redirect(`/vendor?${decision.status === "PENDING_REVIEW" ? "review=event" : "eventPublished=1"}#events`);
+  redirect(`/vendor?tab=events&${decision.status === "PENDING_REVIEW" ? "review=event" : "eventPublished=1"}`);
 }
 
 export async function updateEvent(_: FormState, form: FormData): Promise<FormState> {
@@ -167,7 +167,7 @@ export async function updateEvent(_: FormState, form: FormData): Promise<FormSta
   });
   revalidatePath("/vendor");
   revalidatePath(`/events/${event.id}`);
-  redirect(`/vendor?${status === "PENDING_REVIEW" ? "review=event" : "updated=1"}#events`);
+  redirect(`/vendor?tab=events&${status === "PENDING_REVIEW" ? "review=event" : "updated=1"}`);
 }
 
 export async function setEventVisibility(eventId: string, visible: boolean) {
@@ -176,7 +176,7 @@ export async function setEventVisibility(eventId: string, visible: boolean) {
   if (event.status !== "ACTIVE" && event.status !== "HIDDEN") return;
   if (visible) {
     const { ok } = await hasRoomForEvent(vendor.id, event.id);
-    if (!ok) redirect("/vendor?error=eventLimit#events");
+    if (!ok) redirect("/vendor?tab=events&error=eventLimit");
   }
   await db.event.update({ where: { id: eventId }, data: { status: visible ? "ACTIVE" : "HIDDEN" } });
   revalidatePath("/vendor");

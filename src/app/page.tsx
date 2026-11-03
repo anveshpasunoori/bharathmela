@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
+import { FilterPanel } from "@/components/FilterPanel";
 import { ListingCard } from "@/components/ListingCard";
 import { LocationPicker } from "@/components/LocationPicker";
 import { RentalTabs } from "@/components/RentalTabs";
@@ -234,7 +235,7 @@ export default async function Home({
             <h2 className="text-lg font-semibold">Upcoming events</h2>
             <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">See all →</Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {events.map((e) => (
               <EventCard key={e.id} event={e} />
             ))}
@@ -245,7 +246,8 @@ export default async function Home({
       {showingListings && (
         // One scrollable row on phones instead of a wall of wrapped chips.
         <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Categories">
-          {CATEGORIES.map((c) => (
+          {/* The current category first, so it's visible without scrolling the row. */}
+          {[...CATEGORIES].sort((a, b) => Number(b.id === category) - Number(a.id === category)).map((c) => (
             <Link
               key={c.id}
               href={href(c.id)}
@@ -279,7 +281,8 @@ export default async function Home({
       )}
 
       {category === "EVENT_SERVICES" && (
-        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Event service filters">
+        <FilterPanel active={Object.values(eventFilters).filter(Boolean).length}>
+        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Event service filters">
           {locationInputs}
           <input type="hidden" name="category" value="EVENT_SERVICES" />
           {q && <input type="hidden" name="q" value={q} />}
@@ -315,10 +318,12 @@ export default async function Home({
             <button className="btn">Apply</button>
           </div>
         </form>
+        </FilterPanel>
       )}
 
       {category && isProfessional(category) && (
-        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Professional filters">
+        <FilterPanel active={Object.values(proFilters).filter(Boolean).length}>
+        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Professional filters">
           {locationInputs}
           <input type="hidden" name="category" value={category} />
           {q && <input type="hidden" name="q" value={q} />}
@@ -348,6 +353,7 @@ export default async function Home({
             Always check a {category === "LEGAL" ? "lawyer's license with the state bar" : "realtor's license with your state's real estate department"} before hiring.
           </p>
         </form>
+        </FilterPanel>
       )}
 
       {category === "ROOM_RENTAL" && (
@@ -361,7 +367,8 @@ export default async function Home({
       )}
 
       {category === "ROOM_RENTAL" && (
-        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Rental filters">
+        <FilterPanel active={Object.values(rentalFilters).filter((v) => v != null && v !== false).length}>
+        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Rental filters">
           {locationInputs}
           <input type="hidden" name="category" value="ROOM_RENTAL" />
           {q && <input type="hidden" name="q" value={q} />}
@@ -393,6 +400,7 @@ export default async function Home({
             <Link href={`/?metro=${metro}&category=ROOM_RENTAL`} className="btn-outline">Reset</Link>
           </div>
         </form>
+        </FilterPanel>
       )}
 
       {(q || category) && (

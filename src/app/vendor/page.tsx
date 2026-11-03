@@ -7,11 +7,11 @@ import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatEventTime } from "@/lib/events";
 import { daysUntil } from "@/lib/time";
-import { metroName, metroTimeZone } from "@/lib/metros";
+import { metroTimeZone } from "@/lib/metros";
 import { PLANS, formatUSD } from "@/lib/plans";
 import { ratingsFor } from "@/lib/reviews";
 import { ConfirmButton } from "@/components/ConfirmButton";
-import { Stars } from "@/components/Stars";
+import { MoreMenu } from "@/components/MoreMenu";
 
 const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -26,6 +26,7 @@ export default async function VendorDashboard({
     updated?: string;
     eventPublished?: string;
     phoneVerified?: string;
+    tab?: string;
   }>;
 }) {
   const { user, vendor } = await requireVendor();
@@ -55,83 +56,84 @@ export default async function VendorDashboard({
   const canAdd = usedCount < plan.maxListings;
   const totalViews = listings.reduce((sum, l) => sum + l.views, 0);
   const rating = ratings.get(vendor.id);
+  const tab = params.tab === "events" || params.tab === "billing" ? params.tab : "listings";
+  const inReview = listings.filter((l) => l.status === "PENDING_REVIEW").length + events.filter((e) => e.status === "PENDING_REVIEW").length;
+
+  // One message at a time, from whatever the seller just did.
+  const flash: [string, "ok" | "info" | "error"] | null = params.submitted
+    ? ["Thanks! We received your payment details and will confirm within 1 business day.", "ok"]
+    : params.review
+      ? [`Your ${params.review === "event" ? "event" : "listing"} was sent for review. We usually check within 1 business day.`, "info"]
+      : params.published
+        ? ["Your listing is live.", "ok"]
+        : params.eventPublished
+          ? ["Your event is live.", "ok"]
+          : params.updated
+            ? ["Your changes are saved.", "ok"]
+            : params.phoneVerified
+              ? ["✓ Your phone is verified.", "ok"]
+              : params.error === "limit"
+                ? ["You've reached your plan's listing limit. Hide a listing or upgrade.", "error"]
+                : params.error === "eventLimit"
+                  ? ["You've reached your plan's limit of upcoming events. Hide an event or upgrade.", "error"]
+                  : null;
+  const flashTone = { ok: "bg-green-50 text-green-800", info: "bg-amber-50 text-amber-900", error: "bg-red-50 text-red-700" };
+
+  // Everything that needs the seller's attention, in one checklist.
+  const todos: { text: string; href: string; action: string }[] = [
+    ...(!user.phoneVerifiedAt ? [{ text: "Verify your phone to get a ✓ badge buyers trust", href: "/vendor/verify-phone", action: "Verify" }] : []),
+    ...(expiringCount ? [{ text: `Renew ${expiringCount} listing${expiringCount === 1 ? "" : "s"} expiring soon`, href: "/vendor?tab=listings", action: "Review" }] : []),
+    ...(!listings.length ? [{ text: "Post your first listing", href: "/vendor/listings/new", action: "Start" }] : []),
+  ];
+  const tabClass = (t: string) =>
+    `-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t ? "border-brand text-brand" : "border-transparent text-stone-600 hover:text-stone-900"}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{vendor.businessName}</h1>
-          <p className="text-stone-600">{metroName(vendor.metro)}</p>
-        </div>
-        <div className="flex flex-wrap gap-3 text-sm font-semibold text-brand">
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-2xl font-bold">{vendor.businessName}</h1>
+        <p className="text-sm text-stone-600">
+          {activeCount} live · {totalViews.toLocaleString()} views ·{" "}
+          {rating ? <>★ {rating.average.toFixed(1)} ({rating.count})</> : "no ratings yet"} · {plan.name} plan
+        </p>
+        <p className="mt-1 flex flex-wrap gap-x-4 text-sm font-semibold text-brand">
+          <Link href={`/seller/${vendor.id}`}>Public page</Link>
           <Link href="/vendor/profile">Edit profile</Link>
-          <Link href="/vendor/reviews">Ratings & replies</Link>
-          <Link href={`/seller/${vendor.id}`}>Public page →</Link>
-        </div>
-      </div>
+          <Link href="/vendor/reviews">Reviews</Link>
+        </p>
+      </header>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="card py-3">
-          <p className="text-xs text-stone-500">Live listings</p>
-          <p className="text-xl font-semibold">{activeCount}</p>
-        </div>
-        <div className="card py-3">
-          <p className="text-xs text-stone-500">Listing views</p>
-          <p className="text-xl font-semibold">{totalViews.toLocaleString()}</p>
-        </div>
-        <div className="card py-3">
-          <p className="text-xs text-stone-500">Rating</p>
-          {rating ? <Stars rating={rating.average} count={rating.count} /> : <p className="text-sm text-stone-500">No ratings yet</p>}
-        </div>
-      </div>
+      {flash && <p className={`rounded-md px-4 py-3 text-sm ${flashTone[flash[1]]}`}>{flash[0]}</p>}
 
-      {params.submitted && (
-        <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
-          Thanks! We received your payment details and will confirm within 1 business day.
-        </p>
-      )}
-      {params.review && (
-        <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Your {params.review === "event" ? "event" : "listing"} was sent for review. We check first posts, rentals, domestic help, realtor and
-          lawyer licenses, unfamiliar ticket links and anything our filters flag, usually within 1 business day. You&apos;ll see it go live here.
-        </p>
-      )}
-      {(params.published || params.updated || params.eventPublished) && (
-        <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
-          {params.published ? "Your listing is live." : params.eventPublished ? "Your event is live." : "Your changes are saved."}
-        </p>
-      )}
-      {params.error === "eventLimit" && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-          You&apos;ve reached your plan&apos;s limit of upcoming events. Hide another event or upgrade.
-        </p>
-      )}
-      {params.phoneVerified && <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">✓ Your phone is verified.</p>}
-      {!user.phoneVerifiedAt && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-sky-50 px-4 py-3 text-sm text-sky-900 ring-1 ring-sky-100">
-          <span>Get a <b>✓ Phone verified</b> badge. Buyers trust verified sellers more.</span>
-          <Link href="/vendor/verify-phone" className="btn py-1.5">Verify phone</Link>
-        </div>
-      )}
-      {expiringCount > 0 && (
-        <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {expiringCount} listing{expiringCount === 1 ? " is" : "s are"} expired or expiring within a week. Renew {expiringCount === 1 ? "it" : "them"} below so
-          buyers can still find you.
-        </p>
-      )}
-      {params.error === "limit" && (
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-          You&apos;ve reached your plan&apos;s listing limit. Hide another listing or upgrade.
-        </p>
+      {todos.length > 0 && (
+        <section className="card space-y-2 py-4">
+          <h2 className="text-sm font-semibold">To do</h2>
+          <ul className="divide-y divide-stone-100 text-sm">
+            {todos.map((t) => (
+              <li key={t.text} className="flex items-center justify-between gap-3 py-2">
+                <span>{t.text}</span>
+                <Link href={t.href} className="btn-outline shrink-0 px-3 py-1">{t.action}</Link>
+              </li>
+            ))}
+          </ul>
+          {inReview > 0 && <p className="text-xs text-stone-500">{inReview} item{inReview === 1 ? " is" : "s are"} waiting for review. Nothing to do.</p>}
+        </section>
       )}
 
+      <nav className="flex gap-1 border-b border-stone-200" aria-label="Dashboard">
+        <Link href="/vendor" className={tabClass("listings")}>Listings ({listings.length})</Link>
+        <Link href="/vendor?tab=events" className={tabClass("events")}>Events ({events.length})</Link>
+        <Link href="/vendor?tab=billing" className={tabClass("billing")}>Plan & payments</Link>
+      </nav>
+
+      {tab === "billing" && (
       <section className="card flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-sm text-stone-500">Current plan</p>
           <p className="text-xl font-semibold">{plan.name}</p>
           <p className="text-sm text-stone-600">
-            {usedCount} of {plan.maxListings} listings used (live and in review)
-            {subscription?.endsAt && <> · renews by payment before {fmtDate(subscription.endsAt)}</>}
+            {usedCount} of {plan.maxListings} listings · {upcomingEventCount} of {plan.maxEvents} events
+            {subscription?.endsAt && <> · paid through {fmtDate(subscription.endsAt)}</>}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -152,7 +154,9 @@ export default async function VendorDashboard({
           )}
         </div>
       </section>
+      )}
 
+      {tab === "listings" && (
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Your listings</h2>
@@ -198,7 +202,7 @@ export default async function VendorDashboard({
                 <div className="flex flex-wrap gap-2 text-sm">
                   {l.status === "ACTIVE" && (!l.expiresAt || l.expiresAt > now) && (
                     <Link href={`/vendor/listings/${l.id}/boost`} className="btn py-1.5">
-                      {featured ? "Extend feature" : "Feature this"}
+                      {featured ? "Extend promotion" : "Promote"}
                     </Link>
                   )}
                   {(l.status === "ACTIVE" || l.status === "HIDDEN") && l.expiresAt && daysUntil(l.expiresAt) <= 14 && (
@@ -211,14 +215,16 @@ export default async function VendorDashboard({
                       {l.status === "REJECTED" ? "Fix & resubmit" : "Edit"}
                     </Link>
                   )}
-                  {(l.status === "ACTIVE" || l.status === "HIDDEN") && (
-                    <form action={setListingVisibility.bind(null, l.id, l.status !== "ACTIVE")}>
-                      <button className="btn-outline py-1.5">{l.status === "ACTIVE" ? "Hide" : "Show"}</button>
-                    </form>
-                  )}
-                  <ConfirmButton action={deleteListing.bind(null, l.id)} message={`Delete "${l.title}"? This can't be undone.`}>
-                    Delete
-                  </ConfirmButton>
+                  <MoreMenu>
+                    {(l.status === "ACTIVE" || l.status === "HIDDEN") && (
+                      <form action={setListingVisibility.bind(null, l.id, l.status !== "ACTIVE")}>
+                        <button className="btn-outline py-1.5">{l.status === "ACTIVE" ? "Hide from buyers" : "Show to buyers"}</button>
+                      </form>
+                    )}
+                    <ConfirmButton action={deleteListing.bind(null, l.id)} message={`Delete "${l.title}"? This can't be undone.`}>
+                      Delete
+                    </ConfirmButton>
+                  </MoreMenu>
                 </div>
               </li>
             );
@@ -226,6 +232,9 @@ export default async function VendorDashboard({
         </ul>
       </section>
 
+      )}
+
+      {tab === "events" && (
       <section id="events" className="scroll-mt-20">
         <div className="mb-3 flex items-center justify-between">
           <div>
@@ -269,14 +278,16 @@ export default async function VendorDashboard({
                       {e.status === "REJECTED" ? "Fix & resubmit" : "Edit"}
                     </Link>
                   )}
-                  {(e.status === "ACTIVE" || e.status === "HIDDEN") && !past && (
-                    <form action={setEventVisibility.bind(null, e.id, e.status !== "ACTIVE")}>
-                      <button className="btn-outline py-1.5">{e.status === "ACTIVE" ? "Hide" : "Show"}</button>
-                    </form>
-                  )}
-                  <ConfirmButton action={deleteEvent.bind(null, e.id)} message={`Delete "${e.title}"? This can't be undone.`}>
-                    Delete
-                  </ConfirmButton>
+                  <MoreMenu>
+                    {(e.status === "ACTIVE" || e.status === "HIDDEN") && !past && (
+                      <form action={setEventVisibility.bind(null, e.id, e.status !== "ACTIVE")}>
+                        <button className="btn-outline py-1.5">{e.status === "ACTIVE" ? "Hide from buyers" : "Show to buyers"}</button>
+                      </form>
+                    )}
+                    <ConfirmButton action={deleteEvent.bind(null, e.id)} message={`Delete "${e.title}"? This can't be undone.`}>
+                      Delete
+                    </ConfirmButton>
+                  </MoreMenu>
                 </div>
               </li>
             );
@@ -284,7 +295,9 @@ export default async function VendorDashboard({
         </ul>
       </section>
 
-      {payments.length > 0 && (
+      )}
+
+      {tab === "billing" && payments.length > 0 && (
         <section>
           <h2 className="mb-3 text-lg font-semibold">Payments</h2>
           <div className="card overflow-x-auto p-0">

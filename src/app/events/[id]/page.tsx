@@ -81,10 +81,15 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               {event.isFree ? "RSVP" : "Get tickets"} ↗
             </a>
           )}
-          <a href={googleCal.toString()} target="_blank" rel="noopener noreferrer" className="btn-outline">Add to Google Calendar</a>
-          <a href={`/events/${event.id}/calendar.ics`} className="btn-outline">Add to Apple/Outlook</a>
+          <details className="relative">
+            <summary className="btn-outline cursor-pointer list-none">📅 Add to calendar</summary>
+            <div className="absolute z-10 mt-1 w-48 rounded-lg border border-stone-200 bg-white p-1 text-sm shadow-lg">
+              <a href={googleCal.toString()} target="_blank" rel="noopener noreferrer" className="block rounded px-3 py-2 hover:bg-stone-100">Google Calendar</a>
+              <a href={`/events/${event.id}/calendar.ics`} className="block rounded px-3 py-2 hover:bg-stone-100">Apple / Outlook</a>
+            </div>
+          </details>
           {!online && (
-            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="btn-outline">Map & directions</a>
+            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="btn-outline">📍 Directions</a>
           )}
         </div>
         <p className="whitespace-pre-line text-stone-700">{event.description}</p>

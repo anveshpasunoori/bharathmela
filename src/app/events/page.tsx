@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
-import { LocationPicker } from "@/components/LocationPicker";
+import { LocationLine } from "@/components/LocationLine";
 import { type EventWhen, upcomingEvents } from "@/lib/event-data";
 import { EVENT_TYPES, FESTIVALS, eventTypeLabel, isEventType, isFestival } from "@/lib/events";
 import { metroFor } from "@/lib/geo";
@@ -42,66 +42,70 @@ export default async function EventsPage({
     const params = new URLSearchParams(Object.entries(next).filter(([, v]) => v) as [string, string][]);
     return `/events?${params}`;
   };
-  const chip = (on: boolean) => `rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`;
+  const chip = (on: boolean) =>
+    `shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`;
+  const filtered = !!(type || festival || q || freeOnly || when !== "all");
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl bg-gradient-to-br from-brand-soft to-white p-6 ring-1 ring-orange-100 sm:p-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">Events in {metroName(metro)}</h1>
-        <p className="mt-1 text-stone-600">Concerts, dance performances, festival celebrations, pujas and community gatherings.</p>
-        <form className="mt-4 flex flex-col gap-2 sm:flex-row" role="search">
+    <div className="space-y-4">
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h1 className="text-2xl font-bold">Events</h1>
+          <Link href="/vendor/events/new" className="text-sm font-semibold text-brand">+ Post an event</Link>
+        </div>
+        <form className="flex gap-2" role="search">
           <input type="hidden" name="metro" value={metro} />
           {type && <input type="hidden" name="type" value={type} />}
           {festival && <input type="hidden" name="festival" value={festival} />}
           <input type="search" name="q" defaultValue={q} maxLength={100} className="input flex-1"
-            placeholder="Try “Garba”, “Carnatic concert”, “Diwali mela”" aria-label="Search events" />
+            placeholder="Garba, concert, Diwali mela…" aria-label="Search events" />
           <button className="btn">Search</button>
         </form>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <LocationPicker metro={metro} basePath="/events" place={place} />
-          <Link href="/vendor/events/new" className="text-sm font-semibold text-brand">Organizing something? Post an event →</Link>
-        </div>
+        <LocationLine metro={metro} place={place && metroFor(place).metro === metro ? place : null} basePath="/events" />
       </section>
 
-      <div className="space-y-3 text-sm">
-        <nav className="flex flex-wrap gap-2" aria-label="When">
+      {/* Two swipeable rows instead of a wall of wrapped chips. */}
+      <div className="space-y-2 text-sm">
+        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" aria-label="When">
           {WHEN.map((w) => (
             <Link key={w.id} href={href({ when: w.id === "all" ? undefined : w.id })} className={chip(when === w.id)}>
-              {w.label}
+              {w.id === "all" ? "Any date" : w.label}
             </Link>
           ))}
           <Link href={href({ free: freeOnly ? undefined : "1" })} className={chip(freeOnly)}>
-            {freeOnly ? "✓ " : ""}Free only
+            {freeOnly ? "✓ " : ""}Free
           </Link>
         </nav>
-        <nav className="flex flex-wrap gap-2" aria-label="Event type">
+        <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" aria-label="Event type">
           <Link href={href({ type: undefined })} className={chip(!type)}>All types</Link>
           {EVENT_TYPES.map((t) => (
             <Link key={t.id} href={href({ type: t.id })} className={chip(type === t.id)}>{t.label}</Link>
           ))}
         </nav>
-        <form className="flex items-center gap-2" aria-label="Festival">
-          <input type="hidden" name="metro" value={metro} />
-          {type && <input type="hidden" name="type" value={type} />}
-          {when !== "all" && <input type="hidden" name="when" value={when} />}
-          {freeOnly && <input type="hidden" name="free" value="1" />}
-          <label htmlFor="festival" className="text-stone-500">Festival:</label>
-          <select id="festival" name="festival" defaultValue={festival ?? ""} className="input w-auto py-1.5">
-            <option value="">Any</option>
-            {FESTIVALS.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </select>
-          <button className="btn-outline py-1.5">Apply</button>
-        </form>
+        <details className="text-sm" open={!!festival}>
+          <summary className="cursor-pointer text-stone-600">More filters{festival && <>: <b>{festival}</b></>}</summary>
+          <form className="mt-2 flex items-center gap-2" aria-label="Festival">
+            <input type="hidden" name="metro" value={metro} />
+            {type && <input type="hidden" name="type" value={type} />}
+            {when !== "all" && <input type="hidden" name="when" value={when} />}
+            {freeOnly && <input type="hidden" name="free" value="1" />}
+            <select id="festival" name="festival" defaultValue={festival ?? ""} className="input w-auto py-1.5" aria-label="Festival">
+              <option value="">Any festival</option>
+              {FESTIVALS.map((f) => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+            <button className="btn-outline py-1.5">Apply</button>
+          </form>
+        </details>
       </div>
 
       <p className="text-sm text-stone-600">
-        {events.length} upcoming event{events.length === 1 ? "" : "s"}
+        {events.length} upcoming event{events.length === 1 ? "" : "s"} in {metroName(metro)}
         {type && <> · {eventTypeLabel(type)}</>}
         {festival && <> · {festival}</>}
         {q && <> matching &ldquo;{q}&rdquo;</>}
-        {(type || festival || q || freeOnly || when !== "all") && (
+        {filtered && (
           <>
             {" · "}
             <Link href={`/events?metro=${metro}`} className="text-brand">Clear</Link>
@@ -110,15 +114,15 @@ export default async function EventsPage({
       </p>
 
       {events.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {events.map((e) => (
             <EventCard key={e.id} event={e} />
           ))}
         </div>
       ) : (
         <div className="card text-center text-stone-600">
-          <p>No upcoming events match. Try another date range or city.</p>
-          <Link href="/vendor/events/new" className="mt-3 inline-block font-semibold text-brand">Post your event free →</Link>
+          <p>No upcoming events match. Try another date or type.</p>
+          <Link href="/vendor/events/new" className="mt-3 inline-block font-semibold text-brand">Hosting one? Post it free →</Link>
         </div>
       )}
     </div>

@@ -21,14 +21,14 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
       <div className="card mx-auto max-w-lg">
         <h1 className="text-xl font-bold">This event was removed</h1>
         <p className="mt-2 text-stone-600">Reason: {event.moderationNote || "it broke our rules"}. Removed events can&apos;t be edited.</p>
-        <Link href="/vendor#events" className="btn mt-4">Back to dashboard</Link>
+        <Link href="/vendor?tab=events" className="btn mt-4">Back to dashboard</Link>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/vendor#events" className="text-sm text-stone-500 hover:text-brand">← Dashboard</Link>
+      <Link href="/vendor?tab=events" className="text-sm text-stone-500 hover:text-brand">← Dashboard</Link>
       <h1 className="mt-2 text-2xl font-bold">Edit event</h1>
       {event.status === "REJECTED" && (
         <p className="mt-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">

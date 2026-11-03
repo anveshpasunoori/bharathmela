@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LocationPicker } from "@/components/LocationPicker";
+import { FilterPanel } from "@/components/FilterPanel";
+import { LocationLine } from "@/components/LocationLine";
 import { RentalTabs } from "@/components/RentalTabs";
 import { WantedCard } from "@/components/WantedCard";
 import { metroFor } from "@/lib/geo";
@@ -29,49 +30,51 @@ export default async function RoomsWantedPage({
   const posts = await browseWanted({ metro, minBudget: rent, space, moveInBy: by, query: q });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <RentalTabs metro={metro} active="wanted" />
-      <section className="rounded-xl bg-gradient-to-br from-sky-50 to-white p-6 ring-1 ring-sky-100 sm:p-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">People looking for a place in {metroName(metro)}</h1>
-        <p className="mt-1 text-stone-600">Have a room or apartment? Message renters directly. Looking yourself? Post what you need.</p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-2xl font-bold">People looking for a place</h1>
           <Link href="/rooms-wanted/mine" className="text-sm font-semibold text-brand">My requests</Link>
-          <LocationPicker metro={metro} basePath="/rooms-wanted" place={place} />
         </div>
+        <p className="text-sm text-stone-600">Have a room? Message renters directly. Looking yourself? Post what you need and let owners come to you.</p>
+        <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
+        <LocationLine metro={metro} place={place && metroFor(place).metro === metro ? place : null} basePath="/rooms-wanted" />
       </section>
 
-      <form className="card grid gap-3 py-4 text-sm sm:grid-cols-5" aria-label="Filters">
-        <input type="hidden" name="metro" value={metro} />
-        <div className="sm:col-span-2">
-          <label className="label" htmlFor="q">Search</label>
-          <input id="q" name="q" type="search" defaultValue={q} className="input" placeholder="e.g. Sunnyvale, student, vegetarian" />
-        </div>
-        <div>
-          <label className="label" htmlFor="rent">My rent / month</label>
-          <input id="rent" name="rent" inputMode="numeric" className="input" placeholder="1200" defaultValue={rent ? rent / 100 : ""} />
-        </div>
-        <div>
-          <label className="label" htmlFor="space">My space</label>
-          <select id="space" name="space" defaultValue={space ?? ""} className="input">
-            <option value="">Any</option>
-            {SPACE_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>{t.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label" htmlFor="by">Available by</label>
-          <input id="by" name="by" type="date" className="input" defaultValue={by ?? ""} />
-        </div>
-        <div className="flex gap-2 sm:col-span-5">
-          <button className="btn">Find renters</button>
-          <Link href={`/rooms-wanted?metro=${metro}`} className="btn-outline">Reset</Link>
-          <span className="self-center text-xs text-stone-500">&ldquo;My rent&rdquo; shows renters whose budget covers it.</span>
-        </div>
-      </form>
+      <FilterPanel active={[q, rent, space, by].filter(Boolean).length}>
+        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Filters">
+          <input type="hidden" name="metro" value={metro} />
+          <div>
+            <label className="label" htmlFor="q">Search</label>
+            <input id="q" name="q" type="search" defaultValue={q} className="input" placeholder="Sunnyvale, student…" />
+          </div>
+          <div>
+            <label className="label" htmlFor="rent">My rent / month</label>
+            <input id="rent" name="rent" inputMode="numeric" className="input" placeholder="1200" defaultValue={rent ? rent / 100 : ""} />
+          </div>
+          <div>
+            <label className="label" htmlFor="space">My space</label>
+            <select id="space" name="space" defaultValue={space ?? ""} className="input">
+              <option value="">Any</option>
+              {SPACE_TYPES.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="by">Available by</label>
+            <input id="by" name="by" type="date" className="input" defaultValue={by ?? ""} />
+          </div>
+          <div className="flex gap-2 sm:col-span-4">
+            <button className="btn">Show renters</button>
+            <Link href={`/rooms-wanted?metro=${metro}`} className="btn-outline">Reset</Link>
+          </div>
+          <p className="text-xs text-stone-500 sm:col-span-4">&ldquo;My rent&rdquo; shows renters whose budget covers it.</p>
+        </form>
+      </FilterPanel>
 
-      <p className="text-sm text-stone-600">{posts.length} {posts.length === 1 ? "person" : "people"} looking</p>
+      <p className="text-sm text-stone-600">{posts.length} {posts.length === 1 ? "person" : "people"} looking in {metroName(metro)}</p>
       {posts.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
