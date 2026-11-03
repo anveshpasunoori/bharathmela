@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
+import { DIET_TAGS, normalizeTags } from "@/lib/constants";
 import { CategorySelect } from "./CategorySelect";
 
 // Listing inputs plus the AI ad writer, which fills them in from the seller's rough idea.
-export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string };
+export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[] };
 
 export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initial?: ListingValues }) {
   const [category, setCategory] = useState(initial?.category ?? "");
@@ -14,6 +15,7 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [priceUnit, setPriceUnit] = useState(initial?.priceUnit ?? "");
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [idea, setIdea] = useState("");
   const [aiError, setAiError] = useState("");
   const [writing, startWriting] = useTransition();
@@ -27,6 +29,7 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
       setDescription(draft.description.slice(0, 2000));
       setPrice(draft.price_usd != null ? String(draft.price_usd) : "");
       setPriceUnit(draft.price_unit.slice(0, 40));
+      if (category === "FOOD") setTags(normalizeTags(draft.diet_tags));
     });
   }
 
@@ -76,6 +79,35 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
           value={description} onChange={(e) => setDescription(e.target.value)}
           placeholder="What you offer, pickup/delivery area, how to order, languages spoken…" />
       </div>
+      {category === "FOOD" && (
+        <fieldset>
+          <legend className="label">Dietary markers (tick only what&apos;s true for everything in this listing)</legend>
+          <div className="flex flex-wrap gap-2">
+            {DIET_TAGS.map((t) => {
+              const on = tags.includes(t.id);
+              return (
+                <label
+                  key={t.id}
+                  className={`cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-300"}`}
+                >
+                  <input
+                    type="checkbox"
+                    name="tags"
+                    value={t.id}
+                    checked={on}
+                    onChange={() => setTags(normalizeTags(on ? tags.filter((x) => x !== t.id) : [...tags, t.id]))}
+                    className="sr-only"
+                  />
+                  {on ? "✓ " : ""}
+                  {t.label}
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-1 text-xs text-stone-500">Vegan also marks Vegetarian, Eggless and Dairy-free; Jain also marks Vegetarian.</p>
+        </fieldset>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="label" htmlFor="price">Price in USD (optional)</label>

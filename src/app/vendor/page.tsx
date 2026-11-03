@@ -142,7 +142,7 @@ export default async function VendorDashboard({
                     {featured && <span className="badge bg-brand text-white">Featured until {fmtDate(l.featuredUntil!)}</span>}
                   </div>
                   <p className="text-sm text-stone-500">
-                    {categoryLabel(l.category)} · {l.views.toLocaleString()} views
+                    {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
                   </p>
                   {(l.status === "REJECTED" || l.status === "REMOVED") && l.moderationNote && (
                     <p className="mt-1 text-sm text-red-700">Reason: {l.moderationNote}</p>

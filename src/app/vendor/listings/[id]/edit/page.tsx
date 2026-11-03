@@ -4,6 +4,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { ListingFields } from "@/components/ListingFields";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
+import { parseTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { AI_WRITER_PLANS } from "@/lib/plans";
 import { updateListing } from "../../../../actions/vendor";
@@ -44,6 +45,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
               description: listing.description,
               price: listing.priceCents != null ? (listing.priceCents / 100).toFixed(2) : "",
               priceUnit: listing.priceUnit,
+              tags: parseTags(listing.tags),
             }}
           />
           <label className="flex gap-2 text-sm text-stone-700">

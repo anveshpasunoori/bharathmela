@@ -2,6 +2,7 @@ import Link from "next/link";
 import { categoryLabel } from "@/lib/constants";
 import type { BrowseListing } from "@/lib/listings";
 import { formatUSD } from "@/lib/plans";
+import { DietBadges } from "./DietBadges";
 import { Stars } from "./Stars";
 
 export function ListingCard({ listing }: { listing: BrowseListing }) {
@@ -18,6 +19,7 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
       <h3 className="font-semibold">{listing.title}</h3>
       {listing.rating && <Stars rating={listing.rating.average} count={listing.rating.count} />}
       <p className="mt-1 line-clamp-2 text-sm text-stone-600">{listing.description}</p>
+      <DietBadges tags={listing.tags} className="mt-2" />
       <div className="mt-3 flex items-baseline justify-between text-sm">
         <span className="text-stone-500">{listing.vendor.businessName}</span>
         {listing.priceCents != null && (

@@ -78,6 +78,10 @@ DesiBazaar is set up as a neutral listing platform. The Terms of Service and Pri
 **Security headers**
 - Content Security Policy, no framing, nosniff, a strict referrer policy and a permissions policy, plus HSTS in production (`next.config.ts`).
 
+## Dietary markers (food)
+
+Food listings can carry Vegetarian, Vegan, Jain, Eggless, Gluten-free, Dairy-free, Nut-free, Organic and Halal markers (`DIET_TAGS` in `src/lib/constants.ts`). Vegan also marks Vegetarian, Eggless and Dairy-free, and Jain also marks Vegetarian. Buyers can filter food by any combination of markers. Markers are the seller's own claims: sellers see rules about cross-contact and USDA organic certification, and buyers see a "not verified" note. The AI writer only adds markers the seller stated.
+
 ## AI ad writer (Pro plan)
 
 Pro sellers describe their idea and Claude drafts the title, description and price (`src/lib/ai.ts`). The writer is told to drop discriminatory preferences. It needs `ANTHROPIC_API_KEY`; without one it shows "not set up". The limit is 20 drafts per seller per day (`AI_DAILY_LIMIT`).

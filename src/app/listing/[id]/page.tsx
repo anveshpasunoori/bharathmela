@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { ContactButtons } from "@/components/ContactButtons";
+import { DietBadges } from "@/components/DietBadges";
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { getCurrentUser } from "@/lib/auth";
@@ -59,6 +60,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       <article className="card space-y-3">
         <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
         <h1 className="text-2xl font-bold">{listing.title}</h1>
+        <DietBadges tags={listing.tags} />
         {listing.priceCents != null && (
           <p className="text-lg font-semibold">
             {formatUSD(listing.priceCents)} <span className="text-base font-normal text-stone-500">{listing.priceUnit}</span>

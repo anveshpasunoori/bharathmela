@@ -20,8 +20,11 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
     seller: [
       "You are responsible for following your state and county cottage food or food-handling permit rules.",
       "List all major allergens (nuts, dairy, gluten, etc.) in your description.",
+      "Only tick dietary markers that are true for everything in the listing. \"Gluten-free\" and \"Nut-free\" mean no cross-contact in your kitchen, not just no gluten or nut ingredients.",
+      "Selling food as \"Organic\" requires USDA organic certification once your organic sales pass $5,000 a year, and only certified sellers may use the USDA seal.",
     ],
-    buyer: "Home-cooked food may not come from an inspected commercial kitchen. Ask the seller about permits and allergens.",
+    buyer:
+      "Home-cooked food may not come from an inspected commercial kitchen. Dietary markers (vegan, gluten-free, organic, halal…) are the seller's own claims and aren't verified by DesiBazaar. If you have an allergy, confirm ingredients and kitchen practices with the seller.",
   },
   TUTORING: {
     seller: ["You are responsible for the safety of minors in your care and any background checks your state requires."],

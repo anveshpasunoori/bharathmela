@@ -10,7 +10,7 @@ export const PUBLIC_LISTING: Prisma.ListingWhereInput = {
 };
 
 // Public browse: featured (paid boost) first, then Pro sellers, then newest.
-export async function browseListings(metro: string, category?: string, query?: string) {
+export async function browseListings(metro: string, category?: string, query?: string, diet: string[] = []) {
   const now = new Date();
   const words = (query ?? "").trim().split(/\s+/).filter(Boolean).slice(0, 5);
   const listings = await db.listing.findMany({
@@ -18,10 +18,14 @@ export async function browseListings(metro: string, category?: string, query?: s
       ...PUBLIC_LISTING,
       metro,
       ...(category ? { category } : {}),
-      // Every word must appear in the title, description or business name.
-      AND: words.map((w) => ({
-        OR: [{ title: { contains: w } }, { description: { contains: w } }, { vendor: { businessName: { contains: w } } }],
-      })),
+      AND: [
+        // Every word must appear in the title, description or business name.
+        ...words.map((w) => ({
+          OR: [{ title: { contains: w } }, { description: { contains: w } }, { vendor: { businessName: { contains: w } } }],
+        })),
+        // Every chosen dietary marker must be on the listing.
+        ...diet.map((tag) => ({ tags: { contains: `,${tag},` } })),
+      ],
     },
     include: {
       vendor: {

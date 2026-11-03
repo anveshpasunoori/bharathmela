@@ -107,6 +107,8 @@ model Listing {
   category      String
   priceCents    Int?
   priceUnit     String        @default("") // e.g. "per plate", "per hour"
+  // Dietary tags for food, stored as ",VEGAN,GLUTEN_FREE," so a tag can be matched with `contains`.
+  tags          String        @default("")
   metro         String
   zip           String
   // ACTIVE | HIDDEN (by seller) | PENDING_REVIEW | REJECTED | REMOVED (by admin)

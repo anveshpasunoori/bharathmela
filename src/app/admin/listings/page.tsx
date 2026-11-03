@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { approveListing, rejectListing } from "../../actions/admin";
+import { DietBadges } from "@/components/DietBadges";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { metroName } from "@/lib/metros";
@@ -35,6 +36,7 @@ export default async function AdminListingsPage() {
               <span className="text-sm text-stone-500">{fmtDate(l.updatedAt)}</span>
             </div>
             <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">Why it&apos;s here: {l.moderationNote}</p>
+            <DietBadges tags={l.tags} />
             <p className="whitespace-pre-line text-sm text-stone-700">{l.description}</p>
             {l.priceCents != null && (
               <p className="text-sm font-semibold">

@@ -6,7 +6,7 @@ import type { FormState } from "@/components/ActionForm";
 import { aiConfigured, draftListing, type ListingDraft } from "@/lib/ai";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
-import { CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
+import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
 import { screenListing } from "@/lib/moderation";
@@ -46,7 +46,14 @@ async function hasRoomForListing(vendorId: string, excludeId?: string) {
   return { ok: used < plan.maxListings, plan };
 }
 
-type ListingInput = { title: string; description: string; category: string; priceCents: number | null; priceUnit: string };
+type ListingInput = {
+  title: string;
+  description: string;
+  category: string;
+  priceCents: number | null;
+  priceUnit: string;
+  tags: string;
+};
 
 function parseListing(form: FormData): ListingInput | { error: string } {
   const title = field(form, "title");
@@ -66,7 +73,9 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     priceCents = Math.round(n * 100);
   }
   if (form.get("confirm") !== "on") return { error: "Please confirm the listing follows the rules and Terms." };
-  return { title, description, category, priceCents, priceUnit };
+  // Dietary markers only apply to food.
+  const tags = category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String))) : "";
+  return { title, description, category, priceCents, priceUnit, tags };
 }
 
 // Decides whether a listing can go live right away or must wait for an admin.

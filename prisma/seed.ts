@@ -35,6 +35,7 @@ async function main() {
       plan: "PRO",
       listings: [
         { title: "Weekly Andhra meal box (5 days)", category: "FOOD", priceCents: 7500, priceUnit: "per week", featured: true,
+          tags: ",VEGETARIAN,EGGLESS,NUT_FREE,",
           description: "Home-style rice, dal, curry, pickle and curd. Pickup in Santa Clara or delivery within 5 miles." },
         { title: "Party orders – biryani trays", category: "FOOD", priceCents: 9000, priceUnit: "per tray (serves 10)", featured: false,
           description: "Chicken or veg dum biryani. Order 3 days ahead." },
@@ -140,6 +141,7 @@ async function main() {
           category: l.category,
           priceCents: l.priceCents,
           priceUnit: l.priceUnit,
+          tags: "tags" in l ? l.tags : "",
           metro: s.metro,
           zip: s.zip,
           featuredUntil: l.featured ? new Date(now + 7 * DAY_MS) : null,
