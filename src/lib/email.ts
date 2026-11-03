@@ -1,5 +1,6 @@
 import "server-only";
 import { resolveMx } from "node:dns/promises";
+import { renderEmailHtml } from "./email-template";
 
 // Throwaway-inbox providers. Extend as abuse shows up; a maintained list
 // (e.g. the disposable-email-domains project) can replace this later.
@@ -28,7 +29,8 @@ export async function checkEmailDomain(email: string): Promise<string | null> {
   return null;
 }
 
-// Sends through Resend when RESEND_API_KEY is set; otherwise prints to the server log (development).
+// Sends through Resend when RESEND_API_KEY is set (plain text plus a branded HTML version); otherwise
+// prints to the server log (development).
 // `headers` is for extras such as List-Unsubscribe on alert emails.
 export async function sendEmail(to: string, subject: string, text: string, replyTo?: string, headers?: Record<string, string>) {
   const key = process.env.RESEND_API_KEY;
@@ -44,6 +46,7 @@ export async function sendEmail(to: string, subject: string, text: string, reply
       to,
       subject,
       text,
+      html: renderEmailHtml(subject, text, process.env.EMAIL_FOOTER_ADDRESS),
       ...(replyTo ? { reply_to: replyTo } : {}),
       ...(headers ? { headers } : {}),
     }),
