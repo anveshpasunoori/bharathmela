@@ -8,7 +8,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
     where: {
       deletedAt: null,
       ...(query
-        ? { OR: [{ email: { contains: query } }, { name: { contains: query } }, { vendor: { businessName: { contains: query } } }] }
+        ? { OR: [{ email: { contains: query, mode: "insensitive" } }, { name: { contains: query, mode: "insensitive" } }, { vendor: { businessName: { contains: query, mode: "insensitive" } } }] }
         : {}),
     },
     include: { vendor: { select: { businessName: true, _count: { select: { listings: true } } } }, _count: { select: { reviews: true } } },

@@ -1,0 +1,19 @@
+# Local Postgres for development: `docker compose up -d`. Production uses a managed Postgres (see DEPLOY.md).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bharathmela
+      POSTGRES_PASSWORD: bharathmela
+      POSTGRES_DB: bharathmela
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bharathmela"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+volumes:
+  pgdata:

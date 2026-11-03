@@ -1,4 +1,4 @@
-// SQLite for local development. Switch provider to "postgresql" for production.
+// Postgres everywhere: locally from docker-compose.yml, in production a managed database (see DEPLOY.md).
 // Status/role fields are plain strings; allowed values live in src/lib/constants.ts.
 
 generator client {
@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

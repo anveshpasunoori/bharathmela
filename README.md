@@ -5,6 +5,7 @@ A local marketplace for Indian home businesses in US cities: home kitchens, tuto
 ## Run locally
 
 ```bash
+docker compose up -d      # local Postgres (docker-compose.yml)
 npm install
 cp .env.example .env
 npm run db:migrate
