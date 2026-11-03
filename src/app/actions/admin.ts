@@ -44,6 +44,12 @@ export async function resolveReport(reportId: string, remove: boolean, form: For
         db.report.updateMany({ where: { eventId: report.eventId, status: "OPEN" }, data: closeReports }),
       ]);
       await audit(admin.id, "event.remove", "event", report.eventId, reason);
+    } else if (report.roomWantedId) {
+      await db.$transaction([
+        db.roomWanted.update({ where: { id: report.roomWantedId }, data: removed }),
+        db.report.updateMany({ where: { roomWantedId: report.roomWantedId, status: "OPEN" }, data: closeReports }),
+      ]);
+      await audit(admin.id, "roomWanted.remove", "roomWanted", report.roomWantedId, reason);
     }
   } else {
     await db.report.update({ where: { id: reportId }, data: { status: "DISMISSED", resolvedAt: now } });
@@ -64,6 +70,21 @@ export async function rejectEvent(eventId: string, form: FormData) {
   const reason = note(form) || "doesn't meet our event rules";
   await db.event.update({ where: { id: eventId }, data: { status: "REJECTED", moderationNote: reason } });
   await audit(admin.id, "event.reject", "event", eventId, reason);
+  revalidatePath("/admin/listings");
+}
+
+export async function approveWanted(id: string) {
+  const admin = await requireAdmin();
+  await db.roomWanted.update({ where: { id }, data: { status: "ACTIVE", moderationNote: "" } });
+  await audit(admin.id, "roomWanted.approve", "roomWanted", id);
+  revalidatePath("/admin/listings");
+}
+
+export async function rejectWanted(id: string, form: FormData) {
+  const admin = await requireAdmin();
+  const reason = note(form) || "doesn't meet our rules";
+  await db.roomWanted.update({ where: { id }, data: { status: "REJECTED", moderationNote: reason } });
+  await audit(admin.id, "roomWanted.reject", "roomWanted", id, reason);
   revalidatePath("/admin/listings");
 }
 

@@ -19,9 +19,10 @@ export default async function AccountPage() {
             <Link href="/verify?next=/account" className="text-sm font-semibold text-brand">Verify email</Link>
           )}
         </p>
-        {user.vendor && (
-          <Link href="/vendor" className="mt-2 inline-block text-sm font-semibold text-brand">Go to your seller dashboard →</Link>
-        )}
+        <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-brand">
+          {user.vendor && <Link href="/vendor">Seller dashboard →</Link>}
+          <Link href="/rooms-wanted/mine">My room requests →</Link>
+        </div>
       </div>
 
       <section className="card">

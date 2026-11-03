@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { LocationPicker } from "@/components/LocationPicker";
+import { RentalTabs } from "@/components/RentalTabs";
 import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
@@ -150,6 +151,16 @@ export default async function Home({
             );
           })}
         </nav>
+      )}
+
+      {category === "ROOM_RENTAL" && (
+        <div className="space-y-3">
+          <RentalTabs metro={metro} active="offered" />
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-sky-50 px-4 py-3 text-sm ring-1 ring-sky-100">
+            <span>Looking for a room? Post what you need and let owners come to you.</span>
+            <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn py-1.5">I need a place to live</Link>
+          </div>
+        </div>
       )}
 
       {category === "ROOM_RENTAL" && (

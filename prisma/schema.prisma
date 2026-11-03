@@ -20,6 +20,9 @@ model User {
   emailVerifiedAt DateTime?
   emailCodes   EmailCode[]
   reviews      Review[]
+  roomsWanted  RoomWanted[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
   termsVersion    String?
   termsAcceptedAt DateTime?
@@ -128,13 +131,15 @@ model Listing {
   @@index([metro, category, status])
 }
 
-// A user's complaint about a listing or an event (exactly one is set).
+// A user's complaint about a listing, event or room-wanted post (exactly one is set).
 model Report {
   id            String    @id @default(cuid())
   listingId     String?
   listing       Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   eventId       String?
   event         Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  roomWantedId  String?
+  roomWanted    RoomWanted? @relation(fields: [roomWantedId], references: [id], onDelete: Cascade)
   reason        String // see REPORT_REASONS in src/lib/legal.ts
   details       String    @default("")
   reporterEmail String    @default("")
@@ -235,4 +240,50 @@ model Event {
   reports        Report[]
 
   @@index([metro, status, startsAt])
+}
+
+// "I need a place to live": a renter describes what they're looking for, and owners contact them.
+// Any verified user can post; posts expire so stale requests don't pile up.
+model RoomWanted {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metro            String
+  title            String
+  description      String
+  budgetMaxCents   Int
+  moveInDate       String // YYYY-MM-DD
+  lease            String // see LEASES in src/lib/rentals.ts
+  spaceTypes       String // ",PRIVATE_ROOM,PAYING_GUEST," (see SPACE_TYPES)
+  areas            String    @default("") // preferred neighborhoods or cities
+  needsPrivateBath Boolean   @default(false)
+  needsFurnished   Boolean   @default(false)
+  needsParking     Boolean   @default(false)
+  hasPets          Boolean   @default(false)
+  // ACTIVE | HIDDEN (by poster) | PENDING_REVIEW | REJECTED | REMOVED (by admin)
+  status           String    @default("ACTIVE")
+  moderationNote   String    @default("")
+  expiresAt        DateTime
+  views            Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now()) @updatedAt
+  reports          Report[]
+  messages         Message[]
+
+  @@index([metro, status, expiresAt])
+}
+
+// A message relayed by email between users (owner → renter), kept for abuse checks.
+model Message {
+  id           String      @id @default(cuid())
+  fromUserId   String
+  fromUser     User        @relation("SentMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId     String
+  toUser       User        @relation("ReceivedMessages", fields: [toUserId], references: [id], onDelete: Cascade)
+  roomWantedId String?
+  roomWanted   RoomWanted? @relation(fields: [roomWantedId], references: [id], onDelete: SetNull)
+  body         String
+  createdAt    DateTime    @default(now())
+
+  @@index([fromUserId, createdAt])
 }

@@ -208,6 +208,41 @@ async function main() {
       });
     }
   }
+
+  // Sample "I need a place" requests from a seeded renter (password "buyer-dev-password").
+  if (!(await db.roomWanted.count())) {
+    const renter = await db.user.upsert({
+      where: { email: "anil.renter@desibazaar.test" },
+      update: {},
+      create: {
+        email: "anil.renter@desibazaar.test",
+        name: "Anil Kumar",
+        role: "BUYER",
+        passwordHash: await bcrypt.hash("buyer-dev-password", 10),
+        emailVerifiedAt: new Date(now),
+        createdAt: new Date(now - 30 * DAY_MS),
+      },
+    });
+    const soon = (days: number) => new Date(now + days * DAY_MS).toISOString().slice(0, 10);
+    await db.roomWanted.createMany({
+      data: [
+        {
+          userId: renter.id, metro: "bay-area", title: "Software engineer looking for a room near Sunnyvale from December",
+          description: "Moving from Hyderabad for a new job in Sunnyvale. Quiet, non-smoker, I cook simple vegetarian food and keep shared spaces clean. Looking to stay at least 6 months.",
+          budgetMaxCents: 140000, moveInDate: soon(25), lease: "6_MONTHS", spaceTypes: ",PRIVATE_ROOM,PAYING_GUEST,",
+          areas: "Sunnyvale, Santa Clara, Mountain View", needsPrivateBath: false, needsFurnished: true, needsParking: false, hasPets: false,
+          expiresAt: new Date(now + 60 * DAY_MS),
+        },
+        {
+          userId: renter.id, metro: "dallas", title: "Grad student needs a shared room near UT Dallas",
+          description: "Masters student starting in January. Looking for a shared or private room within biking distance of UT Dallas. Flexible on lease length.",
+          budgetMaxCents: 70000, moveInDate: soon(45), lease: "FLEXIBLE", spaceTypes: ",SHARED_ROOM,PRIVATE_ROOM,",
+          areas: "Richardson, near UTD", needsPrivateBath: false, needsFurnished: false, needsParking: false, hasPets: false,
+          expiresAt: new Date(now + 60 * DAY_MS),
+        },
+      ],
+    });
+  }
 }
 
 main()

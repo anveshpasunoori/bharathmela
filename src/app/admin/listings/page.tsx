@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { approveEvent, approveListing, rejectEvent, rejectListing } from "../../actions/admin";
+import { approveEvent, approveListing, approveWanted, rejectEvent, rejectListing, rejectWanted } from "../../actions/admin";
 import { DietBadges } from "@/components/DietBadges";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
@@ -10,7 +10,7 @@ import { formatUSD } from "@/lib/plans";
 const fmtDate = (d: Date) => d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 export default async function AdminListingsPage() {
-  const [pending, pendingEvents] = await Promise.all([
+  const [pending, pendingEvents, pendingWanted] = await Promise.all([
     db.listing.findMany({
       where: { status: "PENDING_REVIEW" },
       include: { vendor: { include: { user: { select: { email: true, createdAt: true } } } } },
@@ -20,6 +20,11 @@ export default async function AdminListingsPage() {
       where: { status: "PENDING_REVIEW", endsAt: { gt: new Date() } },
       include: { vendor: { include: { user: { select: { email: true, createdAt: true } } } } },
       orderBy: { startsAt: "asc" },
+    }),
+    db.roomWanted.findMany({
+      where: { status: "PENDING_REVIEW", expiresAt: { gt: new Date() } },
+      include: { user: { select: { name: true, email: true, createdAt: true } } },
+      orderBy: { updatedAt: "asc" },
     }),
   ]);
 
@@ -102,6 +107,30 @@ export default async function AdminListingsPage() {
               </form>
               <form action={rejectEvent.bind(null, e.id)} className="flex flex-1 gap-2">
                 <input name="note" className="input" placeholder="What to fix (shown to organizer)" required />
+                <button className="btn-outline whitespace-nowrap text-red-700">Reject</button>
+              </form>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <h2 className="pt-4 text-lg font-bold">Room requests to review</h2>
+      {pendingWanted.length === 0 && <p className="card text-stone-600">No room requests waiting.</p>}
+      <ul className="space-y-4">
+        {pendingWanted.map((w) => (
+          <li key={w.id} className="card space-y-3">
+            <p className="font-semibold">{w.title}</p>
+            <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">Why it&apos;s here: {w.moderationNote}</p>
+            <p className="whitespace-pre-line text-sm text-stone-700">{w.description}</p>
+            <p className="text-sm text-stone-500">
+              Up to {formatUSD(w.budgetMaxCents)}/mo · {w.areas || "no areas given"} · {metroName(w.metro)} · {w.user.name} · {w.user.email} ·
+              joined {w.user.createdAt.toLocaleDateString()}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <form action={approveWanted.bind(null, w.id)}>
+                <button className="btn">Approve</button>
+              </form>
+              <form action={rejectWanted.bind(null, w.id)} className="flex flex-1 gap-2">
+                <input name="note" className="input" placeholder="What to fix (shown to poster)" required />
                 <button className="btn-outline whitespace-nowrap text-red-700">Reject</button>
               </form>
             </div>

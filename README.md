@@ -89,6 +89,21 @@ Rental listings have structured details (`src/lib/rentals.ts`, stored as JSON in
 - **Filters:** space type, max rent, move-in date, private bath, furnished, pets allowed.
 - **Search:** covers rental details too ("attached bath", "PG", "wifi", neighborhood names).
 
+## "I need a place to live" (room requests)
+
+Renters post what they're looking for at `/rooms-wanted/new`. Owners browse at `/rooms-wanted`, which also appears as a tab under Room Rentals.
+- **Who can post:** any verified account, free. Up to 2 active posts per person, each expiring after 60 days and renewable.
+- **A post holds:** budget, move-in date, stay length, the kinds of space they'd take, preferred areas, and must-haves (private bath, furnished, parking, has a pet).
+- **Owner filters:** "My rent" shows renters whose budget covers it. Owners can also filter by space type and move-in date, and search.
+- **Contact without exposing emails:**
+  - Owners message renters through the site. The renter gets an email with the owner's address as reply-to, so neither email is shown publicly.
+  - Messages asking for wire transfers, gift cards, crypto or payment before viewing are refused.
+  - Owners can send 15 messages a day, and one per post per day.
+  - Every message is logged (`Message` model).
+- **Privacy:** only the renter's first name is shown.
+- **Fair housing:** renters may describe themselves, so preference wording isn't held for review. Prohibited items and scam signals still are.
+- **Moderation:** posts can be reported (3 reports put a post on hold) and removed by admins.
+
 ## Events
 
 Sellers can also post events as organizers at `/vendor/events/new`: concerts, dance performances, festival celebrations, pujas, community events, workshops, kids' events and comedy/film/theatre. Each event can be tagged with a festival (Diwali, Navratri/Garba, Holi, Ganesh Chaturthi and more).

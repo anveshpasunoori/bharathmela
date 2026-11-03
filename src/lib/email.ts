@@ -29,16 +29,22 @@ export async function checkEmailDomain(email: string): Promise<string | null> {
 }
 
 // Sends through Resend when RESEND_API_KEY is set; otherwise prints to the server log (development).
-export async function sendEmail(to: string, subject: string, text: string) {
+export async function sendEmail(to: string, subject: string, text: string, replyTo?: string) {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
-    console.log(`\n[email to ${to}] ${subject}\n${text}\n`);
+    console.log(`\n[email to ${to}${replyTo ? `, reply-to ${replyTo}` : ""}] ${subject}\n${text}\n`);
     return;
   }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM ?? "DesiBazaar <no-reply@example.com>", to, subject, text }),
+    body: JSON.stringify({
+      from: process.env.EMAIL_FROM ?? "DesiBazaar <no-reply@example.com>",
+      to,
+      subject,
+      text,
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    }),
   });
   if (!res.ok) throw new Error(`Email send failed: ${res.status} ${await res.text()}`);
 }

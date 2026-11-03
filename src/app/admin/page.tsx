@@ -26,6 +26,7 @@ export default async function AdminPage() {
       include: {
         listing: { include: { vendor: { select: { businessName: true } } } },
         event: { include: { vendor: { select: { businessName: true } } } },
+        roomWanted: { include: { user: { select: { name: true, email: true } } } },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -80,10 +81,11 @@ export default async function AdminPage() {
         {reports.length === 0 && <p className="card text-stone-600">No open reports.</p>}
         <ul className="space-y-3">
           {reports.map((r) => {
-            const target = r.listing ?? r.event;
+            const target = r.listing ?? r.event ?? r.roomWanted;
             if (!target) return null;
-            const kind = r.listing ? "listing" : "event";
-            const url = r.listing ? `/listing/${target.id}` : `/events/${target.id}`;
+            const kind = r.listing ? "listing" : r.event ? "event" : "room request";
+            const url = r.listing ? `/listing/${target.id}` : r.event ? `/events/${target.id}` : `/rooms-wanted/${target.id}`;
+            const owner = "vendor" in target ? target.vendor.businessName : `${target.user.name} (${target.user.email})`;
             return (
             <li key={r.id} className="card space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -97,7 +99,7 @@ export default async function AdminPage() {
                 <p className="text-sm text-stone-500">{fmtDate(r.createdAt)}</p>
               </div>
               <p className="text-sm text-stone-600">
-                Seller: {target.vendor.businessName} · Status: {target.status.toLowerCase().replace("_", " ")}
+                Posted by: {owner} · Status: {target.status.toLowerCase().replace("_", " ")}
                 {r.reporterEmail && <> · Reporter: {r.reporterEmail}</>}
               </p>
               {r.details && <p className="rounded-md bg-stone-50 px-3 py-2 text-sm">{r.details}</p>}
