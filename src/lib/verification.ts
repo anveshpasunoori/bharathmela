@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomInt } from "node:crypto";
 import { db } from "./db";
 import { sendEmail } from "./email";
+import { sendSms } from "./sms";
 
 const CODE_TTL_MS = 15 * 60_000;
 const MAX_ATTEMPTS = 5;
@@ -38,6 +39,34 @@ export async function checkVerificationCode(userId: string, code: string): Promi
   await db.$transaction([
     db.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } }),
     db.emailCode.deleteMany({ where: { userId } }),
+  ]);
+  return null;
+}
+
+// Texted code for sellers' phone numbers, shown to buyers as "Phone verified".
+export async function sendPhoneCode(userId: string, phone: string) {
+  const last = await db.phoneCode.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
+  if (last && Date.now() - last.createdAt.getTime() < RESEND_COOLDOWN_MS) {
+    return { error: "Please wait a minute before asking for another code." };
+  }
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  await db.phoneCode.deleteMany({ where: { userId } });
+  await db.phoneCode.create({ data: { userId, phone, codeHash: hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) } });
+  await sendSms(phone, `Your BharathMela code is ${code}. It expires in 15 minutes.`);
+  return {};
+}
+
+export async function checkPhoneCode(userId: string, code: string): Promise<string | null> {
+  const record = await db.phoneCode.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
+  if (!record || record.expiresAt < new Date()) return "That code has expired. Send a new one.";
+  if (record.attempts >= MAX_ATTEMPTS) return "Too many wrong tries. Send a new code.";
+  if (record.codeHash !== hash(code.trim())) {
+    await db.phoneCode.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
+    return "That code isn't right. Check your texts and try again.";
+  }
+  await db.$transaction([
+    db.user.update({ where: { id: userId }, data: { phoneVerifiedAt: new Date() } }),
+    db.phoneCode.deleteMany({ where: { userId } }),
   ]);
   return null;
 }

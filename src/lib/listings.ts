@@ -8,17 +8,33 @@ import { type ProfessionalFilters, isProfessional, matchesProfessionalFilters, p
 import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
 import { parseQuery, rankListings, suggestQuery } from "./search";
 
-// Listings anyone can see: live, and from a seller who isn't suspended or deleted.
-export const PUBLIC_LISTING: Prisma.ListingWhereInput = {
-  status: "ACTIVE",
-  vendor: { user: { suspendedAt: null, deletedAt: null } },
-};
+// Listings stay up this long after being posted or renewed, so stale ads drop off on their own.
+export const LISTING_DAYS = 90;
+export const listingExpiry = (from = new Date()) => new Date(from.getTime() + LISTING_DAYS * 86_400_000);
+
+// Listings anyone can see: live, not expired, and from a seller who isn't suspended or deleted.
+export function publicListing(now = new Date()): Prisma.ListingWhereInput {
+  return {
+    status: "ACTIVE",
+    expiresAt: { gt: now },
+    vendor: { user: { suspendedAt: null, deletedAt: null } },
+  };
+}
 
 const withPlans = (now: Date) =>
   ({
     vendor: { include: { subscriptions: { where: { status: "ACTIVE", endsAt: { gt: now } }, select: { plan: true } } } },
     photos: { orderBy: { position: "asc" }, take: 1, select: { thumbUrl: true } },
   }) satisfies Prisma.ListingInclude;
+
+const MAX_PINNED = 2;
+
+// Stable pseudo-random order for a listing within a given hour.
+function rotation(id: string, hour: number) {
+  let h = hour;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return h;
+}
 
 export type BrowseOptions = {
   metro: string;
@@ -61,7 +77,7 @@ export async function browseListings({
   const now = new Date();
   const byRadius = near?.radiusMiles != null;
   const filters: Prisma.ListingWhereInput = {
-    ...PUBLIC_LISTING,
+    ...publicListing(),
     ...(category ? { category } : {}),
     // Every chosen dietary marker must be on the listing.
     AND: diet.map((tag) => ({ tags: { contains: `,${tag},` } })),
@@ -120,10 +136,20 @@ export async function browseListings({
       score: score * (isFeatured ? 1.15 : 1) * (isPro ? 1.05 : 1) * nearby,
     };
   });
+  // At most MAX_PINNED sponsored listings sit at the top, so paid placement never crowds out the page.
+  // When more sellers have paid, they take turns: the pick rotates every hour.
+  const hour = Math.floor(Date.now() / 3_600_000);
+  const pinned = new Set(
+    listings
+      .filter((l) => l.isFeatured)
+      .sort((a, b) => rotation(a.id, hour) - rotation(b.id, hour))
+      .slice(0, MAX_PINNED)
+      .map((l) => l.id),
+  );
   const recommended = (a: (typeof listings)[number], b: (typeof listings)[number]) =>
     searching
       ? b.score - a.score
-      : Number(b.isFeatured) - Number(a.isFeatured) ||
+      : Number(pinned.has(b.id)) - Number(pinned.has(a.id)) ||
         (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) ||
         Number(b.isPro) - Number(a.isPro);
   // Listings without a price go last when sorting by price.
@@ -176,7 +202,7 @@ export type BrowseListing = Awaited<ReturnType<typeof browseListings>>["listings
 export async function categoryCounts(metro: string, near?: { lat: number; lng: number; radiusMiles: number | null }) {
   const byRadius = near?.radiusMiles != null;
   const rows = await db.listing.findMany({
-    where: { ...PUBLIC_LISTING, ...(byRadius ? {} : { metro }) },
+    where: { ...publicListing(), ...(byRadius ? {} : { metro }) },
     select: { category: true, zip: true },
     take: 20000,
   });

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { PUBLIC_LISTING } from "@/lib/listings";
+import { publicListing } from "@/lib/listings";
 import { ratingsFor } from "@/lib/reviews";
 import { toggleSaved } from "../actions/buyer";
 
@@ -17,7 +17,7 @@ export default async function SavedPage() {
   });
   const now = new Date();
   // Listings that were removed or hidden stay in the list so the buyer knows what happened.
-  const live = await db.listing.findMany({ where: { id: { in: saved.map((s) => s.listingId) }, ...PUBLIC_LISTING }, select: { id: true } });
+  const live = await db.listing.findMany({ where: { id: { in: saved.map((s) => s.listingId) }, ...publicListing() }, select: { id: true } });
   const liveIds = new Set(live.map((l) => l.id));
   const ratings = await ratingsFor([...new Set(saved.map((s) => s.listing.vendorId))]);
 

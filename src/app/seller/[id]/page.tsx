@@ -4,17 +4,18 @@ import { ContactButtons } from "@/components/ContactButtons";
 import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { ReviewList } from "@/components/ReviewList";
+import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
 import { db } from "@/lib/db";
 import { publicEventWhere } from "@/lib/event-data";
-import { PUBLIC_LISTING } from "@/lib/listings";
+import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 
 async function getSeller(id: string) {
   return db.vendorProfile.findFirst({
     where: { id, user: { suspendedAt: null, deletedAt: null } },
-    include: { user: { select: { createdAt: true } } },
+    include: { user: { select: { createdAt: true, lastSeenAt: true, emailVerifiedAt: true, phoneVerifiedAt: true } } },
   });
 }
 
@@ -31,7 +32,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
   const now = new Date();
   const [listings, reviews, ratings, pro, events] = await Promise.all([
     db.listing.findMany({
-      where: { vendorId: id, ...PUBLIC_LISTING },
+      where: { vendorId: id, ...publicListing() },
       include: { vendor: true, photos: { orderBy: { position: "asc" }, take: 1, select: { thumbUrl: true } } },
       orderBy: { createdAt: "desc" },
     }),
@@ -56,6 +57,11 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             <span>Member since {seller.user.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
           </div>
         </div>
+        <TrustBadges
+          emailVerified={!!seller.user.emailVerifiedAt}
+          phoneVerified={!!seller.user.phoneVerifiedAt}
+          lastSeenAt={seller.user.lastSeenAt}
+        />
         {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
         <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />
       </header>

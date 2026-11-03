@@ -6,6 +6,7 @@ import { priceLabel } from "@/lib/plans";
 import { readEventService, rentalItemLabels, serviceLabels } from "@/lib/event-services";
 import { isProfessional, licenseLine, readProfessional } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
+import { timeAgo } from "@/lib/time";
 import { DietBadges } from "./DietBadges";
 import { Stars } from "./Stars";
 
@@ -53,7 +54,8 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
           {pro.freeConsultation && <span className="badge ml-1 bg-green-50 text-green-800">Free consultation</span>}
         </p>
       )}
-      <div className="mt-3 flex items-baseline justify-between text-sm">
+      <p className="mt-2 text-xs text-stone-400">Updated {timeAgo(listing.updatedAt)}</p>
+      <div className="mt-1 flex items-baseline justify-between text-sm">
         <span className="text-stone-500">
           {listing.vendor.businessName}
           {listing.distanceMiles != null && (

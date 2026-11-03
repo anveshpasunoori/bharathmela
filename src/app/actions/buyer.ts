@@ -6,7 +6,7 @@ import type { FormState } from "@/components/ActionForm";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
-import { PUBLIC_LISTING } from "@/lib/listings";
+import { publicListing } from "@/lib/listings";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
 
 const DAY_MS = 86_400_000;
@@ -20,7 +20,7 @@ export async function toggleSaved(listingId: string) {
   if (await db.favorite.findUnique({ where: key })) {
     await db.favorite.delete({ where: key });
   } else {
-    if (!(await db.listing.findFirst({ where: { id: listingId, ...PUBLIC_LISTING }, select: { id: true } }))) return;
+    if (!(await db.listing.findFirst({ where: { id: listingId, ...publicListing() }, select: { id: true } }))) return;
     await db.favorite.create({ data: { userId: user.id, listingId } });
   }
   revalidatePath(`/listing/${listingId}`);
@@ -37,7 +37,7 @@ export async function messageSeller(_: FormState, form: FormData): Promise<FormS
   if (Date.now() - user.createdAt.getTime() < MIN_ACCOUNT_AGE_MS) {
     return { error: "New accounts can send messages 10 minutes after signing up." };
   }
-  const listing = await db.listing.findFirst({ where: { id: listingId, ...PUBLIC_LISTING }, include: { vendor: { include: { user: true } } } });
+  const listing = await db.listing.findFirst({ where: { id: listingId, ...publicListing() }, include: { vendor: { include: { user: true } } } });
   if (!listing) return { error: "This listing is no longer available." };
   if (listing.vendor.userId === user.id) return { error: "That's your own listing." };
   const body = String(form.get("message") ?? "").trim();

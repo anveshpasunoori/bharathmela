@@ -218,6 +218,7 @@ async function main() {
           metro: s.metro,
           zip: s.zip,
           featuredUntil: l.featured ? new Date(now + 7 * DAY_MS) : null,
+          expiresAt: new Date(now + 90 * DAY_MS),
         },
       });
     }

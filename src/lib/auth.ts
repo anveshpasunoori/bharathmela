@@ -43,6 +43,11 @@ export const getCurrentUser = cache(async () => {
   if (!session || session.expiresAt < new Date()) return null;
   // Suspended or deleted accounts are treated as logged out everywhere.
   if (session.user.suspendedAt || session.user.deletedAt) return null;
+  // Record activity for "Active recently" badges, at most every 10 minutes to keep writes low.
+  const seen = session.user.lastSeenAt?.getTime() ?? 0;
+  if (Date.now() - seen > 10 * 60_000) {
+    await db.user.update({ where: { id: session.user.id }, data: { lastSeenAt: new Date() } });
+  }
   return session.user;
 });
 

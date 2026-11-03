@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
+import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
@@ -13,23 +14,25 @@ import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { getCurrentUser } from "@/lib/auth";
 import { milesBetween, zipCoords } from "@/lib/geo";
+import { timeAgo } from "@/lib/time";
 import { getUserLocation } from "@/lib/user-location";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
-import { PUBLIC_LISTING } from "@/lib/listings";
+import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
-import { priceLabel } from "@/lib/plans";
+import { formatUSD, priceLabel } from "@/lib/plans";
 import { readEventService } from "@/lib/event-services";
 import { isProfessional, readProfessional } from "@/lib/professionals";
-import { readRental } from "@/lib/rentals";
+import { readRental, spaceTypeLabel } from "@/lib/rentals";
+import { rentComparison } from "@/lib/rent-trends";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 import { messageSeller, toggleSaved } from "../../actions/buyer";
 import { submitReview } from "../../actions/review";
 
 async function getListing(id: string) {
   return db.listing.findFirst({
-    where: { id, ...PUBLIC_LISTING },
+    where: { id, ...publicListing() },
     include: { vendor: true, photos: { orderBy: { position: "asc" } } },
   });
 }
@@ -59,13 +62,17 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       take: 10,
     }),
     ratingsFor([listing.vendorId]),
-    db.user.findUnique({ where: { id: listing.vendor.userId }, select: { createdAt: true } }),
+    db.user.findUnique({
+      where: { id: listing.vendor.userId },
+      select: { createdAt: true, lastSeenAt: true, emailVerifiedAt: true, phoneVerifiedAt: true },
+    }),
     getUserLocation(),
   ]);
   const saved = user ? !!(await db.favorite.findUnique({ where: { userId_listingId: { userId: user.id, listingId: listing.id } } })) : false;
   const coords = place && zipCoords(listing.zip);
   const miles = place && coords ? Math.round(milesBetween(place, coords)) : null;
   const own = user?.id === listing.vendor.userId;
+  const rent = rental ? await rentComparison(listing) : null;
   // Count views from everyone except the seller.
   if (user?.id !== listing.vendor.userId) {
     await db.listing.update({ where: { id: listing.id }, data: { views: { increment: 1 } } });
@@ -104,10 +111,22 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           </p>
         )}
         {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
+        {rent && (
+          <p className={`rounded-md px-3 py-2 text-sm ${rent.suspiciouslyLow ? "bg-red-50 text-red-900" : "bg-stone-50 text-stone-700"}`}>
+            Typical rent for a {spaceTypeLabel(rental!.spaceType).toLowerCase()} within 15 mi:{" "}
+            <b>{formatUSD(rent.typicalCents)}/mo</b> (from {rent.count} listings). This one is{" "}
+            {rent.percent === 0 ? "about the same" : `${Math.abs(rent.percent)}% ${rent.percent < 0 ? "lower" : "higher"}`}.
+            {rent.suspiciouslyLow && (
+              <> <b>Far below typical rent is a common scam sign.</b> See the place in person before paying anything.</>
+            )}
+          </p>
+        )}
         {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
         {eventService && <EventServiceDetailsView details={eventService} />}
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
-        <p className="text-xs text-stone-400">Updated {listing.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+        <p className="text-xs text-stone-400">
+          Posted {listing.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · updated {timeAgo(listing.updatedAt)}
+        </p>
       </article>
 
       <div className="card space-y-3">
@@ -125,6 +144,13 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             {sellerSince && <span>On BharathMela since {sellerSince.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
           </div>
         </div>
+        {sellerSince && (
+          <TrustBadges
+            emailVerified={!!sellerSince.emailVerifiedAt}
+            phoneVerified={!!sellerSince.phoneVerifiedAt}
+            lastSeenAt={sellerSince.lastSeenAt}
+          />
+        )}
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
         {!own && (
           <details id="message" className="rounded-md bg-stone-50 p-3 ring-1 ring-stone-200">

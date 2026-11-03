@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { deleteEvent, setEventVisibility } from "../actions/event";
-import { deleteListing, setListingVisibility } from "../actions/vendor";
+import { deleteListing, renewListing, setListingVisibility } from "../actions/vendor";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatEventTime } from "@/lib/events";
+import { daysUntil } from "@/lib/time";
 import { metroName, metroTimeZone } from "@/lib/metros";
 import { PLANS, formatUSD } from "@/lib/plans";
 import { ratingsFor } from "@/lib/reviews";
@@ -24,9 +25,10 @@ export default async function VendorDashboard({
     published?: string;
     updated?: string;
     eventPublished?: string;
+    phoneVerified?: string;
   }>;
 }) {
-  const { vendor } = await requireVendor();
+  const { user, vendor } = await requireVendor();
   const params = await searchParams;
   await syncExpirations();
 
@@ -46,6 +48,9 @@ export default async function VendorDashboard({
   const now = new Date();
   const upcomingEventCount = events.filter((e) => e.endsAt > now && (e.status === "ACTIVE" || e.status === "PENDING_REVIEW")).length;
   const activeCount = listings.filter((l) => l.status === "ACTIVE").length;
+  const expiringCount = listings.filter(
+    (l) => (l.status === "ACTIVE" || l.status === "HIDDEN") && l.expiresAt && daysUntil(l.expiresAt) <= 7,
+  ).length;
   const usedCount = listings.filter((l) => l.status === "ACTIVE" || l.status === "PENDING_REVIEW").length;
   const canAdd = usedCount < plan.maxListings;
   const totalViews = listings.reduce((sum, l) => sum + l.views, 0);
@@ -99,6 +104,19 @@ export default async function VendorDashboard({
       {params.error === "eventLimit" && (
         <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
           You&apos;ve reached your plan&apos;s limit of upcoming events. Hide another event or upgrade.
+        </p>
+      )}
+      {params.phoneVerified && <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">✓ Your phone is verified.</p>}
+      {!user.phoneVerifiedAt && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-sky-50 px-4 py-3 text-sm text-sky-900 ring-1 ring-sky-100">
+          <span>Get a <b>✓ Phone verified</b> badge. Buyers trust verified sellers more.</span>
+          <Link href="/vendor/verify-phone" className="btn py-1.5">Verify phone</Link>
+        </div>
+      )}
+      {expiringCount > 0 && (
+        <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {expiringCount} listing{expiringCount === 1 ? " is" : "s are"} expired or expiring within a week. Renew {expiringCount === 1 ? "it" : "them"} below so
+          buyers can still find you.
         </p>
       )}
       {params.error === "limit" && (
@@ -160,16 +178,33 @@ export default async function VendorDashboard({
                   </div>
                   <p className="text-sm text-stone-500">
                     {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
+                    {l.expiresAt && (l.status === "ACTIVE" || l.status === "HIDDEN") && (
+                      <>
+                        {" · "}
+                        {l.expiresAt <= now ? (
+                          <span className="font-semibold text-red-700">Expired – not showing to buyers</span>
+                        ) : daysUntil(l.expiresAt) <= 7 ? (
+                          <span className="font-semibold text-amber-700">Expires in {daysUntil(l.expiresAt)} days</span>
+                        ) : (
+                          <>Showing until {l.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>
+                        )}
+                      </>
+                    )}
                   </p>
                   {(l.status === "REJECTED" || l.status === "REMOVED") && l.moderationNote && (
                     <p className="mt-1 text-sm text-red-700">Reason: {l.moderationNote}</p>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2 text-sm">
-                  {l.status === "ACTIVE" && (
+                  {l.status === "ACTIVE" && (!l.expiresAt || l.expiresAt > now) && (
                     <Link href={`/vendor/listings/${l.id}/boost`} className="btn py-1.5">
                       {featured ? "Extend feature" : "Feature this"}
                     </Link>
+                  )}
+                  {(l.status === "ACTIVE" || l.status === "HIDDEN") && l.expiresAt && daysUntil(l.expiresAt) <= 14 && (
+                    <form action={renewListing.bind(null, l.id)}>
+                      <button className="btn py-1.5">Renew 90 days</button>
+                    </form>
                   )}
                   {l.status !== "REMOVED" && (
                     <Link href={`/vendor/listings/${l.id}/edit`} className="btn-outline py-1.5">

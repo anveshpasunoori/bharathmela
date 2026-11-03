@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
+import { sendEmail } from "./email";
 import { PLANS, PLAN_PERIOD_DAYS, type PlanId } from "./plans";
 
 const DAY_MS = 86_400_000;
@@ -56,6 +57,22 @@ export async function syncExpirations() {
     where: { status: "ACTIVE", endsAt: { lte: now } },
     data: { status: "EXPIRED" },
   });
+
+  // A week before a listing expires, remind the seller once so good listings don't silently disappear.
+  const expiring = await db.listing.findMany({
+    where: { status: "ACTIVE", expiryWarnedAt: null, expiresAt: { gt: now, lte: new Date(now.getTime() + 7 * 86_400_000) } },
+    include: { vendor: { include: { user: { select: { email: true, name: true } } } } },
+    take: 200,
+  });
+  for (const l of expiring) {
+    await db.listing.update({ where: { id: l.id }, data: { expiryWarnedAt: now } });
+    await sendEmail(
+      l.vendor.user.email,
+      `Your BharathMela listing "${l.title}" expires soon`,
+      `Hi ${l.vendor.user.name},\n\nYour listing "${l.title}" will stop showing on ${l.expiresAt!.toLocaleDateString("en-US", { month: "long", day: "numeric" })}. ` +
+        `If it's still available, renew it from your dashboard in one click. Listings expire so buyers only see businesses that are still active.\n\n– BharathMela`,
+    ).catch((e) => console.error("expiry reminder failed", e));
+  }
 }
 
 export async function approvePayment(paymentId: string, adminId: string) {

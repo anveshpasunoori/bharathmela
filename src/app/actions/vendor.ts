@@ -12,9 +12,13 @@ import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
 import { parseEventServiceForm } from "@/lib/event-services";
 import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
+import { findDuplicates } from "@/lib/duplicates";
 import { screenListing } from "@/lib/moderation";
+import { listingExpiry } from "@/lib/listings";
 import { checkPhotos, deleteListingFiles, deletePhotos, savePhotos, uploadedFiles } from "@/lib/photos";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
+import { toE164 } from "@/lib/sms";
+import { checkPhoneCode, sendPhoneCode } from "@/lib/verification";
 import { AI_DAILY_LIMIT, AI_WRITER_PLANS, PLANS, boostOption, isPaidPlan } from "@/lib/plans";
 
 function field(form: FormData, name: string) {
@@ -100,12 +104,22 @@ function parseListing(form: FormData): ListingInput | { error: string } {
 }
 
 // Decides whether a listing can go live right away or must wait for an admin.
-async function moderate(input: ListingInput, vendorId: string) {
+async function moderate(input: ListingInput, vendorId: string, excludeId?: string) {
   const extra = JSON.parse(input.details);
   const neighborhood = [extra.neighborhood, extra.firm, extra.areasServed].filter(Boolean).join("\n");
   const screening = screenListing(`${input.title}\n${input.description}\n${input.priceUnit}\n${neighborhood}`, input.category);
   if (screening.block) return { error: screening.block } as const;
   const reasons = [...screening.flags];
+  const candidates = await db.listing.findMany({
+    where: { category: input.category, status: { not: "REMOVED" }, ...(excludeId ? { id: { not: excludeId } } : {}) },
+    select: { id: true, title: true, description: true, vendorId: true },
+    take: 3000,
+  });
+  const { own, copied } = findDuplicates(`${input.title} ${input.description}`, vendorId, candidates);
+  if (own) {
+    return { error: `This looks the same as your listing "${own.title}". Edit that one instead of posting it again.` } as const;
+  }
+  if (copied) reasons.push("text closely matches another seller's listing (possible copy)");
   if (CATEGORY_RULES[input.category]?.requiresReview) reasons.push("category is reviewed before publishing");
   if (REVIEW_FIRST_LISTING) {
     const approvedBefore = await db.listing.count({ where: { vendorId, status: { in: ["ACTIVE", "HIDDEN"] } } });
@@ -132,7 +146,9 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
   const photoProblem = await checkPhotos(photos, 0);
   if (photoProblem) return { error: photoProblem };
 
-  const created = await db.listing.create({ data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip } });
+  const created = await db.listing.create({
+    data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip, expiresAt: listingExpiry() },
+  });
   await savePhotos(created.id, photos);
   revalidatePath("/vendor");
   redirect(`/vendor?${decision.status === "PENDING_REVIEW" ? "review=1" : "published=1"}`);
@@ -146,7 +162,7 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
   if ("error" in input) return input;
   if (!hit("listing", vendor.id)) return { error: TOO_MANY };
 
-  const decision = await moderate(input, vendor.id);
+  const decision = await moderate(input, vendor.id, listing.id);
   if ("error" in decision) return decision;
   const removeIds = form.getAll("removePhotos").map(String);
   const photos = uploadedFiles(form, "photos");
@@ -169,7 +185,14 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
   }
   await db.listing.update({
     where: { id: listing.id },
-    data: { ...input, status, moderationNote: status === "PENDING_REVIEW" ? note || "edited after rejection" : "" },
+    // Editing a listing counts as renewing it.
+    data: {
+      ...input,
+      status,
+      moderationNote: status === "PENDING_REVIEW" ? note || "edited after rejection" : "",
+      expiresAt: listingExpiry(),
+      expiryWarnedAt: null,
+    },
   });
   if (removeIds.length) await deletePhotos(listing.id, removeIds);
   await savePhotos(listing.id, photos);
@@ -213,6 +236,15 @@ export async function setListingVisibility(listingId: string, visible: boolean) 
     if (!ok) redirect("/vendor?error=limit");
   }
   await db.listing.update({ where: { id: listingId }, data: { status: visible ? "ACTIVE" : "HIDDEN" } });
+  revalidatePath("/vendor");
+}
+
+// Keeps a listing up for another LISTING_DAYS days; an expired one comes back.
+export async function renewListing(listingId: string) {
+  const { vendor } = await requireVendor();
+  const listing = await ownListing(vendor.id, listingId);
+  if (listing.status === "REMOVED" || listing.status === "REJECTED") return;
+  await db.listing.update({ where: { id: listingId }, data: { expiresAt: listingExpiry(), expiryWarnedAt: null } });
   revalidatePath("/vendor");
 }
 
@@ -295,6 +327,28 @@ export async function updateProfile(_: FormState, form: FormData): Promise<FormS
     where: { id: vendor.id },
     data: { businessName, phone, about, whatsapp: form.get("whatsapp") === "on" },
   });
+  // A new number has to be verified again.
+  if (toE164(phone) !== toE164(vendor.phone)) {
+    await db.user.update({ where: { id: vendor.userId }, data: { phoneVerifiedAt: null } });
+  }
   revalidatePath(`/seller/${vendor.id}`);
   return { message: "Profile saved." };
+}
+
+// Texts a code to the seller's business phone; confirming it earns a "Phone verified" badge.
+export async function sendPhoneVerification(): Promise<FormState> {
+  const { user, vendor } = await requireVendor();
+  const phone = toE164(vendor.phone);
+  if (!phone) return { error: "Your profile phone isn't a valid US number. Fix it in your business profile first." };
+  if (!hit("sms", user.id)) return { error: TOO_MANY };
+  const { error } = await sendPhoneCode(user.id, phone);
+  return error ? { error } : { message: `We texted a 6-digit code to ${vendor.phone}.` };
+}
+
+export async function confirmPhone(_: FormState, form: FormData): Promise<FormState> {
+  const { user } = await requireVendor();
+  const error = await checkPhoneCode(user.id, field(form, "code"));
+  if (error) return { error };
+  revalidatePath("/vendor");
+  redirect("/vendor?phoneVerified=1");
 }

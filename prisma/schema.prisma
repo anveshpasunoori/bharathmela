@@ -19,6 +19,7 @@ model User {
   // Set once the user enters the code we emailed them. Required before rating.
   emailVerifiedAt DateTime?
   emailCodes   EmailCode[]
+  phoneCodes   PhoneCode[]
   reviews      Review[]
   roomsWanted  RoomWanted[]
   favorites    Favorite[]
@@ -27,6 +28,10 @@ model User {
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
   termsVersion    String?
   termsAcceptedAt DateTime?
+  // Last time the user was signed in and using the site, for "Active recently" badges.
+  lastSeenAt      DateTime?
+  // Set once the user confirms a texted code; phone itself lives on VendorProfile.
+  phoneVerifiedAt DateTime?
   // Suspended users can't log in and their listings and reviews are hidden.
   suspendedAt     DateTime?
   suspendReason   String         @default("")
@@ -62,6 +67,18 @@ model VendorProfile {
   aiDrafts      AiDraft[]
   reviews       Review[]
   events        Event[]
+}
+
+// One-time code texted to prove a seller owns their phone number.
+model PhoneCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 // One-time code emailed to prove the user owns their address.
@@ -123,6 +140,10 @@ model Listing {
   moderationNote String       @default("") // why it was held, rejected or removed
   views         Int           @default(0)
   updatedAt     DateTime      @default(now()) @updatedAt
+  // Listings go stale: they stop showing after this date unless the seller renews them.
+  // Set on create and on renew (see LISTING_DAYS in src/lib/listings.ts).
+  expiresAt     DateTime?
+  expiryWarnedAt DateTime?
   // Denormalized from approved ad boosts so browse can sort featured listings first.
   featuredUntil DateTime?
   createdAt     DateTime      @default(now())

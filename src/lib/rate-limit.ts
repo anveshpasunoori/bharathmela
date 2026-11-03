@@ -14,6 +14,7 @@ export const LIMITS = {
   payment: { limit: 10, windowMs: 24 * 60 * 60_000 },
   listing: { limit: 20, windowMs: 24 * 60 * 60_000 },
   message: { limit: 15, windowMs: 24 * 60 * 60_000 },
+  sms: { limit: 5, windowMs: 24 * 60 * 60_000 },
 } as const;
 
 export async function clientIp() {

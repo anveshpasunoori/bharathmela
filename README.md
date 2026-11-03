@@ -153,6 +153,14 @@ Sellers can also post events as organizers at `/vendor/events/new`: concerts, da
   - On phones, a sticky Call/Text/WhatsApp bar.
 - **Prices:** shown as "From $2,500" for starting prices.
 
+## Trust and freshness (gaps found on Sulekha)
+
+- **Freshness:** listings show for 90 days (`LISTING_DAYS`). Sellers get one reminder email a week before expiry and can renew in one click, and editing also renews. Expired listings are hidden from buyers. Cards show "Updated 3 days ago", and listing pages show the posted date.
+- **Sponsored cap:** at most 2 sponsored listings are pinned per results page. When more have paid, they rotate hourly.
+- **Duplicates** (`src/lib/duplicates.ts`): reposting your own ad is blocked ("edit that one instead"). Text that closely matches another seller's ad goes to review as a possible copy.
+- **Seller badges:** "Active today / this week / this month" (from their last visit), "Phone verified" (texted code via Twilio, or the server log in development) and "Email verified".
+- **Typical rent:** room listings show the median rent for the same space type within 15 miles, once there are 5+ comparable listings. Rent under half of typical gets a scam warning.
+
 ## Listing photos
 
 Sellers can add up to 6 photos per listing (`src/lib/photos.ts`).
