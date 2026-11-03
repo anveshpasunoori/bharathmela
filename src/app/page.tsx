@@ -5,6 +5,9 @@ import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { browseListings } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
+import { formatUSD } from "@/lib/plans";
+
+const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
 export default async function Home({
   searchParams,
@@ -19,12 +22,12 @@ export default async function Home({
   const diet = category === "FOOD" ? (params.diet ?? "").split(",").filter(isDietTag) : [];
 
   await syncExpirations();
-  const listings = await browseListings(metro, category, q, diet);
+  const { listings, search } = await browseListings(metro, category, q, diet);
 
-  const href = (cat?: string, dietTags: string[] = []) => {
-    const p = new URLSearchParams({ metro });
+  const href = (cat?: string, dietTags: string[] = [], query = q, city = metro) => {
+    const p = new URLSearchParams({ metro: city });
     if (cat) p.set("category", cat);
-    if (q) p.set("q", q);
+    if (query) p.set("q", query);
     if (cat === "FOOD" && dietTags.length) p.set("diet", dietTags.join(","));
     return `/?${p}`;
   };
@@ -44,9 +47,27 @@ export default async function Home({
           <input type="hidden" name="metro" value={metro} />
           {category && <input type="hidden" name="category" value={category} />}
           {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
-          <input name="q" defaultValue={q} className="input flex-1" placeholder="Search biryani, Bharatanatyam, Telugu tutor…" aria-label="Search listings" />
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            maxLength={100}
+            className="input flex-1"
+            placeholder="Try “biryani”, “pooja for housewarming”, “vegan snacks under $20”"
+            aria-label="Search listings"
+          />
           <button className="btn">Search</button>
         </form>
+        {!q && (
+          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
+            Popular:
+            {POPULAR.map((term) => (
+              <Link key={term} href={href(undefined, [], term)} className="rounded-full bg-white px-2.5 py-0.5 text-stone-700 ring-1 ring-stone-200 hover:text-brand">
+                {term}
+              </Link>
+            ))}
+          </p>
+        )}
         <div className="mt-3">
           <LocationPicker metro={metro} />
         </div>
@@ -88,14 +109,35 @@ export default async function Home({
       )}
 
       {(q || category) && (
-        <p className="text-sm text-stone-600">
-          {listings.length} result{listings.length === 1 ? "" : "s"}
-          {q && <> for &ldquo;{q}&rdquo;</>}
-          {category && <> in {categoryLabel(category)}</>}
-          {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
-          {" · "}
-          <Link href={`/?metro=${metro}`} className="text-brand">Clear</Link>
-        </p>
+        <div className="space-y-1 text-sm text-stone-600">
+          <p>
+            {listings.length} result{listings.length === 1 ? "" : "s"}
+            {q && <> for &ldquo;{q}&rdquo;</>}
+            {category && <> in {categoryLabel(category)}</>}
+            {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
+            {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
+            {search.minPriceCents != null && <> · from {formatUSD(search.minPriceCents)}</>}
+            {" · "}
+            <Link href={`/?metro=${metro}`} className="text-brand">Clear</Link>
+          </p>
+          {search.suggestion && (
+            <p>
+              Did you mean{" "}
+              <Link href={href(category, diet, search.suggestion)} className="font-semibold text-brand">
+                {search.suggestion}
+              </Link>
+              ?
+            </p>
+          )}
+          {!category && search.hintedCategory && listings.length > 3 && (
+            <p>
+              Only show{" "}
+              <Link href={href(search.hintedCategory)} className="font-semibold text-brand">
+                {categoryLabel(search.hintedCategory)}
+              </Link>
+            </p>
+          )}
+        </div>
       )}
 
       {listings.length ? (
@@ -106,7 +148,25 @@ export default async function Home({
         </div>
       ) : (
         <div className="card text-center text-stone-600">
-          <p>{q || diet.length ? "Nothing matches your search and filters yet." : "No listings here yet."}</p>
+          <p>{q || diet.length ? `Nothing matches in ${metroName(metro)} yet.` : "No listings here yet."}</p>
+          {search.otherMetros.length > 0 && (
+            <p className="mt-2 text-sm">
+              Found in other cities:{" "}
+              {search.otherMetros.map((m, i) => (
+                <span key={m.metro}>
+                  {i > 0 && ", "}
+                  <Link href={href(category, diet, q, m.metro)} className="font-semibold text-brand">
+                    {metroName(m.metro)} ({m.count})
+                  </Link>
+                </span>
+              ))}
+            </p>
+          )}
+          {category && q && (
+            <p className="mt-2 text-sm">
+              <Link href={href(undefined, [], q)} className="font-semibold text-brand">Search all categories</Link>
+            </p>
+          )}
           <Link href="/vendor/signup" className="mt-3 inline-block font-semibold text-brand">
             Run a home business in {metroName(metro)}? List it free →
           </Link>

@@ -62,7 +62,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             {listings.map((l) => (
               <ListingCard
                 key={l.id}
-                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined }}
+                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0 }}
               />
             ))}
           </div>

@@ -78,6 +78,17 @@ DesiBazaar is set up as a neutral listing platform. The Terms of Service and Pri
 **Security headers**
 - Content Security Policy, no framing, nosniff, a strict referrer policy and a permissions policy, plus HSTS in production (`next.config.ts`).
 
+## Search
+
+`src/lib/search.ts` ranks one city's listings in memory:
+- **Spelling variants and synonyms** for desi terms: biriyani/biryani, pooja/puja, "meal box" → tiffin, "priest" → pandit, "housewarming" → griha pravesh.
+- **Matching:** plurals, typos (1 letter from 5-letter words, 2 from 8+), and half-typed words of 4+ letters.
+- **Price limits** like "under $20" or "over $100".
+- **Ranking:** title, diet markers and business name count more than the description. A category the query hints at gets a boost, and so do featured and Pro listings.
+- **When results are thin:** "Did you mean" suggestions built from words in real listings, and result counts in other cities when yours has none.
+
+Add spelling variants to `SYNONYMS` as you see real searches. `npm test` runs the search and listing-screening checks.
+
 ## Dietary markers (food)
 
 Food listings can carry Vegetarian, Vegan, Jain, Eggless, Gluten-free, Dairy-free, Nut-free, Organic and Halal markers (`DIET_TAGS` in `src/lib/constants.ts`). Vegan also marks Vegetarian, Eggless and Dairy-free, and Jain also marks Vegetarian. Buyers can filter food by any combination of markers. Markers are the seller's own claims: sellers see rules about cross-contact and USDA organic certification, and buyers see a "not verified" note. The AI writer only adds markers the seller stated.
