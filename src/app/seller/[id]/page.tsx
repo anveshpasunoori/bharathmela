@@ -7,6 +7,7 @@ import { ReviewList } from "@/components/ReviewList";
 import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
 import { db } from "@/lib/db";
+import { isNewListing } from "@/lib/time";
 import { publicEventWhere } from "@/lib/event-data";
 import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
@@ -75,7 +76,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             {listings.map((l) => (
               <ListingCard
                 key={l.id}
-                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0, distanceMiles: null }}
+                listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0, distanceMiles: null, isNew: isNewListing(l.createdAt) }}
               />
             ))}
           </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isNewListing } from "@/lib/time";
 import { publicListing } from "@/lib/listings";
 import { ratingsFor } from "@/lib/reviews";
 import { toggleSaved } from "../actions/buyer";
@@ -46,6 +47,7 @@ export default async function SavedPage() {
                   rating: ratings.get(listing.vendorId),
                   score: 0,
                   distanceMiles: null,
+                  isNew: isNewListing(listing.createdAt),
                 }}
               />
               <form action={toggleSaved.bind(null, listing.id)} className="absolute right-3 top-3">

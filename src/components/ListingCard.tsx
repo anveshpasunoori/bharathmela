@@ -1,75 +1,70 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CATEGORIES, categoryLabel } from "@/lib/constants";
+import { CATEGORIES, categoryLabel, parseTags, tagLabel } from "@/lib/constants";
+import { readEventService, serviceLabels } from "@/lib/event-services";
 import type { BrowseListing } from "@/lib/listings";
 import { priceLabel } from "@/lib/plans";
-import { readEventService, rentalItemLabels, serviceLabels } from "@/lib/event-services";
-import { isProfessional, licenseLine, readProfessional } from "@/lib/professionals";
+import { isProfessional, readProfessional, specialtyLabels } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
-import { timeAgo } from "@/lib/time";
-import { DietBadges } from "./DietBadges";
-import { Stars } from "./Stars";
+
+// The one line of facts a buyer scans for in each category.
+function keyFacts(listing: BrowseListing) {
+  if (listing.category === "ROOM_RENTAL") {
+    const r = readRental(listing.details);
+    if (r) return rentalSummary(r).join(" · ");
+  }
+  if (listing.category === "EVENT_SERVICES") {
+    const e = readEventService(listing.details);
+    if (e) return serviceLabels(e).join(" · ");
+  }
+  if (isProfessional(listing.category)) {
+    const p = readProfessional(listing.details);
+    if (p) return [p.firm, specialtyLabels(listing.category, p)[0], p.languages.filter((l) => l !== "English").join(", ")].filter(Boolean).join(" · ");
+  }
+  const diet = parseTags(listing.tags);
+  if (diet.length) return diet.filter((t) => !(t === "VEGETARIAN" && diet.includes("VEGAN"))).slice(0, 3).map(tagLabel).join(" · ");
+  return categoryLabel(listing.category);
+}
 
 export function ListingCard({ listing }: { listing: BrowseListing }) {
-  const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
-  const pro = isProfessional(listing.category) ? readProfessional(listing.details) : null;
-  const ev = listing.category === "EVENT_SERVICES" ? readEventService(listing.details) : null;
+  const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
+  const miles = listing.distanceMiles;
   return (
-    <Link
-      href={`/listing/${listing.id}`}
-      className={`card block overflow-hidden transition hover:shadow-md ${listing.isFeatured ? "border-stone-400" : ""}`}
-    >
-      <div className="-mx-5 -mt-5 mb-3 aspect-[4/3] overflow-hidden rounded-t-lg bg-brand-soft">
+    <Link href={`/listing/${listing.id}`} className="group block overflow-hidden rounded-xl bg-white ring-1 ring-stone-200 transition hover:shadow-md">
+      <div className="relative aspect-[4/3] bg-brand-soft">
         {listing.photos[0] ? (
           <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />
         ) : (
-          <div className="grid h-full place-items-center text-5xl opacity-70" aria-hidden>
+          <div className="grid h-full place-items-center text-5xl opacity-60" aria-hidden>
             {CATEGORIES.find((c) => c.id === listing.category)?.icon}
           </div>
         )}
+        <div className="absolute left-2 top-2 flex gap-1">
+          {/* Paid placement is labeled as such (FTC guidance on search ads). */}
+          {listing.isFeatured && <span className="badge bg-stone-900/80 text-white" title="This seller paid to show this listing first">Sponsored</span>}
+          {listing.isPro && <span className="badge bg-white/90 text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
+          {listing.isNew && !listing.isFeatured && <span className="badge bg-white/90 text-green-800">New</span>}
+        </div>
       </div>
-      <div className="mb-2 flex flex-wrap gap-1.5">
-        {/* Paid placement is labeled as such (FTC guidance on search ads). */}
-        {listing.isFeatured && <span className="badge bg-stone-800 text-white" title="This seller paid to show this listing first">Sponsored</span>}
-        {listing.isPro && <span className="badge bg-amber-100 text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
-        <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
-      </div>
-      <h3 className="font-semibold">{listing.title}</h3>
-      {listing.rating && <Stars rating={listing.rating.average} count={listing.rating.count} />}
-      {rental ? (
-        <p className="mt-1 text-sm text-stone-700">{rentalSummary(rental).join(" · ")}</p>
-      ) : (
-        <p className="mt-1 line-clamp-2 text-sm text-stone-600">{listing.description}</p>
-      )}
-      <DietBadges tags={listing.tags} className="mt-2" />
-      {ev && (
-        <p className="mt-2 text-xs text-stone-600">
-          {[...serviceLabels(ev), ...rentalItemLabels(ev).slice(0, 3)].join(" · ")}
-          {ev.insured && <span className="badge ml-1 bg-green-50 text-green-800">Insured</span>}
-        </p>
-      )}
-      {pro && (
-        <p className="mt-2 text-xs text-stone-600">
-          {pro.firm} · {licenseLine(listing.category, pro)} · {pro.languages.join(", ")}
-          {pro.freeConsultation && <span className="badge ml-1 bg-green-50 text-green-800">Free consultation</span>}
-        </p>
-      )}
-      <p className="mt-2 text-xs text-stone-400">Updated {timeAgo(listing.updatedAt)}</p>
-      <div className="mt-1 flex items-baseline justify-between text-sm">
-        <span className="text-stone-500">
-          {listing.vendor.businessName}
-          {listing.distanceMiles != null && (
-            <span className="block text-xs">
-              📍 {listing.distanceMiles < 1 ? "under 1 mi" : `${Math.round(listing.distanceMiles)} mi`} away
+      <div className="space-y-1 p-3">
+        <h3 className="line-clamp-2 font-semibold leading-snug group-hover:text-brand">{listing.title}</h3>
+        {price && (
+          <p className="text-sm">
+            <b>{price.main}</b> <span className="text-stone-500">{price.unit}</span>
+          </p>
+        )}
+        <p className="truncate text-sm text-stone-600">{keyFacts(listing)}</p>
+        <div className="flex items-center justify-between gap-2 pt-1 text-xs text-stone-500">
+          <span className="truncate">
+            {listing.vendor.businessName}
+            {miles != null && <> · {miles < 1 ? "<1" : Math.round(miles)} mi</>}
+          </span>
+          {listing.rating && (
+            <span className="shrink-0 text-stone-700">
+              <span className="text-amber-500">★</span> {listing.rating.average.toFixed(1)} ({listing.rating.count})
             </span>
           )}
-        </span>
-        {listing.priceCents != null && (
-          <span className="font-semibold">
-            {priceLabel(listing.priceCents, listing.priceUnit).main}{" "}
-            <span className="font-normal text-stone-500">{priceLabel(listing.priceCents, listing.priceUnit).unit}</span>
-          </span>
-        )}
+        </div>
       </div>
     </Link>
   );

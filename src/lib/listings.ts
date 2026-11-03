@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
+import { isNewListing } from "./time";
 import { milesBetween, zipCoords } from "./geo";
 import { ratingsFor } from "./reviews";
 import { type EventServiceFilters, eventServiceSearchText, matchesEventServiceFilters, readEventService } from "./event-services";
@@ -131,6 +132,7 @@ export async function browseListings({
       ...item,
       isFeatured,
       isPro,
+      isNew: isNewListing(item.createdAt),
       distanceMiles,
       rating: ratings.get(item.vendorId),
       score: score * (isFeatured ? 1.15 : 1) * (isPro ? 1.05 : 1) * nearby,

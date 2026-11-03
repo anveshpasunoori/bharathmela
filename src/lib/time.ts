@@ -21,3 +21,6 @@ export function activityLabel(lastSeenAt: Date | null | undefined, now = Date.no
 }
 
 export const daysUntil = (date: Date, now = Date.now()) => Math.ceil((date.getTime() - now) / DAY);
+
+// Listings posted in the last week get a "New" label.
+export const isNewListing = (createdAt: Date, now = Date.now()) => now - createdAt.getTime() < 7 * DAY;
