@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { ratingsFor } from "./reviews";
+import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
 import { parseQuery, rankListings, suggestQuery } from "./search";
 
 // Listings anyone can see: live, and from a seller who isn't suspended or deleted.
@@ -17,7 +18,13 @@ const withPlans = (now: Date) =>
 
 // Browse a city. Without a search: featured (paid boost) first, then Pro sellers, then newest.
 // With a search: best matches first, with a small lift for featured and Pro listings.
-export async function browseListings(metro: string, category?: string, query = "", diet: string[] = []) {
+export async function browseListings(
+  metro: string,
+  category?: string,
+  query = "",
+  diet: string[] = [],
+  rentalFilters: RentalFilters = {},
+) {
   const now = new Date();
   const filters: Prisma.ListingWhereInput = {
     ...PUBLIC_LISTING,
@@ -28,13 +35,26 @@ export async function browseListings(metro: string, category?: string, query = "
   const parsed = parseQuery(query);
   const searching = parsed.terms.length > 0 || parsed.maxPriceCents != null || parsed.minPriceCents != null;
 
-  const candidates = await db.listing.findMany({
+  const filteringRentals = category === "ROOM_RENTAL" && Object.values(rentalFilters).some((v) => v != null && v !== false);
+  const fetched = await db.listing.findMany({
     where: { ...filters, metro },
     include: withPlans(now),
     orderBy: { createdAt: "desc" },
-    take: searching ? 5000 : 200,
+    take: searching || filteringRentals ? 5000 : 200,
   });
-  const scored = searching ? rankListings(parsed, candidates) : candidates.map((item) => ({ item, score: 0 }));
+  const candidates = filteringRentals
+    ? fetched.filter((l) => matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters))
+    : fetched;
+  // Rental details (space type, neighborhood, amenities) are searchable too.
+  const scored = searching
+    ? rankListings(
+        parsed,
+        candidates.map((l) => {
+          const rental = l.category === "ROOM_RENTAL" ? readRental(l.details) : null;
+          return { ...l, description: rental ? `${l.description} ${rentalSearchText(rental)}` : l.description, original: l };
+        }),
+      ).map(({ item, score }) => ({ item: item.original, score }))
+    : candidates.map((item) => ({ item, score: 0 }));
 
   const ratings = await ratingsFor([...new Set(scored.map((s) => s.item.vendorId))]);
   const listings = scored.map(({ item, score }) => {

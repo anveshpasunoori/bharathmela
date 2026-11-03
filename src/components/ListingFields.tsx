@@ -4,12 +4,22 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
+import type { RentalDetails } from "@/lib/rentals";
 import { CategorySelect } from "./CategorySelect";
+import { RentalFields } from "./RentalFields";
 
 // Listing inputs plus the AI ad writer, which fills them in from the seller's rough idea.
 export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[] };
 
-export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initial?: ListingValues }) {
+export function ListingFields({
+  canUseAI,
+  initial,
+  initialRental,
+}: {
+  canUseAI: boolean;
+  initial?: ListingValues;
+  initialRental?: RentalDetails | null;
+}) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -19,6 +29,7 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
   const [idea, setIdea] = useState("");
   const [aiError, setAiError] = useState("");
   const [writing, startWriting] = useTransition();
+  const rental = category === "ROOM_RENTAL";
 
   function writeAd() {
     setAiError("");
@@ -88,7 +99,7 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
               return (
                 <label
                   key={t.id}
-                  className={`cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-300"}`}
+                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-300"}`}
                 >
                   <input
                     type="checkbox"
@@ -108,18 +119,30 @@ export function ListingFields({ canUseAI, initial }: { canUseAI: boolean; initia
         </fieldset>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="label" htmlFor="price">Price in USD (optional)</label>
-          <input className="input" id="price" name="price" inputMode="decimal" placeholder="12.50"
-            value={price} onChange={(e) => setPrice(e.target.value)} />
+      {rental ? (
+        <>
+          <div>
+            <label className="label" htmlFor="price">Monthly rent (USD)</label>
+            <input className="input" id="price" name="price" inputMode="decimal" placeholder="1200" required
+              value={price} onChange={(e) => setPrice(e.target.value)} />
+            <input type="hidden" name="priceUnit" value="per month" />
+          </div>
+          <RentalFields initial={initialRental} />
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label" htmlFor="price">Price in USD (optional)</label>
+            <input className="input" id="price" name="price" inputMode="decimal" placeholder="12.50"
+              value={price} onChange={(e) => setPrice(e.target.value)} />
+          </div>
+          <div>
+            <label className="label" htmlFor="priceUnit">Price unit</label>
+            <input className="input" id="priceUnit" name="priceUnit" maxLength={40} placeholder="per plate, per hour…"
+              value={priceUnit} onChange={(e) => setPriceUnit(e.target.value)} />
+          </div>
         </div>
-        <div>
-          <label className="label" htmlFor="priceUnit">Price unit</label>
-          <input className="input" id="priceUnit" name="priceUnit" maxLength={40} placeholder="per plate, per hour…"
-            value={priceUnit} onChange={(e) => setPriceUnit(e.target.value)} />
-        </div>
-      </div>
+      )}
     </>
   );
 }

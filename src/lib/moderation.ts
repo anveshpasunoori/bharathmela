@@ -83,7 +83,7 @@ export function screenListing(text: string, category: string): Screening {
     if (!m) continue;
     if (strict) {
       return {
-        block: `Your listing says "${m[0].trim()}". Rental and hiring ads can't state a preference about who the tenant or worker is (religion, community, language, sex, family status, diet and similar). Describe the room or the job instead.`,
+        block: `Your listing says "${m[0].trim()}". Rental and hiring ads can't state a preference about who the tenant or worker is (religion, community, language, sex, family status, diet and similar). Describe the room or the job instead.${category === "ROOM_RENTAL" ? " If you live in the home and will share it, you can set a roommate gender preference in the rental details instead." : ""}`,
         flags: [],
       };
     }

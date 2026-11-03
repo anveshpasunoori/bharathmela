@@ -56,6 +56,7 @@ export function boostOption(days: number) {
   return BOOSTS.find((b) => b.days === days);
 }
 
+// "$1,400" for whole dollars, "$9.99" otherwise.
 export function formatUSD(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
+  return (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: cents % 100 ? 2 : 0 });
 }

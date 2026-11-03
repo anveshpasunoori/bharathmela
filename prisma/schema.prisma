@@ -110,6 +110,8 @@ model Listing {
   priceUnit     String        @default("") // e.g. "per plate", "per hour"
   // Dietary tags for food, stored as ",VEGAN,GLUTEN_FREE," so a tag can be matched with `contains`.
   tags          String        @default("")
+  // Category-specific structured fields as JSON (room rentals: see RentalDetails in src/lib/rentals.ts).
+  details       String        @default("{}")
   metro         String
   zip           String
   // ACTIVE | HIDDEN (by seller) | PENDING_REVIEW | REJECTED | REMOVED (by admin)

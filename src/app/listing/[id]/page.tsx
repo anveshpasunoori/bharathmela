@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
+import { RentalDetailsView, RentalScamWarning } from "@/components/RentalDetailsView";
 import { ReviewList } from "@/components/ReviewList";
 import { Stars } from "@/components/Stars";
 import { getCurrentUser } from "@/lib/auth";
@@ -13,6 +14,7 @@ import { CATEGORY_RULES, PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { PUBLIC_LISTING } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { readRental } from "@/lib/rentals";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 import { submitReview } from "../../actions/review";
 
@@ -32,6 +34,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const listing = await getListing(id);
   if (!listing) notFound();
   const buyerNote = CATEGORY_RULES[listing.category]?.buyer;
+  const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
 
   const [user, reviews, ratings, sellerSince] = await Promise.all([
     getCurrentUser(),
@@ -57,6 +60,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       <Link href={`/?metro=${listing.metro}&category=${listing.category}`} className="text-sm text-stone-500 hover:text-brand">
         ← {categoryLabel(listing.category)} in {metroName(listing.metro)}
       </Link>
+      {rental && <RentalScamWarning />}
       <article className="card space-y-3">
         <span className="badge bg-stone-100 text-stone-600">{categoryLabel(listing.category)}</span>
         <h1 className="text-2xl font-bold">{listing.title}</h1>
@@ -66,6 +70,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             {formatUSD(listing.priceCents)} <span className="text-base font-normal text-stone-500">{listing.priceUnit}</span>
           </p>
         )}
+        {rental && <RentalDetailsView details={rental} zip={listing.zip} />}
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
         <p className="text-xs text-stone-400">Updated {listing.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
       </article>

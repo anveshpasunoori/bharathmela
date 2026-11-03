@@ -78,6 +78,7 @@ async function main() {
       plan: "FREE",
       listings: [
         { title: "Private room in 3BR house near Lawrence Expwy", category: "ROOM_RENTAL", priceCents: 140000, priceUnit: "per month", featured: false,
+          details: "{\"spaceType\": \"PRIVATE_ROOM\", \"availableFrom\": \"2026-12-01\", \"lease\": \"6_MONTHS\", \"depositCents\": 100000, \"utilities\": \"INCLUDED\", \"bathroom\": \"SHARED\", \"furnished\": \"FURNISHED\", \"parking\": \"DRIVEWAY\", \"laundry\": \"IN_UNIT\", \"bedrooms\": null, \"bathrooms\": null, \"neighborhood\": \"Lawrence Expwy & El Camino\", \"amenities\": [\"WIFI\", \"AC\", \"KITCHEN\", \"NEAR_TRANSIT\"], \"houseRules\": [\"NO_SMOKING\", \"QUIET_HOURS\"], \"ownerOccupied\": true, \"roommateGender\": \"ANY\"}",
           description: "Furnished room with shared bath, utilities and Wi-Fi included. Walk to Caltrain. Available Dec 1." },
       ],
     },
@@ -143,6 +144,7 @@ async function main() {
           priceCents: l.priceCents,
           priceUnit: l.priceUnit,
           tags: "tags" in l ? l.tags : "",
+          details: "details" in l ? l.details : "{}",
           metro: s.metro,
           zip: s.zip,
           featuredUntil: l.featured ? new Date(now + 7 * DAY_MS) : null,

@@ -8,13 +8,26 @@ import { upcomingEvents } from "@/lib/event-data";
 import { browseListings } from "@/lib/listings";
 import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
+import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
 
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ metro?: string; category?: string; q?: string; diet?: string; deleted?: string }>;
+  searchParams: Promise<{
+    metro?: string;
+    category?: string;
+    q?: string;
+    diet?: string;
+    deleted?: string;
+    space?: string;
+    maxRent?: string;
+    by?: string;
+    pbath?: string;
+    furn?: string;
+    pets?: string;
+  }>;
 }) {
   const params = await searchParams;
   const metro = isMetro(params.metro) ? params.metro : DEFAULT_METRO;
@@ -22,10 +35,22 @@ export default async function Home({
   const q = (params.q ?? "").slice(0, 100);
   // Dietary filters only apply to food.
   const diet = category === "FOOD" ? (params.diet ?? "").split(",").filter(isDietTag) : [];
+  // Rental filters only apply to room rentals.
+  const rentalFilters: RentalFilters =
+    category === "ROOM_RENTAL"
+      ? {
+          space: SPACE_TYPES.some((t) => t.id === params.space) ? params.space : undefined,
+          maxRent: Number(params.maxRent) > 0 ? Math.round(Number(params.maxRent) * 100) : undefined,
+          availableBy: /^\d{4}-\d{2}-\d{2}$/.test(params.by ?? "") ? params.by : undefined,
+          privateBath: params.pbath === "1",
+          furnished: params.furn === "1",
+          pets: params.pets === "1",
+        }
+      : {};
 
   await syncExpirations();
   const [{ listings, search }, events] = await Promise.all([
-    browseListings(metro, category, q, diet),
+    browseListings(metro, category, q, diet, rentalFilters),
     q || category ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
   ]);
 
@@ -125,6 +150,41 @@ export default async function Home({
             );
           })}
         </nav>
+      )}
+
+      {category === "ROOM_RENTAL" && (
+        <form className="card grid gap-3 py-4 text-sm sm:grid-cols-4" aria-label="Rental filters">
+          <input type="hidden" name="metro" value={metro} />
+          <input type="hidden" name="category" value="ROOM_RENTAL" />
+          {q && <input type="hidden" name="q" value={q} />}
+          <div>
+            <label className="label" htmlFor="space">Space</label>
+            <select id="space" name="space" defaultValue={rentalFilters.space ?? ""} className="input">
+              <option value="">Any</option>
+              {SPACE_TYPES.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="maxRent">Max rent / month</label>
+            <input id="maxRent" name="maxRent" inputMode="numeric" placeholder="e.g. 1500" className="input"
+              defaultValue={rentalFilters.maxRent ? rentalFilters.maxRent / 100 : ""} />
+          </div>
+          <div>
+            <label className="label" htmlFor="by">Move in by</label>
+            <input id="by" name="by" type="date" className="input" defaultValue={rentalFilters.availableBy ?? ""} />
+          </div>
+          <div className="flex flex-col justify-end gap-1">
+            <label className="flex items-center gap-2"><input type="checkbox" name="pbath" value="1" defaultChecked={rentalFilters.privateBath} /> Private bath</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="furn" value="1" defaultChecked={rentalFilters.furnished} /> Furnished</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="pets" value="1" defaultChecked={rentalFilters.pets} /> Pets allowed</label>
+          </div>
+          <div className="flex gap-2 sm:col-span-4">
+            <button className="btn">Apply filters</button>
+            <Link href={`/?metro=${metro}&category=ROOM_RENTAL`} className="btn-outline">Reset</Link>
+          </div>
+        </form>
       )}
 
       {(q || category) && (

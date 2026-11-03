@@ -11,7 +11,7 @@
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
     "postinstall": "prisma generate",
-    "test": "tsx tests/moderation.ts && tsx tests/search.ts"
+    "test": "tsx tests/moderation.ts && tsx tests/search.ts && tsx tests/rentals.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

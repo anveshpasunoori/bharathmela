@@ -75,6 +75,10 @@ const SYNONYMS: string[][] = [
   ["rent", "rental", "for rent", "lease", "sublet", "sublease", "renting"],
   ["roommate", "room mate", "flatmate", "housemate"],
   ["apartment", "apt", "flat", "condo", "studio"],
+  ["pg", "paying guest", "paying guests", "pg accommodation"],
+  ["wifi", "wi fi", "wi-fi", "internet"],
+  ["furnished", "fully furnished"],
+  ["private bath", "attached bath", "attached bathroom", "private bathroom", "ensuite"],
   // Art & clothing
   ["mehndi", "mehendi", "henna", "mehandi"],
   ["rangoli", "kolam", "muggulu"],

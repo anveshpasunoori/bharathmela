@@ -78,6 +78,17 @@ DesiBazaar is set up as a neutral listing platform. The Terms of Service and Pri
 **Security headers**
 - Content Security Policy, no framing, nosniff, a strict referrer policy and a permissions policy, plus HSTS in production (`next.config.ts`).
 
+## Room rentals
+
+Rental listings have structured details (`src/lib/rentals.ts`, stored as JSON in `Listing.details`):
+- **The space:** type (private room, shared room, paying guest, apartment, condo, townhouse, house, in-law unit), bedrooms and baths for whole units, bathroom, furnishing.
+- **Terms:** monthly rent, available-from date, lease length, deposit, utilities.
+- **Extras:** parking, laundry, amenities, house rules, and neighborhood or cross streets. The exact address is never posted.
+- **Roommate gender preference:** offered only when the poster lives in the home and shares it. Fair-housing rules generally allow sex preferences only for shared living. Every other "who" preference stays blocked.
+- **Listing pages:** a scam warning, a facts grid, and an "area on map" link.
+- **Filters:** space type, max rent, move-in date, private bath, furnished, pets allowed.
+- **Search:** covers rental details too ("attached bath", "PG", "wifi", neighborhood names).
+
 ## Events
 
 Sellers can also post events as organizers at `/vendor/events/new`: concerts, dance performances, festival celebrations, pujas, community events, workshops, kids' events and comedy/film/theatre. Each event can be tagged with a festival (Diwali, Navratri/Garba, Holi, Ganesh Chaturthi and more).

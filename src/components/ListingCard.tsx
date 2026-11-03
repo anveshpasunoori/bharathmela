@@ -2,10 +2,12 @@ import Link from "next/link";
 import { categoryLabel } from "@/lib/constants";
 import type { BrowseListing } from "@/lib/listings";
 import { formatUSD } from "@/lib/plans";
+import { readRental, rentalSummary } from "@/lib/rentals";
 import { DietBadges } from "./DietBadges";
 import { Stars } from "./Stars";
 
 export function ListingCard({ listing }: { listing: BrowseListing }) {
+  const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
   return (
     <Link
       href={`/listing/${listing.id}`}
@@ -18,7 +20,11 @@ export function ListingCard({ listing }: { listing: BrowseListing }) {
       </div>
       <h3 className="font-semibold">{listing.title}</h3>
       {listing.rating && <Stars rating={listing.rating.average} count={listing.rating.count} />}
-      <p className="mt-1 line-clamp-2 text-sm text-stone-600">{listing.description}</p>
+      {rental ? (
+        <p className="mt-1 text-sm text-stone-700">{rentalSummary(rental).join(" · ")}</p>
+      ) : (
+        <p className="mt-1 line-clamp-2 text-sm text-stone-600">{listing.description}</p>
+      )}
       <DietBadges tags={listing.tags} className="mt-2" />
       <div className="mt-3 flex items-baseline justify-between text-sm">
         <span className="text-stone-500">{listing.vendor.businessName}</span>

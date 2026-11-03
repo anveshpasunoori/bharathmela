@@ -7,6 +7,7 @@ import { getVendorPlan } from "@/lib/billing";
 import { parseTags } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { AI_WRITER_PLANS } from "@/lib/plans";
+import { readRental } from "@/lib/rentals";
 import { updateListing } from "../../../../actions/vendor";
 
 export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
@@ -39,6 +40,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
           <input type="hidden" name="listingId" value={listing.id} />
           <ListingFields
             canUseAI={AI_WRITER_PLANS.includes(plan.id)}
+            initialRental={readRental(listing.details)}
             initial={{
               category: listing.category,
               title: listing.title,
