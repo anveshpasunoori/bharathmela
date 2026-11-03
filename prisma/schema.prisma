@@ -416,3 +416,12 @@ model Quote {
   @@unique([requestId, vendorId])
 }
 
+// Rate-limit counters (src/lib/rate-limit.ts), shared by every server instance. Old rows are cleared daily.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+

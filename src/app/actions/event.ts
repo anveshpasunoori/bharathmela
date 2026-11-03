@@ -134,7 +134,7 @@ export async function createEvent(_: FormState, form: FormData): Promise<FormSta
   const { vendor } = await requireVendor();
   const input = parseEvent(form, vendor.metro);
   if ("error" in input) return input;
-  if (!hit("listing", vendor.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", vendor.id))) return { error: TOO_MANY };
   const { ok, plan } = await hasRoomForEvent(vendor.id);
   if (!ok) {
     return { error: `Your ${plan.name} plan allows ${plan.maxEvents} upcoming event(s). Upgrade, or wait until one has finished.` };
@@ -153,7 +153,7 @@ export async function updateEvent(_: FormState, form: FormData): Promise<FormSta
   if (event.status === "REMOVED") return { error: "This event was removed by BharathMela and can't be edited." };
   const input = parseEvent(form, event.metro);
   if ("error" in input) return input;
-  if (!hit("listing", vendor.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", vendor.id))) return { error: TOO_MANY };
 
   const decision = await moderateEvent(input, vendor.id);
   if ("error" in decision) return decision;

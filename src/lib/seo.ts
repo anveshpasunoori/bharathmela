@@ -9,7 +9,8 @@ export const SITE_DESCRIPTION =
   "Find home food, tutors, pujaris, dance and music teachers, wedding vendors, home services, rooms and more from the Indian community in your US city.";
 
 export const siteUrl = () => (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-export const absoluteUrl = (path: string) => `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+// Full URL for a path; URLs that are already absolute (photos on a CDN) are left as they are.
+export const absoluteUrl = (path: string) => (/^https?:\/\//.test(path) ? path : `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`);
 
 // URL words for each category, as people search for them.
 export const CATEGORY_SLUGS: Record<string, string> = {

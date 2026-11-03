@@ -32,7 +32,7 @@ export async function createRequest(_: FormState, form: FormData): Promise<FormS
   const screening = screenListing(`${input.title}\n${input.description}`, input.category);
   if (screening.block) return { error: screening.block };
   if (screening.flags.length) return { error: `Please reword your request: it mentions ${screening.flags.join(", ")}.` };
-  if (!hit("listing", user.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", user.id))) return { error: TOO_MANY };
   const open = await db.serviceRequest.count({ where: { userId: user.id, ...openRequest() } });
   if (open >= MAX_OPEN_REQUESTS) return { error: `You can have ${MAX_OPEN_REQUESTS} open requests. Close one you no longer need first.` };
 
@@ -66,7 +66,7 @@ export async function sendQuote(_: FormState, form: FormData): Promise<FormState
   if (screening.flags.some((f) => /wire|gift card|crypto|before viewing|upfront|advance/.test(f))) {
     return { error: "Quotes can't ask for wire transfers, gift cards, crypto or payment up front." };
   }
-  if (!hit("message", user.id)) return { error: TOO_MANY };
+  if (!(await hit("message", user.id))) return { error: TOO_MANY };
   if (await db.quote.findUnique({ where: { requestId_vendorId: { requestId: id, vendorId: vendor.id } } })) {
     return { error: "You've already sent a quote for this request." };
   }

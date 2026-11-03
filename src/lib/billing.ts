@@ -36,8 +36,9 @@ let lastSync = 0;
 
 // Expire lapsed plans and boosts. Runs lazily on page loads (at most once a minute);
 // move to a scheduled job once traffic grows.
-export async function syncExpirations() {
-  if (Date.now() - lastSync < 60_000) return;
+// Also run by the daily job (`force`), so expiries and reminders happen even on quiet days.
+export async function syncExpirations({ force = false } = {}) {
+  if (!force && Date.now() - lastSync < 60_000) return;
   lastSync = Date.now();
   const now = new Date();
   const lapsed = await db.subscription.findMany({

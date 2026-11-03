@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { DeleteObjectCommand, DeleteObjectsCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 import { db } from "./db";
 
@@ -9,15 +10,38 @@ export const MAX_PHOTOS = 6;
 const MAX_BYTES = 8 * 1024 * 1024;
 const FORMATS = new Set(["jpeg", "png", "webp"]);
 
-// Local disk under public/ for development. In production, swap these two functions for
-// object storage (S3, Cloudflare R2) and serve the files from a CDN.
+// Where photos live. With S3_BUCKET set, any S3-compatible store (Cloudflare R2, AWS S3, Backblaze B2):
+// files are served from S3_PUBLIC_URL (a public bucket URL or CDN in front of it). Without it, local disk
+// under public/ (development only: most hosts wipe it on every deploy).
 const ROOT = path.join(process.cwd(), "public", "uploads", "listings");
+const bucket = process.env.S3_BUCKET;
+const publicBase = (process.env.S3_PUBLIC_URL ?? "").replace(/\/$/, "");
+const s3 = bucket
+  ? new S3Client({
+      region: process.env.S3_REGION ?? "auto",
+      endpoint: process.env.S3_ENDPOINT || undefined,
+      credentials: { accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "", secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "" },
+    })
+  : null;
+const keyFor = (listingId: string, name: string) => `listings/${listingId}/${name}`;
+
 async function store(listingId: string, name: string, data: Buffer) {
+  if (s3) {
+    await s3.send(
+      new PutObjectCommand({ Bucket: bucket, Key: keyFor(listingId, name), Body: data, ContentType: "image/webp", CacheControl: "public, max-age=31536000, immutable" }),
+    );
+    return `${publicBase}/${keyFor(listingId, name)}`;
+  }
   await mkdir(path.join(ROOT, listingId), { recursive: true });
   await writeFile(path.join(ROOT, listingId, name), data);
   return `/uploads/listings/${listingId}/${name}`;
 }
+
 async function remove(url: string) {
+  if (s3 && publicBase && url.startsWith(`${publicBase}/listings/`)) {
+    await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: url.slice(publicBase.length + 1) }));
+    return;
+  }
   if (!url.startsWith("/uploads/listings/")) return;
   await rm(path.join(process.cwd(), "public", url), { force: true });
 }
@@ -75,6 +99,12 @@ export async function deletePhotos(listingId: string, ids: string[]) {
 // Removes every stored file for a listing (call when the listing is deleted).
 export async function deleteListingFiles(listingId: string) {
   if (!/^[a-z0-9]+$/i.test(listingId)) return;
+  if (s3) {
+    const listed = await s3.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: `listings/${listingId}/` }));
+    const keys = (listed.Contents ?? []).flatMap((o) => (o.Key ? [{ Key: o.Key }] : []));
+    if (keys.length) await s3.send(new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: keys } }));
+    return;
+  }
   await rm(path.join(ROOT, listingId), { recursive: true, force: true });
 }
 

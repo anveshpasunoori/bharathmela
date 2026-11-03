@@ -21,7 +21,7 @@ export async function submitReview(_: FormState, form: FormData): Promise<FormSt
   if (Date.now() - user.createdAt.getTime() < MIN_ACCOUNT_AGE_MS) {
     return { error: "New accounts can rate sellers 10 minutes after signing up." };
   }
-  if (!hit("review", user.id)) return { error: TOO_MANY };
+  if (!(await hit("review", user.id))) return { error: TOO_MANY };
 
   const rating = Number(form.get("rating"));
   const comment = String(form.get("comment") ?? "").trim().slice(0, 1000);

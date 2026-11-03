@@ -32,7 +32,7 @@ async function parsePayment(form: FormData, vendorId: string) {
   const reference = field(form, "reference").slice(0, 100);
   if (!PAYMENT_METHODS.some((m) => m.id === method)) return { error: "Choose how you paid." } as const;
   if (reference.length < 4) return { error: "Enter the transaction ID or confirmation number from your payment." } as const;
-  if (!hit("payment", vendorId)) return { error: TOO_MANY } as const;
+  if (!(await hit("payment", vendorId))) return { error: TOO_MANY } as const;
   // A reference that was already used is either a mistake or an attempt to reuse one payment.
   const reused = await db.payment.findFirst({
     where: { reference: { equals: reference }, status: { in: ["PENDING", "APPROVED"] } },
@@ -151,7 +151,7 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
   const { vendor } = await requireVendor();
   const input = parseListing(form);
   if ("error" in input) return input;
-  if (!hit("listing", vendor.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", vendor.id))) return { error: TOO_MANY };
 
   const { ok, plan } = await hasRoomForListing(vendor.id);
   if (!ok) {
@@ -177,7 +177,7 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
   if (listing.status === "REMOVED") return { error: "This listing was removed by BharathMela and can't be edited." };
   const input = parseListing(form);
   if ("error" in input) return input;
-  if (!hit("listing", vendor.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", vendor.id))) return { error: TOO_MANY };
 
   const decision = await moderate(input, vendor.id, listing.id);
   if ("error" in decision) return decision;
@@ -357,7 +357,7 @@ export async function sendPhoneVerification(): Promise<FormState> {
   const { user, vendor } = await requireVendor();
   const phone = toE164(vendor.phone);
   if (!phone) return { error: "Your profile phone isn't a valid US number. Fix it in your business profile first." };
-  if (!hit("sms", user.id)) return { error: TOO_MANY };
+  if (!(await hit("sms", user.id))) return { error: TOO_MANY };
   const { error } = await sendPhoneCode(user.id, phone);
   return error ? { error } : { message: `We texted a 6-digit code to ${vendor.phone}.` };
 }

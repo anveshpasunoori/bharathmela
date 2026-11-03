@@ -16,7 +16,7 @@ export async function reportListing(_: FormState, form: FormData): Promise<FormS
   const details = String(form.get("details") ?? "").trim().slice(0, 2000);
   const reporterEmail = String(form.get("email") ?? "").trim().slice(0, 200);
 
-  if (!hit("report", await clientIp())) return { error: TOO_MANY };
+  if (!(await hit("report", await clientIp()))) return { error: TOO_MANY };
   if (!REPORT_REASONS.some((r) => r.id === reason)) return { error: "Choose a reason." };
   const listing = await db.listing.findUnique({ where: { id: listingId }, select: { id: true, status: true } });
   if (!listing) return { error: "This listing no longer exists." };
@@ -38,7 +38,7 @@ export async function reportEvent(_: FormState, form: FormData): Promise<FormSta
   const details = String(form.get("details") ?? "").trim().slice(0, 2000);
   const reporterEmail = String(form.get("email") ?? "").trim().slice(0, 200);
 
-  if (!hit("report", await clientIp())) return { error: TOO_MANY };
+  if (!(await hit("report", await clientIp()))) return { error: TOO_MANY };
   if (!REPORT_REASONS.some((r) => r.id === reason)) return { error: "Choose a reason." };
   const event = await db.event.findUnique({ where: { id: eventId }, select: { id: true, status: true } });
   if (!event) return { error: "This event no longer exists." };

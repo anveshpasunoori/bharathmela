@@ -26,7 +26,7 @@ function safeNext(form: FormData, fallback = "/") {
 
 // Checks shared by buyer and seller signup. Returns an error message or null.
 async function signupProblem(email: string, password: string, form: FormData) {
-  if (!hit("signup", await clientIp())) return TOO_MANY;
+  if (!(await hit("signup", await clientIp()))) return TOO_MANY;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) return "Enter a valid email address.";
   const pw = passwordProblem(password, email);
   if (pw) return pw;
@@ -111,7 +111,7 @@ export async function resendVerificationCode(): Promise<FormState> {
 export async function login(_: FormState, form: FormData): Promise<FormState> {
   const email = field(form, "email").toLowerCase();
   const password = String(form.get("password") ?? "");
-  if (!hit("login", await clientIp()) || !hit("loginEmail", email)) return { error: TOO_MANY };
+  if (!(await hit("login", await clientIp())) || !(await hit("loginEmail", email))) return { error: TOO_MANY };
 
   const user = await db.user.findUnique({ where: { email } });
   if (!user || user.deletedAt || !(await bcrypt.compare(password, user.passwordHash))) {

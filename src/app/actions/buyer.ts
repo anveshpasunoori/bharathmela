@@ -42,7 +42,7 @@ export async function messageSeller(_: FormState, form: FormData): Promise<FormS
   if (listing.vendor.userId === user.id) return { error: "That's your own listing." };
   const body = String(form.get("message") ?? "").trim();
   if (body.length < 10 || body.length > 2000) return { error: "Write a short message (10 to 2,000 characters)." };
-  if (!hit("message", user.id)) return { error: TOO_MANY };
+  if (!(await hit("message", user.id))) return { error: TOO_MANY };
   if (await db.message.findFirst({ where: { fromUserId: user.id, listingId, createdAt: { gt: new Date(Date.now() - DAY_MS) } } })) {
     return { error: "You've already messaged this seller about this listing today. Wait for their reply." };
   }

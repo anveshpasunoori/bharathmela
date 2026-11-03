@@ -56,7 +56,7 @@ export async function createWanted(_: FormState, form: FormData): Promise<FormSt
   if (Date.now() - user.createdAt.getTime() < MIN_ACCOUNT_AGE_MS) return { error: "New accounts can post 10 minutes after signing up." };
   const input = parseWantedForm(form);
   if ("error" in input) return input;
-  if (!hit("listing", user.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", user.id))) return { error: TOO_MANY };
   if ((await activeCount(user.id)) >= MAX_ACTIVE_WANTED) {
     return { error: `You can have ${MAX_ACTIVE_WANTED} active posts. Hide or delete one first.` };
   }
@@ -74,7 +74,7 @@ export async function updateWanted(_: FormState, form: FormData): Promise<FormSt
   if (post.status === "REMOVED") return { error: "This post was removed by BharathMela and can't be edited." };
   const input = parseWantedForm(form);
   if ("error" in input) return input;
-  if (!hit("listing", user.id)) return { error: TOO_MANY };
+  if (!(await hit("listing", user.id))) return { error: TOO_MANY };
   const decision = moderate(input);
   if ("error" in decision) return decision;
   const status =
@@ -130,7 +130,7 @@ export async function contactRenter(_: FormState, form: FormData): Promise<FormS
   if (screening.flags.some((f) => /wire|gift card|crypto|before viewing|absentee/.test(f))) {
     return { error: "Messages asking for wire transfers, gift cards, crypto or payment before viewing aren't allowed." };
   }
-  if (!hit("message", user.id)) return { error: TOO_MANY };
+  if (!(await hit("message", user.id))) return { error: TOO_MANY };
   if (await db.message.findFirst({ where: { fromUserId: user.id, roomWantedId: post.id, createdAt: { gt: new Date(Date.now() - DAY_MS) } } })) {
     return { error: "You've already messaged this person today. Wait for their reply." };
   }
@@ -151,7 +151,7 @@ export async function contactRenter(_: FormState, form: FormData): Promise<FormS
 export async function reportWanted(_: FormState, form: FormData): Promise<FormState> {
   const roomWantedId = String(form.get("id") ?? "");
   const reason = String(form.get("reason") ?? "");
-  if (!hit("report", await clientIp())) return { error: TOO_MANY };
+  if (!(await hit("report", await clientIp()))) return { error: TOO_MANY };
   if (!REPORT_REASONS.some((r) => r.id === reason)) return { error: "Choose a reason." };
   const post = await db.roomWanted.findUnique({ where: { id: roomWantedId }, select: { id: true, status: true } });
   if (!post) return { error: "This post no longer exists." };
