@@ -254,7 +254,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         ) : (
           <div>
             <h1 className="text-2xl font-bold sm:text-3xl">
-              {isMetro(params.metro) ? `Indian home businesses in ${metroName(metro)}` : "Home businesses from our community, near you"}
+              {isMetro(params.metro) ? `Local Businesses in ${metroName(metro)}` : "Local Businesses near you"}
             </h1>
             <p className="mt-1 text-stone-600">Home food, tutors, pujaris, event vendors, rooms and more {where}.</p>
           </div>
