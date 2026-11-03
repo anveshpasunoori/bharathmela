@@ -93,6 +93,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
                 <div className="py-1">
                   <Link href="/account" className={menuLink}>Account settings</Link>
                   <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/messages" className={menuLink}>Messages</Link>
                   <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
                   {user.vendor ? (
@@ -148,6 +149,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
               {user && (
                 <>
                   <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/messages" className={menuLink}>Messages</Link>
                   <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
                   <Link href="/account" className={menuLink}>Account settings</Link>

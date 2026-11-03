@@ -318,6 +318,7 @@ model Message {
   createdAt    DateTime    @default(now())
 
   @@index([fromUserId, createdAt])
+  @@index([toUserId, createdAt])
 }
 
 // A buyer's shortlist.

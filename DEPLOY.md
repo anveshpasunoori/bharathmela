@@ -38,6 +38,7 @@ email and SMS APIs).
 | `S3_PUBLIC_URL` | with S3 | `https://photos.yourdomain.com` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | recommended | From Twilio |
 | `PAY_ZELLE`, `PAY_VENMO` | yes | Where sellers send plan payments |
+| `EMAIL_FOOTER_ADDRESS` | yes for alerts | Your business mailing address for email footers (CAN-SPAM) |
 | `ANTHROPIC_API_KEY` | optional | Turns on the AI ad writer |
 | `GOOGLE_SITE_VERIFICATION` | optional | Search Console "HTML tag" code |
 
