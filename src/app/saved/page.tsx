@@ -125,6 +125,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
           {shown.map(({ listing, createdAt }) => (
             <div key={listing.id} className="relative">
               <ListingCard
+                saved
                 listing={{
                   ...listing,
                   vendor: { ...listing.vendor, subscriptions: [] },
@@ -136,15 +137,6 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
                   isNew: isNewListing(listing.createdAt),
                 }}
               />
-              <form action={toggleSaved.bind(null, listing.id)} className="absolute right-2 top-2">
-                <button
-                  className="grid h-10 w-10 place-items-center rounded-full transition hover:scale-110"
-                  aria-label={`Remove “${listing.title}” from saved`}
-                  title="Remove from saved"
-                >
-                  <HeartIcon filled overlay className="h-8 w-8" />
-                </button>
-              </form>
               <p className="mt-1.5 px-1 text-xs text-stone-500">Saved {timeAgo(createdAt, now.getTime())}</p>
             </div>
           ))}

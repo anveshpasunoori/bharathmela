@@ -6,10 +6,11 @@ import { ListingCard } from "@/components/ListingCard";
 import { ReviewList } from "@/components/ReviewList";
 import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { isNewListing } from "@/lib/time";
 import { publicEventWhere } from "@/lib/event-data";
-import { publicListing } from "@/lib/listings";
+import { publicListing, savedListingIds } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 
@@ -31,6 +32,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
   if (!seller) notFound();
 
   const now = new Date();
+  const viewer = await getCurrentUser();
   const [listings, reviews, ratings, pro, events] = await Promise.all([
     db.listing.findMany({
       where: { vendorId: id, ...publicListing() },
@@ -42,6 +44,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
     db.subscription.count({ where: { vendorId: id, plan: "PRO", status: "ACTIVE", endsAt: { gt: now } } }),
     db.event.findMany({ where: { vendorId: id, ...publicEventWhere(now) }, include: { vendor: true }, orderBy: { startsAt: "asc" }, take: 10 }),
   ]);
+  const savedIds = await savedListingIds(viewer?.id, listings.map((l) => l.id));
   const summary = ratings.get(id);
 
   return (
@@ -76,6 +79,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             {listings.map((l) => (
               <ListingCard
                 key={l.id}
+                saved={viewer?.vendor?.id === id ? undefined : savedIds.has(l.id)}
                 listing={{ ...l, vendor: { ...l.vendor, subscriptions: [] }, isFeatured: !!l.featuredUntil && l.featuredUntil > now, isPro: pro > 0, rating: undefined, score: 0, distanceMiles: null, isNew: isNewListing(l.createdAt) }}
               />
             ))}

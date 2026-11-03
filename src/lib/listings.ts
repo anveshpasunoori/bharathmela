@@ -236,3 +236,10 @@ export async function categoryForSearch(opts: { metro: string; category: string;
   const [top] = [...counts].sort((a, b) => b[1] - a[1]);
   return top?.[0] ?? null;
 }
+
+// Which of these listings the visitor has saved, for the hearts on listing cards.
+export async function savedListingIds(userId: string | undefined, listingIds: string[]) {
+  if (!userId || !listingIds.length) return new Set<string>();
+  const rows = await db.favorite.findMany({ where: { userId, listingId: { in: listingIds } }, select: { listingId: true } });
+  return new Set(rows.map((r) => r.listingId));
+}

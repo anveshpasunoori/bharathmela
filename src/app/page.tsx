@@ -10,7 +10,8 @@ import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, categoryLabel, isDietTag, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
-import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch } from "@/lib/listings";
+import { getCurrentUser } from "@/lib/auth";
+import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
@@ -119,6 +120,9 @@ export default async function Home({
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
   ]);
+  // Hearts on the cards: which results the visitor saved; none on a seller's own listings.
+  const viewer = await getCurrentUser();
+  const savedIds = await savedListingIds(viewer?.id, listings.map((l) => l.id));
   const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
 
   // Links keep the current location mode: "near you" (radius) or a picked metro.
@@ -397,7 +401,7 @@ export default async function Home({
       {!showingListings ? null : listings.length ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l) => (
-            <ListingCard key={l.id} listing={l} />
+            <ListingCard key={l.id} listing={l} saved={l.vendorId === viewer?.vendor?.id ? undefined : savedIds.has(l.id)} />
           ))}
         </div>
       ) : (
