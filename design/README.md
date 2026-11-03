@@ -28,7 +28,8 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
 
 ## Subcategory icons
 
-- `source-sheets/subcategory-icons-1.webp` to `-4.webp`: the illustrated subcategory icons, cut to
+- `source-sheets/subcategory-icons-1.webp` to `-4.webp` (and `-3b.webp`, a redraw of sheet 3 whose better
+  tiles replaced sheet 3's, including the mandap for Pujari weddings): the illustrated subcategory icons, cut to
   `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` (200 px, rounded) and listed in
   `src/lib/subcategory-art.ts`. Tiles were matched by their labels; sheet 3's fire tile (labelled Wedding) is
   Homam, and tiles that didn't fit their subcategory were left out. Sheet 4's tiles are padded onto the
