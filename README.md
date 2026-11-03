@@ -134,12 +134,20 @@ Sellers can also post events as organizers at `/vendor/events/new`: concerts, da
 - **Event pages:** Google Calendar, Apple/Outlook (.ics) and map links.
 - **Times:** stored in UTC and shown in each city's time zone (`src/lib/events.ts`).
 
-## Location ("Use my location")
+## Location
 
-- **Finding the city:** "Use my location" takes the browser's GPS position and finds the visitor's real city and ZIP using the bundled `zipcodes` dataset (`src/lib/geo.ts`). No outside geocoding service is called. Visitors can also type a ZIP.
-- **Storage:** the city, ZIP and rounded coordinates (about 1 km) are kept in an httpOnly cookie on the visitor's device for 6 months (`src/lib/user-location.ts`), never in the database.
-- **Browsing:** with a saved location, the home page browses "near you" within 5/10/25/50 miles across metros, sorts by distance, and labels cards "N mi away". "All of <metro>" switches back to metro browsing.
-- **Far from every metro** (e.g. Columbus, OH): the visitor sees their own city plus a link to the nearest metro and its distance.
+Location is app-wide and lives in the top bar ("📍 Fremont, CA ▾") on every page.
+- **Picked up automatically:**
+  - On the first visit, the city comes from the hosting platform's IP headers (`x-vercel-ip-latitude/longitude` on Vercel, `cf-iplatitude/longitude` on Cloudflare). No prompt and no outside service.
+  - The browser is then asked once for the precise location (`AutoLocate`). If the visitor allows it, the app switches to their real city with "near you" distances. If they decline, it never asks again.
+  - A city the visitor picks by hand always wins over these guesses.
+- **The panel:** "Use my current location", a ZIP code, or a city from the list.
+- **What's stored:**
+  - A precise location keeps city, ZIP and coordinates rounded to about 1 km in an httpOnly cookie for 6 months.
+  - A picked city keeps only the metro.
+  - Nothing goes in the database (`src/lib/user-location.ts`, `src/lib/geo.ts`).
+- **Overrides:** a `?metro=` in the URL (e.g. "Found in other cities" links) wins for that page.
+- **Near-you browsing:** with a precise location, home and category pages browse within 5/10/25/50 miles across metros, sort by distance and label "N mi away". "All of <metro>" switches back to metro browsing. Visitors far from every metro see their own city and the nearest metro's distance.
 
 ## Buyer experience
 

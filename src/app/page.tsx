@@ -2,7 +2,6 @@ import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ListingCard } from "@/components/ListingCard";
-import { LocationPicker } from "@/components/LocationPicker";
 import { RentalTabs } from "@/components/RentalTabs";
 import { SortSelect } from "@/components/SortSelect";
 import { syncExpirations } from "@/lib/billing";
@@ -10,12 +9,12 @@ import { CATEGORIES, DIET_TAGS, type DietTag, categoryLabel, isDietTag, tagLabel
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
 import { SORTS, type SortId, browseListings, categoryCounts } from "@/lib/listings";
-import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
+import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { type RentalFilters, SPACE_TYPES } from "@/lib/rentals";
-import { getUserLocation } from "@/lib/user-location";
+import { resolveLocation } from "@/lib/user-location";
 
 const RADII = [5, 10, 25, 50];
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
@@ -48,11 +47,10 @@ export default async function Home({
 }) {
   const params = await searchParams;
   // With a saved location and no city picked, browse "near you" by radius across metros.
-  const place = await getUserLocation();
+  const { place, metro } = await resolveLocation(params.metro);
   const nearMode = !!place && !isMetro(params.metro);
   const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
   const placeMetro = place ? metroFor(place) : null;
-  const metro = isMetro(params.metro) ? params.metro : (placeMetro?.metro ?? DEFAULT_METRO);
   const category = CATEGORIES.some((c) => c.id === params.category) ? params.category : undefined;
   const q = (params.q ?? "").slice(0, 100);
   // Dietary filters only apply to food.
@@ -171,39 +169,27 @@ export default async function Home({
             ))}
           </p>
         )}
-        {/* Location stays one line until the buyer wants to change it. */}
-        <details className="group text-sm">
-          <summary className="cursor-pointer list-none text-stone-700">
-            📍 <b>{place && nearMode ? `${place.city}, ${place.state}` : metroName(metro)}</b>
-            {nearMode && <> · within {radius} mi</>} ·{" "}
-            <span className="font-semibold text-brand group-open:hidden">{place ? "Change" : "Use my location"}</span>
-            <span className="hidden font-semibold text-brand group-open:inline">Close</span>
-          </summary>
-          <div className="mt-3 space-y-3">
-            <LocationPicker metro={metro} place={place} />
-            {place && (
-              <nav className="flex flex-wrap items-center gap-2" aria-label="Distance">
-                <span className="text-stone-500">Near {place.city}:</span>
-                {RADII.map((r) => {
-                  const p = new URLSearchParams(locationParams());
-                  p.delete("metro");
-                  p.set("radius", String(r));
-                  if (category) p.set("category", category);
-                  if (q) p.set("q", q);
-                  const on = nearMode && radius === r;
-                  return (
-                    <Link key={r} href={`/?${p}`} className={`rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                      {r} mi
-                    </Link>
-                  );
-                })}
-                <Link href={href(category, diet, q, metro)} className={`rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                  All of {metroName(metro)}
+        {place && (
+          // Distance from the visitor's location (set in the top bar).
+          <nav className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 text-sm" aria-label="Distance">
+            <span className="shrink-0 text-stone-500">Within</span>
+            {RADII.map((r) => {
+              const p = new URLSearchParams();
+              p.set("radius", String(r));
+              if (category) p.set("category", category);
+              if (q) p.set("q", q);
+              const on = nearMode && radius === r;
+              return (
+                <Link key={r} href={`/?${p}`} className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                  {r} mi
                 </Link>
-              </nav>
-            )}
-          </div>
-        </details>
+              );
+            })}
+            <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+              All of {metroName(metro)}
+            </Link>
+          </nav>
+        )}
       </section>
 
       {!showingListings && (

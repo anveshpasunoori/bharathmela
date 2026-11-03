@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { EventCard } from "@/components/EventCard";
-import { LocationLine } from "@/components/LocationLine";
 import { type EventWhen, upcomingEvents } from "@/lib/event-data";
 import { EVENT_TYPES, FESTIVALS, eventTypeLabel, isEventType, isFestival } from "@/lib/events";
-import { metroFor } from "@/lib/geo";
-import { DEFAULT_METRO, isMetro, metroName } from "@/lib/metros";
-import { getUserLocation } from "@/lib/user-location";
+import { metroName } from "@/lib/metros";
+import { resolveLocation } from "@/lib/user-location";
 
 export const metadata = {
   title: "Indian events near you – BharathMela",
@@ -27,8 +25,7 @@ export default async function EventsPage({
 }) {
   const p = await searchParams;
   // Default to the city of the visitor's saved location.
-  const place = await getUserLocation();
-  const metro = isMetro(p.metro) ? p.metro : place ? metroFor(place).metro : DEFAULT_METRO;
+  const { metro } = await resolveLocation(p.metro);
   const type = p.type && isEventType(p.type) ? p.type : undefined;
   const festival = p.festival && isFestival(p.festival) ? p.festival : undefined;
   const when = (WHEN.find((w) => w.id === p.when)?.id ?? "all") as EventWhen;
@@ -61,7 +58,6 @@ export default async function EventsPage({
             placeholder="Garba, concert, Diwali mela…" aria-label="Search events" />
           <button className="btn">Search</button>
         </form>
-        <LocationLine metro={metro} place={place && metroFor(place).metro === metro ? place : null} basePath="/events" />
       </section>
 
       {/* Two swipeable rows instead of a wall of wrapped chips. */}

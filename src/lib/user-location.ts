@@ -1,6 +1,7 @@
 import "server-only";
-import { cookies } from "next/headers";
-import type { Place } from "./geo";
+import { cookies, headers } from "next/headers";
+import { type Place, metroFor, placeFromCoords } from "./geo";
+import { DEFAULT_METRO, isMetro } from "./metros";
 
 // The visitor's chosen location, kept only in a cookie on their device (never in our database).
 const COOKIE = "loc";
@@ -33,4 +34,45 @@ export async function saveUserLocation(place: Place) {
 
 export async function clearUserLocation() {
   (await cookies()).delete(COOKIE);
+}
+
+// The BharathMela city (metro) the visitor picked from the list, for visitors who don't share a precise location.
+const METRO_COOKIE = "metro";
+
+export async function getMetroChoice() {
+  const m = (await cookies()).get(METRO_COOKIE)?.value;
+  return m && isMetro(m) ? m : null;
+}
+
+export async function saveMetroChoice(metro: string) {
+  (await cookies()).set(METRO_COOKIE, metro, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 180,
+  });
+}
+
+// Approximate location from the hosting platform's IP lookup (Vercel and Cloudflare add these headers),
+// so first-time visitors land in the right city without being asked. City-level only; never stored.
+async function ipGuess(): Promise<Place | null> {
+  const h = await headers();
+  const lat = Number(h.get("x-vercel-ip-latitude") ?? h.get("cf-iplatitude"));
+  const lng = Number(h.get("x-vercel-ip-longitude") ?? h.get("cf-iplongitude"));
+  if (!lat || !lng) return null;
+  return placeFromCoords(lat, lng);
+}
+
+// Which metro a page should show: a city in the URL wins, then the visitor's saved place, then their
+// chosen city, then a guess from their connection. `place` is only set for a precise, saved location.
+export async function resolveLocation(paramMetro?: string) {
+  const [place, chosen] = await Promise.all([getUserLocation(), getMetroChoice()]);
+  const guess = !place && !chosen ? await ipGuess() : null;
+  const metro = isMetro(paramMetro)
+    ? paramMetro
+    : place
+      ? metroFor(place).metro
+      : (chosen ?? (guess ? metroFor(guess).metro : DEFAULT_METRO));
+  return { place, guess, metro, chosen: !!chosen, overridden: isMetro(paramMetro) };
 }

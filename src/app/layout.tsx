@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
+import { HeaderLocation } from "@/components/HeaderLocation";
 import { getCurrentUser } from "@/lib/auth";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { logout } from "./actions/auth";
@@ -79,6 +80,10 @@ export default async function RootLayout({
               </div>
             </details>
           </nav>
+          {/* Location applies to the whole app, so it lives in the top bar. */}
+          <div className="mx-auto max-w-5xl px-4 pb-2">
+            <HeaderLocation />
+          </div>
         </header>
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
         <footer className="border-t border-stone-200 bg-white">
