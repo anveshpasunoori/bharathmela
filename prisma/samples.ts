@@ -44,6 +44,15 @@ const eventSvc = (d: Partial<Record<string, unknown>>) => ({
   yearsExperience: null, ...d,
 });
 
+// Garage sale samples run on the next weekend after seeding, so they're always upcoming.
+const nextWeekend = () => {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + ((6 - d.getUTCDay() + 7) % 7 || 7));
+  const sat = d.toISOString().slice(0, 10);
+  const sun = new Date(d.getTime() + 86_400_000).toISOString().slice(0, 10);
+  return { sat, sun };
+};
+
 export const SAMPLE_VENDORS: SampleVendor[] = [
   // ── SF Bay Area ────────────────────────────────────────────────────────────
   {
@@ -246,6 +255,17 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
       { title: "India flight tickets and travel companions for parents", category: "TRAVEL", priceCents: 2500, priceUnit: "booking fee",
         tags: ["TICKETS", "COMPANION"],
         description: "Registered California seller of travel. Fares to Hyderabad, Bengaluru, Chennai, Delhi and Mumbai, and we match your parents with a vetted travel companion on the same flight. Pay the airline fare by card." },
+    ],
+  },
+
+  {
+    email: "bay.moving@bharathmela.test", name: "Neha Gupta", businessName: "Neha Gupta", phone: "(408) 555-0103",
+    metro: "bay-area", zip: "94089", plan: "FREE",
+    listings: [
+      { title: "Moving to India sale – furniture, kitchen, kids' stuff", category: "GARAGE_SALE", priceCents: 200, priceUnit: "items from",
+        tags: ["FURNITURE", "KITCHEN", "KIDS", "INDIAN"],
+        details: { startDate: nextWeekend().sat, endDate: nextWeekend().sun, hours: "9 AM – 2 PM", address: "Sunnyvale, near Lawrence & Tasman" },
+        description: "Everything must go before our move back to Pune: sofa set, dining table, Instant Pot, mixer-grinder, kids' bikes and toys, brass diyas and a pooja mandir. Cash or Zelle at pickup." },
     ],
   },
 
@@ -466,6 +486,17 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
       { title: "India tickets, tour packages and notary services", category: "TRAVEL", priceCents: 3000, priceUnit: "starting at",
         tags: ["TICKETS", "TOURS", "NOTARY"],
         description: "Registered Florida seller of travel and commissioned Florida notary. Fares to India, Kerala and Kashmir tour packages, and notarizing forms and affidavits. Evenings and weekends." },
+    ],
+  },
+
+  {
+    email: "jax.garage@bharathmela.test", name: "Srinivas K", businessName: "Srinivas K", phone: "(904) 555-0127",
+    metro: "jacksonville", zip: "32081", plan: "FREE",
+    listings: [
+      { title: "Nocatee community garage sale – electronics, books and tools", category: "GARAGE_SALE", priceCents: 100, priceUnit: "items from",
+        tags: ["ELECTRONICS", "BOOKS", "TOOLS", "CLOTHES"],
+        details: { startDate: nextWeekend().sat, endDate: nextWeekend().sat, hours: "8 AM – 1 PM", address: "Nocatee, Crosswater Pkwy area" },
+        description: "Three families selling together: monitors, a printer, kids' books and board games, lawn mower and garden tools, sarees and kurtas. Everything priced to go; come early for the best picks." },
     ],
   },
 

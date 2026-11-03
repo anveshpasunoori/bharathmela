@@ -90,6 +90,9 @@ const moves: [string, string, string[]][] = [
   ["cpa", "LEGAL", ["TAX_FINANCE"]],
   ["flight tickets", "GOODS", ["TRAVEL"]],
   ["painting", "HOME_SERVICES", []], // house painting stays in home services
+  ["yard sale", "FOOD", ["GARAGE_SALE"]],
+  ["moving sale this weekend", "GOODS", ["GARAGE_SALE"]],
+  ["movers", "GARAGE_SALE", ["HOME_SERVICES"]], // movers are a service, not a sale
 ];
 for (const [q, current, want] of moves) {
   const got = betterCategories(parseQuery(q, current), current);

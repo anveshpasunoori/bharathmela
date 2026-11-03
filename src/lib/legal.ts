@@ -111,6 +111,16 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
     buyer:
       "Ask for the preparer's PTIN and credentials, get a written fee quote, and never sign a blank return or let a refund go to the preparer's account. Check insurance agents' licenses with your state insurance department.",
   },
+  GARAGE_SALE: {
+    seller: [
+      "Many cities and HOAs require a garage-sale permit or limit how many sales you can hold a year. Check before you post.",
+      "Don't sell recalled products. Check cribs, car seats, strollers, helmets and electronics at cpsc.gov; selling recalled items is illegal.",
+      "Prohibited items stay prohibited: no weapons, ammunition, prescription drugs, alcohol, tobacco or fireworks.",
+      "Wipe phones, laptops and other devices before you sell them.",
+    ],
+    buyer:
+      "Inspect items before paying, test electronics, and check baby gear for recalls at cpsc.gov. Pay in cash or by app at pickup, never in advance for something you haven't seen.",
+  },
   TRAVEL: {
     seller: [
       "Travel sellers may need to register in their state (California, Florida, Hawaii and Washington require it) and keep client payments in a trust account.",

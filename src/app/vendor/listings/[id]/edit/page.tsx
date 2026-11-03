@@ -7,6 +7,7 @@ import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { parseTags } from "@/lib/constants";
 import { parseServiceTypes } from "@/lib/service-types";
+import { readGarageSale } from "@/lib/garage-sales";
 import { db } from "@/lib/db";
 import { AI_WRITER_PLANS } from "@/lib/plans";
 import { readEventService } from "@/lib/event-services";
@@ -47,6 +48,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
             initialRental={readRental(listing.details)}
             initialProfessional={readProfessional(listing.details)}
             initialEventService={readEventService(listing.details)}
+            initialGarageSale={readGarageSale(listing.details)}
             initial={{
               category: listing.category,
               title: listing.title,

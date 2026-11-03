@@ -60,7 +60,8 @@ export async function syncExpirations() {
 
   // A week before a listing expires, remind the seller once so good listings don't silently disappear.
   const expiring = await db.listing.findMany({
-    where: { status: "ACTIVE", expiryWarnedAt: null, expiresAt: { gt: now, lte: new Date(now.getTime() + 7 * 86_400_000) } },
+    // Garage sales end on their own date, so they get no reminder.
+    where: { status: "ACTIVE", category: { not: "GARAGE_SALE" }, expiryWarnedAt: null, expiresAt: { gt: now, lte: new Date(now.getTime() + 7 * 86_400_000) } },
     include: { vendor: { include: { user: { select: { email: true, name: true } } } } },
     take: 200,
   });

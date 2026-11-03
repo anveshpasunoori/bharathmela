@@ -42,6 +42,18 @@ export const SERVICE_TYPES: Record<string, { id: string; label: string }[]> = {
     ["BUSINESS_TAX", "Business taxes"],
     ["INSURANCE", "Insurance"],
   ),
+  // For garage sales these are the kinds of items on sale.
+  GARAGE_SALE: opts(
+    ["FURNITURE", "Furniture"],
+    ["ELECTRONICS", "Electronics"],
+    ["KITCHEN", "Kitchen & appliances"],
+    ["KIDS", "Kids & baby"],
+    ["CLOTHES", "Clothes & shoes"],
+    ["INDIAN", "Indian décor & pooja items"],
+    ["BOOKS", "Books & toys"],
+    ["TOOLS", "Tools, garden & outdoor"],
+    ["CAR", "Car or bikes"],
+  ),
   TRAVEL: opts(
     ["TICKETS", "India flight tickets"],
     ["TOURS", "Tour packages"],
@@ -49,6 +61,13 @@ export const SERVICE_TYPES: Record<string, { id: string; label: string }[]> = {
     ["NOTARY", "Notary & apostille"],
   ),
 };
+
+// What the type picker is called, where "service" doesn't fit.
+export const SERVICE_TYPE_WORDING: Record<string, { filter: string; any: string; legend: string; hint: string }> = {
+  GARAGE_SALE: { filter: "Items", any: "Any items", legend: "What's for sale (pick all that apply)", hint: "Buyers filter by these." },
+};
+export const typeWording = (category: string) =>
+  SERVICE_TYPE_WORDING[category] ?? { filter: "Service", any: "Any service", legend: "Services you offer (pick all that apply)", hint: "Buyers filter by these, so pick only what you actually do." };
 
 export const hasServiceTypes = (category: string | undefined) => !!category && category in SERVICE_TYPES;
 

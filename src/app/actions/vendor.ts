@@ -15,6 +15,7 @@ import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professi
 import { parseRentalForm } from "@/lib/rentals";
 import { findDuplicates } from "@/lib/duplicates";
 import { screenListing } from "@/lib/moderation";
+import { parseGarageSaleForm, readGarageSale, saleExpiry } from "@/lib/garage-sales";
 import { listingExpiry } from "@/lib/listings";
 import { checkPhotos, deleteListingFiles, deletePhotos, savePhotos, uploadedFiles } from "@/lib/photos";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
@@ -38,6 +39,12 @@ async function parsePayment(form: FormData, vendorId: string) {
   });
   if (reused) return { error: "That transaction ID has already been submitted. Check it and try again." } as const;
   return { method, reference } as const;
+}
+
+// Listings stay up for LISTING_DAYS; a garage sale comes down the day after its last day.
+function expiryFor(listing: { category: string; details: string }) {
+  const sale = listing.category === "GARAGE_SALE" ? readGarageSale(listing.details) : null;
+  return sale ? saleExpiry(sale) : listingExpiry();
 }
 
 async function ownListing(vendorId: string, listingId: string) {
@@ -100,6 +107,11 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     if ("error" in services) return services;
     return { title, description, category, priceCents, priceUnit, tags, details: JSON.stringify(services) };
   }
+  if (category === "GARAGE_SALE") {
+    const sale = parseGarageSaleForm(form);
+    if ("error" in sale) return sale;
+    return { title, description, category, priceCents, priceUnit, tags, details: JSON.stringify(sale) };
+  }
   if (isProfessional(category)) {
     const pro = parseProfessionalForm(form, category);
     if ("error" in pro) return pro;
@@ -111,7 +123,7 @@ function parseListing(form: FormData): ListingInput | { error: string } {
 // Decides whether a listing can go live right away or must wait for an admin.
 async function moderate(input: ListingInput, vendorId: string, excludeId?: string) {
   const extra = JSON.parse(input.details);
-  const neighborhood = [extra.neighborhood, extra.firm, extra.areasServed].filter(Boolean).join("\n");
+  const neighborhood = [extra.neighborhood, extra.firm, extra.areasServed, extra.address].filter(Boolean).join("\n");
   const screening = screenListing(`${input.title}\n${input.description}\n${input.priceUnit}\n${neighborhood}`, input.category);
   if (screening.block) return { error: screening.block } as const;
   const reasons = [...screening.flags];
@@ -152,7 +164,7 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
   if (photoProblem) return { error: photoProblem };
 
   const created = await db.listing.create({
-    data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip, expiresAt: listingExpiry() },
+    data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip, expiresAt: expiryFor(input) },
   });
   await savePhotos(created.id, photos);
   revalidatePath("/vendor");
@@ -195,7 +207,7 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
       ...input,
       status,
       moderationNote: status === "PENDING_REVIEW" ? note || "edited after rejection" : "",
-      expiresAt: listingExpiry(),
+      expiresAt: expiryFor(input),
       expiryWarnedAt: null,
     },
   });
@@ -249,7 +261,7 @@ export async function renewListing(listingId: string) {
   const { vendor } = await requireVendor();
   const listing = await ownListing(vendor.id, listingId);
   if (listing.status === "REMOVED" || listing.status === "REJECTED") return;
-  await db.listing.update({ where: { id: listingId }, data: { expiresAt: listingExpiry(), expiryWarnedAt: null } });
+  await db.listing.update({ where: { id: listingId }, data: { expiresAt: expiryFor(listing), expiryWarnedAt: null } });
   revalidatePath("/vendor");
 }
 

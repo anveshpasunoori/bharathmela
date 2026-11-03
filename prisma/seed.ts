@@ -4,6 +4,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { localToUtc } from "../src/lib/events";
+import { readGarageSale, saleExpiry } from "../src/lib/garage-sales";
 import { metroTimeZone } from "../src/lib/metros";
 import { SAMPLE_BUYERS, SAMPLE_EVENTS, SAMPLE_REVIEWS, SAMPLE_VENDORS, SAMPLE_WANTED } from "./samples";
 
@@ -83,7 +84,8 @@ async function main() {
           metro: s.metro,
           zip: s.zip,
           featuredUntil: l.featured ? new Date(now + 7 * DAY_MS) : null,
-          expiresAt: new Date(now + 90 * DAY_MS),
+          // Garage sales come down after their last day; everything else after 90 days.
+          expiresAt: l.category === "GARAGE_SALE" ? saleExpiry(readGarageSale(JSON.stringify(l.details))!) : new Date(now + 90 * DAY_MS),
         },
       });
     }

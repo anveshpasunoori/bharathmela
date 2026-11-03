@@ -18,7 +18,7 @@ import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { SPACE_TYPES } from "@/lib/rentals";
-import { SERVICE_TYPES, hasServiceTypes } from "@/lib/service-types";
+import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
@@ -34,6 +34,7 @@ const LICENSE_TIPS: Record<string, string> = {
   HOME_SERVICES: "Check a contractor's license with your state's licensing board and ask for proof of insurance before work starts.",
   TAX_FINANCE: "Ask for the preparer's IRS PTIN, and never let a refund go to the preparer's account.",
   AUTO: "Get a written estimate before any repair. Driving instructors should show a state license.",
+  GARAGE_SALE: "Check baby gear and electronics for recalls at cpsc.gov, and pay in cash or by app when you pick up.",
 };
 
 export default async function Home({
@@ -155,7 +156,7 @@ export default async function Home({
     });
   }
   if (category && hasServiceTypes(category)) {
-    filterBar.push(pick("type", "Service", "Any service", "type", SERVICE_TYPES[category], serviceType));
+    filterBar.push(pick("type", typeWording(category).filter, typeWording(category).any, "type", SERVICE_TYPES[category], serviceType));
   }
   if (category === "FOOD") {
     filterBar.push({ kind: "multi", key: "diet", param: "diet", label: "Dietary", options: DIET_TAGS, selected: diet });

@@ -15,6 +15,7 @@ export const CATEGORIES = [
   { id: "TRAVEL", label: "Travel Help", priceHint: "starting at", icon: "✈️" },
   { id: "ART", label: "Art & Crafts", priceHint: "per item", icon: "🎨" },
   { id: "CLOTHING", label: "Clothing & Jewelry", priceHint: "per item", icon: "🥻" },
+  { id: "GARAGE_SALE", label: "Garage & Moving Sales", priceHint: "items from", icon: "🏷️" },
   { id: "GOODS", label: "Other Goods & Services", priceHint: "", icon: "🛍️" },
 ] as const;
 

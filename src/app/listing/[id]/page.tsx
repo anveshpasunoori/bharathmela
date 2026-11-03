@@ -9,6 +9,7 @@ import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
+import { readGarageSale, saleWhen } from "@/lib/garage-sales";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
 import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
 import { RentalDetailsView } from "@/components/RentalDetailsView";
@@ -84,6 +85,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const here = `/listing/${listing.id}`;
 
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
+  const sale = listing.category === "GARAGE_SALE" ? readGarageSale(listing.details) : null;
   const facts = [
     categoryLabel(listing.category),
     miles != null ? `${miles < 1 ? "under 1" : miles} mi away` : metroName(listing.metro),
@@ -118,6 +120,14 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         )}
         <p className="text-sm text-stone-500">{facts.join(" · ")}</p>
         <DietBadges tags={listing.tags} className="pt-1" />
+        {sale && (
+          <dl className="mt-1 grid gap-1 rounded-lg bg-brand-soft px-4 py-3 text-sm ring-1 ring-orange-100 sm:grid-cols-[auto_1fr] sm:gap-x-4">
+            <dt className="font-semibold text-brand">When</dt>
+            <dd>{saleWhen(sale)}</dd>
+            <dt className="font-semibold text-brand">Where</dt>
+            <dd>{sale.address || `${metroName(listing.metro)}, ask the seller for the address`}</dd>
+          </dl>
+        )}
         {parseServiceTypes(listing.category, listing.tags).length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-1">
             {parseServiceTypes(listing.category, listing.tags).map((t) => (

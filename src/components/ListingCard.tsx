@@ -9,6 +9,7 @@ import { priceLabel } from "@/lib/plans";
 import { isProfessional, readProfessional, specialtyLabels } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
 import { hasServiceTypes, parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
+import { readGarageSale, saleWhen } from "@/lib/garage-sales";
 
 // The one line of facts a buyer scans for in each category.
 function keyFacts(listing: BrowseListing) {
@@ -23,6 +24,10 @@ function keyFacts(listing: BrowseListing) {
   if (isProfessional(listing.category)) {
     const p = readProfessional(listing.details);
     if (p) return [p.firm, specialtyLabels(listing.category, p)[0], p.languages.filter((l) => l !== "English").join(", ")].filter(Boolean).join(" · ");
+  }
+  if (listing.category === "GARAGE_SALE") {
+    const sale = readGarageSale(listing.details);
+    if (sale) return saleWhen(sale);
   }
   if (hasServiceTypes(listing.category)) {
     const types = parseServiceTypes(listing.category, listing.tags);

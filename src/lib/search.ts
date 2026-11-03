@@ -129,6 +129,7 @@ const SYNONYMS: string[][] = [
   ["accountant", "cpa", "enrolled agent", "tax preparer", "tax filing", "tax return", "taxes"],
   ["flight", "flights", "air tickets", "airfare", "plane tickets"],
   ["notary", "apostille", "notarize", "notarization"],
+  ["garage sale", "garage sales", "yard sale", "yard sales", "moving sale", "moving out sale", "estate sale", "rummage sale", "moving out"],
 ];
 
 // Words that hint at a category: they rank that category higher, and a search that clearly belongs to
@@ -147,6 +148,7 @@ const CATEGORY_HINTS: Record<string, string[]> = {
   AUTO: ["mechanic", "car", "auto", "oil change", "tires", "detailing", "body shop", "driving lessons"],
   BEAUTY: ["threading", "waxing", "salon", "haircut", "beauty", "bridal makeup", "makeup", "mehndi", "saree draping", "yoga", "fitness", "trainer"],
   TAX_FINANCE: ["accountant", "itin", "fbar", "bookkeeping", "insurance", "payroll"],
+  GARAGE_SALE: ["garage sale", "secondhand", "used furniture"],
   TRAVEL: ["flight", "travel", "travel agent", "tour", "tours", "notary", "travel companion"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],

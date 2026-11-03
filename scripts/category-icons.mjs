@@ -253,6 +253,24 @@ ${dot(76, 102, 2.6, C.goldLight)}${dot(100, 102, 2.6, C.goldLight)}${dot(88, 110
 ${dot(134, 114, 2.3, C.brand)}${dot(142, 115, 2.3, C.brand)}${dot(150, 114, 2.3, C.brand)}
 ${spark(30, 40, 7, C.gold)}${spark(136, 36, 5)}${spark(22, 106, 5, C.brand)}`,
 
+  GARAGE_SALE: `
+<path d="M28 66 L80 36 L132 66 L132 134 L28 134 Z" fill="${C.white}" ${S}/>
+<path d="M18 70 L80 34 L142 70" fill="none" stroke="${C.brand}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="44" y="80" width="72" height="54" fill="${C.pale}" ${S}/>
+<rect x="44" y="80" width="72" height="20" fill="${C.main}" ${S}/>
+<path d="M44 87 L116 87 M44 93.5 L116 93.5" fill="none" stroke="${C.brand}" stroke-width="2"/>
+<rect x="52" y="112" width="26" height="22" rx="2" fill="${C.light}" ${S}/>
+<path d="M65 112 L65 120" fill="none" stroke="${C.line}" stroke-width="2"/>
+<path d="M90 106 L104 106 L108 116 L86 116 Z" fill="${C.goldLight}" ${S}/>
+<path d="M97 116 L97 132 M90 134 L104 134" fill="none" ${S}/>
+<g transform="rotate(18 132 106)">
+<path d="M122 92 L140 92 L148 104 L140 116 L122 116 Z" fill="${C.gold}" ${S}/>
+<circle cx="140" cy="104" r="3" fill="${C.white}" ${S}/>
+<path d="M127 100 L135 100 M127 108 L133 108" fill="none" stroke="${C.line}" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<path d="M140 101 Q148 88 140 78" fill="none" stroke="${C.line}" stroke-width="2" stroke-linecap="round"/>
+${spark(30, 36, 6, C.gold)}${spark(122, 30, 5)}${dot(20, 112)}`,
+
   GOODS: `
 <path d="M70 54 L70 36" fill="none" stroke="${C.line}" stroke-width="3" stroke-linecap="round"/>
 <path d="M70 42 Q56 34 52 24 Q66 24 70 40Z" fill="${C.leafLight}" ${S}/>

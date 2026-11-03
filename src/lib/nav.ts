@@ -41,6 +41,7 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
     items: [
       ["CLOTHING", "Sarees, lehengas, jewelry"],
       ["ART", "Paintings, crafts, decor"],
+      ["GARAGE_SALE", "Moving-out and weekend sales"],
       ["GOODS", "Pickles, plants, pooja items"],
     ],
   },

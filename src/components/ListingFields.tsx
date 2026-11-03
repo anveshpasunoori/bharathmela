@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
-import { SERVICE_TYPES, hasServiceTypes } from "@/lib/service-types";
+import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
 import type { EventServiceDetails } from "@/lib/event-services";
+import type { GarageSaleDetails } from "@/lib/garage-sales";
 import type { ProfessionalDetails } from "@/lib/professionals";
 import type { RentalDetails } from "@/lib/rentals";
 import { CategorySelect } from "./CategorySelect";
@@ -23,12 +24,14 @@ export function ListingFields({
   initialRental,
   initialProfessional,
   initialEventService,
+  initialGarageSale,
 }: {
   canUseAI: boolean;
   initial?: ListingValues;
   initialRental?: RentalDetails | null;
   initialProfessional?: ProfessionalDetails | null;
   initialEventService?: EventServiceDetails | null;
+  initialGarageSale?: GarageSaleDetails | null;
 }) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -132,7 +135,7 @@ export function ListingFields({
 
       {hasServiceTypes(category) && (
         <fieldset>
-          <legend className="label">Services you offer (pick all that apply)</legend>
+          <legend className="label">{typeWording(category).legend}</legend>
           <div className="flex flex-wrap gap-2">
             {SERVICE_TYPES[category].map((t) => {
               const on = types.includes(t.id);
@@ -155,7 +158,32 @@ export function ListingFields({
               );
             })}
           </div>
-          <p className="mt-1 text-xs text-stone-500">Buyers filter by these, so pick only what you actually do.</p>
+          <p className="mt-1 text-xs text-stone-500">{typeWording(category).hint}</p>
+        </fieldset>
+      )}
+
+      {category === "GARAGE_SALE" && (
+        <fieldset className="grid gap-3 sm:grid-cols-2">
+          <legend className="label sm:col-span-2">When and where</legend>
+          <div>
+            <label className="label" htmlFor="saleStart">First day</label>
+            <input id="saleStart" name="saleStart" type="date" required className="input" defaultValue={initialGarageSale?.startDate} />
+          </div>
+          <div>
+            <label className="label" htmlFor="saleEnd">Last day <span className="font-normal text-stone-400">(if more than one)</span></label>
+            <input id="saleEnd" name="saleEnd" type="date" className="input" defaultValue={initialGarageSale?.endDate} />
+          </div>
+          <div>
+            <label className="label" htmlFor="saleHours">Hours</label>
+            <input id="saleHours" name="saleHours" required maxLength={40} className="input" placeholder="8 AM – 1 PM" defaultValue={initialGarageSale?.hours} />
+          </div>
+          <div>
+            <label className="label" htmlFor="saleAddress">Address or cross streets <span className="font-normal text-stone-400">(optional)</span></label>
+            <input id="saleAddress" name="saleAddress" maxLength={120} className="input" placeholder="e.g. Nocatee, near Crosswater Pkwy" defaultValue={initialGarageSale?.address} />
+          </div>
+          <p className="text-xs text-stone-500 sm:col-span-2">
+            Shown on your listing. Many people share just the neighborhood and add the address the day before. Your listing comes down after the last day.
+          </p>
         </fieldset>
       )}
 
