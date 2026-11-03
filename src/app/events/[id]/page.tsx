@@ -81,7 +81,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               {event.isFree ? "RSVP" : "Get tickets"} ↗
             </a>
           )}
-          <details className="relative">
+          <details data-dropdown className="relative">
             <summary className="btn-outline cursor-pointer list-none">📅 Add to calendar</summary>
             <div className="absolute z-10 mt-1 w-48 rounded-lg border border-stone-200 bg-white p-1 text-sm shadow-lg">
               <a href={googleCal.toString()} target="_blank" rel="noopener noreferrer" className="block rounded px-3 py-2 hover:bg-stone-100">Google Calendar</a>

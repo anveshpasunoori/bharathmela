@@ -11,7 +11,7 @@ export async function HeaderLocation() {
   const shown = place ?? guess;
   const label = shown ? `${shown.city}, ${shown.state}` : metroName(metro);
   return (
-    <details data-location className="group relative">
+    <details data-location data-dropdown className="group relative">
       <summary className="flex cursor-pointer list-none items-center gap-1 text-sm text-stone-700 hover:text-brand">
         <span aria-hidden>📍</span>
         <span className="max-w-[60vw] truncate font-semibold sm:max-w-xs">{label}</span>

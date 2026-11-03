@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
+import { DropdownCloser } from "@/components/DropdownCloser";
 import { HeaderLocation } from "@/components/HeaderLocation";
 import { getCurrentUser } from "@/lib/auth";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal";
@@ -47,9 +48,9 @@ export default async function RootLayout({
               <Link href="/login" className="btn-outline px-3 py-1.5">Log in</Link>
             )}
             {/* Everything else lives in a menu so the bar stays one line on phones. */}
-            <details className="relative">
+            <details data-dropdown className="relative">
               <summary className="cursor-pointer list-none rounded-md px-2 py-1 text-lg leading-none hover:bg-stone-100" aria-label="Menu">☰</summary>
-              <div className="absolute right-0 mt-2 w-56 space-y-1 rounded-lg border border-stone-200 bg-white p-2 shadow-lg">
+              <div className="absolute right-0 z-30 mt-2 w-56 space-y-1 rounded-lg border border-stone-200 bg-white p-2 shadow-lg">
                 {user ? (
                   <>
                     <p className="truncate px-2 pb-1 text-xs text-stone-500">{user.name}</p>
@@ -85,6 +86,7 @@ export default async function RootLayout({
             <HeaderLocation />
           </div>
         </header>
+        <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
         <footer className="border-t border-stone-200 bg-white">
           <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 text-sm sm:grid-cols-4">
