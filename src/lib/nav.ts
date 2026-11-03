@@ -1,0 +1,50 @@
+import { CATEGORIES } from "./constants";
+
+// How categories are grouped in the header's Browse menu and the phone menu, with a short line on each.
+const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
+  {
+    title: "Food & home",
+    items: [
+      ["FOOD", "Tiffins, meal boxes, party trays"],
+      ["DOMESTIC_HELP", "Nannies, cooks, elder care"],
+      ["GOODS", "Pickles, plants, pooja items"],
+    ],
+  },
+  {
+    title: "Learning",
+    items: [
+      ["TUTORING", "Math, languages, test prep"],
+      ["DANCE_MUSIC", "Classical dance, vocal, instruments"],
+    ],
+  },
+  {
+    title: "Ceremonies & events",
+    items: [
+      ["PUJARI", "Pujas, homams, weddings"],
+      ["EVENT_SERVICES", "Photo, DJ, decor, mehndi, rentals"],
+    ],
+  },
+  {
+    title: "Housing & professionals",
+    items: [
+      ["ROOM_RENTAL", "Rooms, apartments, in-law units"],
+      ["REALTOR", "Buy or sell a home"],
+      ["LEGAL", "Immigration, family, business"],
+    ],
+  },
+  {
+    title: "Shop",
+    items: [
+      ["CLOTHING", "Sarees, lehengas, jewelry"],
+      ["ART", "Paintings, crafts, decor"],
+    ],
+  },
+];
+
+export const NAV_GROUPS = GROUPS.map((g) => ({
+  title: g.title,
+  items: g.items.map(([id, blurb]) => {
+    const c = CATEGORIES.find((c) => c.id === id)!;
+    return { id, blurb, label: c.label, icon: c.icon, href: `/?category=${id}` };
+  }),
+}));

@@ -1,0 +1,171 @@
+import Link from "next/link";
+import { logout } from "@/app/actions/auth";
+import { NAV_GROUPS } from "@/lib/nav";
+import { HeaderLocation } from "./HeaderLocation";
+import { MobileMenu } from "./MobileMenu";
+
+type HeaderUser = { name: string; email: string; role: string; vendor: unknown } | null;
+
+const navLink = "rounded-md px-3 py-2 font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900";
+const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
+
+// The top bar. Desktop shows the main sections as words, with categories grouped under Browse and the
+// account behind its initial; phones get a slide-in menu with the same links.
+export function SiteHeader({ user }: { user: HeaderUser }) {
+  const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
+  return (
+    <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
+      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-2 text-sm" aria-label="Main">
+        <Link href="/" className="mr-4 flex items-center gap-2 text-lg font-bold text-brand">
+          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-white">BM</span>
+          BharathMela
+        </Link>
+
+        {/* Desktop sections */}
+        <div className="hidden items-center gap-1 md:flex">
+          <details data-dropdown className="group">
+            <summary className={`${navLink} flex cursor-pointer list-none items-center gap-1 group-open:bg-stone-100 group-open:text-stone-900`}>
+              Browse <span aria-hidden className="text-xs text-stone-400 transition group-open:rotate-180">▾</span>
+            </summary>
+            <div className="absolute inset-x-0 top-full z-30 border-y border-stone-200 bg-white shadow-lg">
+              <div className="mx-auto grid max-w-5xl grid-cols-3 gap-x-6 gap-y-5 px-4 py-6 lg:grid-cols-5">
+                {NAV_GROUPS.map((g) => (
+                  <div key={g.title}>
+                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{g.title}</p>
+                    <ul className="space-y-0.5">
+                      {g.items.map((c) => (
+                        <li key={c.id}>
+                          <Link href={c.href} className="flex gap-2 rounded-md px-2 py-1.5 hover:bg-stone-50">
+                            <span aria-hidden className="text-lg leading-6">{c.icon}</span>
+                            <span>
+                              <span className="block font-medium text-stone-800">{c.label}</span>
+                              <span className="block text-xs text-stone-500">{c.blurb}</span>
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-stone-100 bg-stone-50">
+                <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-6 py-3 text-sm">
+                  <Link href="/" className="font-medium text-stone-700 hover:text-brand">All categories</Link>
+                  <Link href="/rooms-wanted" className="text-stone-600 hover:text-brand">People looking for a place</Link>
+                  <Link href="/events" className="text-stone-600 hover:text-brand">Events near you</Link>
+                  <Link href="/vendor/signup" className="ml-auto font-semibold text-brand">List your business free →</Link>
+                </div>
+              </div>
+            </div>
+          </details>
+          <Link href="/?category=ROOM_RENTAL" className={navLink}>Rooms</Link>
+          <Link href="/events" className={navLink}>Events</Link>
+          <Link href={user?.vendor ? "/vendor" : "/pricing"} className={navLink}>{user?.vendor ? "My business" : "Sell"}</Link>
+        </div>
+
+        <div className="ml-auto flex items-center gap-1">
+          {user && (
+            <Link href="/saved" className={navLink} aria-label="Saved listings">
+              ♡<span className="hidden sm:inline"> Saved</span>
+            </Link>
+          )}
+          {user ? (
+            <details data-dropdown className="relative hidden md:block">
+              <summary
+                className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full bg-brand-soft font-semibold text-brand ring-1 ring-orange-200 hover:ring-brand"
+                aria-label="Account menu"
+              >
+                {initial}
+              </summary>
+              <div className="absolute right-0 z-30 mt-2 w-60 rounded-xl border border-stone-200 bg-white p-2 shadow-lg">
+                <div className="border-b border-stone-100 px-3 pb-2 pt-1">
+                  <p className="truncate font-semibold">{user.name || "Your account"}</p>
+                  <p className="truncate text-xs text-stone-500">{user.email}</p>
+                </div>
+                <div className="py-1">
+                  <Link href="/account" className={menuLink}>Account settings</Link>
+                  <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
+                  {user.vendor ? (
+                    <Link href="/vendor" className={menuLink}>My business</Link>
+                  ) : (
+                    <Link href="/vendor/signup" className={`${menuLink} font-semibold text-brand`}>Start selling</Link>
+                  )}
+                  {user.role === "ADMIN" && <Link href="/admin" className={menuLink}>Admin</Link>}
+                </div>
+                <form action={logout} className="border-t border-stone-100 pt-1">
+                  <button className={`${menuLink} w-full text-left text-stone-500`}>Log out</button>
+                </form>
+              </div>
+            </details>
+          ) : (
+            <>
+              <Link href="/login" className={navLink}>Log in</Link>
+              <Link href="/signup" className="btn hidden px-3 py-1.5 md:inline-flex">Sign up</Link>
+            </>
+          )}
+
+          {/* Phones */}
+          <MobileMenu>
+            {user && (
+              <div className="mb-4 flex items-center gap-3 rounded-xl bg-stone-50 p-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft font-semibold text-brand">{initial}</span>
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold">{user.name || "Your account"}</span>
+                  <span className="block truncate text-xs text-stone-500">{user.email}</span>
+                </span>
+              </div>
+            )}
+            {!user && (
+              <div className="mb-4 grid grid-cols-2 gap-2">
+                <Link href="/login" className="btn-outline">Log in</Link>
+                <Link href="/signup" className="btn">Sign up</Link>
+              </div>
+            )}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Browse</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
+                <Link key={c.id} href={c.href} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm hover:bg-stone-100">
+                  <span aria-hidden className="text-lg">{c.icon}</span>
+                  <span className="leading-tight">{c.label}</span>
+                </Link>
+              ))}
+            </div>
+            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">More</p>
+            <div className="text-base">
+              <Link href="/events" className={menuLink}>Events near you</Link>
+              <Link href="/rooms-wanted" className={menuLink}>People looking for a place</Link>
+              {user && (
+                <>
+                  <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
+                  <Link href="/account" className={menuLink}>Account settings</Link>
+                </>
+              )}
+              {user?.role === "ADMIN" && <Link href="/admin" className={menuLink}>Admin</Link>}
+              <Link href="/safety" className={menuLink}>Safety tips</Link>
+            </div>
+            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Sellers</p>
+            <div className="text-base">
+              {user?.vendor ? (
+                <Link href="/vendor" className={menuLink}>My business</Link>
+              ) : (
+                <Link href="/vendor/signup" className={`${menuLink} font-semibold text-brand`}>List your business free</Link>
+              )}
+              <Link href="/pricing" className={menuLink}>Pricing for sellers</Link>
+            </div>
+            {user && (
+              <form action={logout} className="mt-5 border-t border-stone-100 pt-3">
+                <button className={`${menuLink} w-full text-left text-base text-stone-500`}>Log out</button>
+              </form>
+            )}
+          </MobileMenu>
+        </div>
+      </nav>
+      {/* Location applies to the whole app, so it lives in the top bar. */}
+      <div className="mx-auto max-w-5xl px-4 pb-2">
+        <HeaderLocation />
+      </div>
+    </header>
+  );
+}
