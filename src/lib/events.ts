@@ -93,6 +93,15 @@ export function formatEventTime(start: Date, end: Date, timeZone: string) {
     : `${day.format(start)}, ${time.format(start)} – ${day.format(end)}, ${time.format(end)} ${zone ?? ""}`.trim();
 }
 
+// Just the hours, for cards that already show the date: "9:30 AM – 12:30 PM", or "7:00 PM – Sun, Nov 15, 1:00 AM"
+// when it runs past the start day.
+export function formatEventHours(start: Date, end: Date, timeZone: string) {
+  const day = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short", month: "short", day: "numeric" });
+  const time = new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", minute: "2-digit" });
+  const endsSameDay = day.format(start) === day.format(end);
+  return `${time.format(start)} – ${endsSameDay ? "" : `${day.format(end)}, `}${time.format(end)}`;
+}
+
 export function eventDateBadge(start: Date, timeZone: string) {
   const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US", { timeZone, ...o }).format(start);
   return { month: fmt({ month: "short" }).toUpperCase(), day: fmt({ day: "numeric" }), weekday: fmt({ weekday: "short" }) };
