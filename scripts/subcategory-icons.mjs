@@ -99,7 +99,6 @@ const truck = (fill = C.main) => R(-50, -24, 60, 40, 4, fill) + P("M10 -12 L32 -
 const saree = (fill = C.main, border = C.gold) =>
   P("M-30 -36 Q-12 -40 0 -32 L30 36 L-34 36 Q-40 0 -30 -36 Z", fill) + L("M0 -32 L30 36", border, 8) + L("M-34 36 L30 36", border, 8) + P("M-30 -36 Q-50 -20 -44 6", "none");
 const skirt = (fill = C.brand) => P("M-14 -30 L14 -30 L40 36 Q0 46 -40 36 Z", fill) + L("M-36 26 Q0 36 36 26", C.gold, 6) + R(-16, -40, 32, 12, 4, C.gold);
-const drum = (fill = C.main) => E(0, -22, 36, 12, C.light) + P("M-36 -22 L-36 22 Q0 38 36 22 L36 -22", fill) + L("M-36 -22 L-12 26 M36 -22 L12 26 M-12 -32 L12 26 M12 -32 L-12 26", C.gold, 3);
 const glass = () => P("M-26 -34 L26 -34 L2 -4 L2 26 L16 34 L-16 34 L-2 26 L-2 -4 Z", C.sky) + O(14, -30, 7, C.leafLight);
 const cake = () => R(-36, -4, 72, 36, 6, C.light) + R(-26, -26, 52, 24, 6, C.pale) + L("M-36 10 Q-24 20 -12 10 Q0 20 12 10 Q24 20 36 10", C.main, 5) + L("M0 -26 L0 -40", C.line, 4) + `<path d="M0 -40 Q-5 -48 0 -54 Q5 -48 0 -40Z" fill="${C.main}"/>`;
 const envelope = () => R(-40, -26, 80, 54, 6, C.white) + L("M-40 -24 L0 6 L40 -24") + O(0, 6, 9, C.brand);
@@ -125,15 +124,12 @@ const dancer = (skirtFill = C.brand, pose = 0) =>
   O(0, -34, 9, "#d6a77a") + P("M-8 -24 L8 -24 L10 0 L-10 0 Z", C.main) + P("M-10 0 L10 0 L30 30 Q0 38 -30 30 Z", skirtFill) +
   L(pose === 0 ? "M-8 -20 L-30 -30 L-36 -42 M8 -20 L28 -10 L38 -18" : pose === 1 ? "M-8 -20 L-26 -40 M8 -20 L26 -40" : "M-8 -20 L-30 -12 M8 -20 L32 -26", C.line, 5) +
   L("M-10 30 L-14 40 M10 30 L14 40", C.line, 5);
-const ankleBells = () => [-24, -8, 8, 24].map((x, i) => O(x, i % 2 ? 6 : 0, 8, C.gold)).join("") + L("M-34 -8 Q0 -20 34 -8", C.brand, 5);
 const stroller = () => P("M-34 -26 Q-34 8 -4 8 L30 8 L30 -6 Q4 -6 -6 -30 Q-24 -36 -34 -26 Z", C.main) + L("M30 8 L38 -26 L46 -26 M-24 8 L-30 26 M22 8 L28 26") + O(-30, 30, 7, C.dark) + O(28, 30, 7, C.dark);
 const broom = () => L("M24 -40 L-2 14", "#a16207", 7) + P("M-2 8 L14 18 L0 42 L-30 26 Z", C.goldLight) + L("M-20 22 L-10 38 M-10 18 L0 34", C.gold, 3);
 const pan = () => O(-8, 4, 28, C.dark) + O(-8, 4, 20, C.stone) + R(18, -2, 32, 12, 5, "#a16207");
 const chefHat = () => P("M-24 14 Q-40 10 -36 -8 Q-32 -22 -18 -18 Q-14 -34 0 -34 Q14 -34 18 -18 Q32 -22 36 -8 Q40 10 24 14 Z", C.white) + R(-24, 14, 48, 18, 3, C.white);
 const tooth = (n, x0, y0, w, h, gap, fill) => Array.from({ length: n }, (_, i) => R(x0 + i * (w + gap), y0, w, h, 3, fill)).join("");
 
-// Tiles that put a small badge in the corner of a main drawing.
-const withBadge = (main, badge) => main + at(116, 116, 0.42, O(0, 0, 40, C.white) + badge);
 
 const I = {
   FOOD: {
