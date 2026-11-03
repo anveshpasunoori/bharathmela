@@ -28,10 +28,10 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
 
 ## Subcategory icons
 
-- `source-sheets/subcategory-icons-1.webp`, `-2.webp`, `-3.webp`: illustrated subcategory icons, cut to
-  `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` and listed in `src/lib/subcategory-art.ts` (matched by
-  label; sheet 3's fire tile, labelled Wedding, is used for Homam). Tiles left out because they didn't fit the
-  subcategory: Carnatic (a stick, then a dancer), Wills & estate (a house and key), sheet 3's diya, scales,
-  garage sale and remodeling tiles.
-- `icons-to-draw/sheet-4.png`: the five still drawn (Carnatic, Wills & estate, Real estate law, Pujari weddings,
-  Science), to have them redrawn. Subcategories without an illustration use the drawn `.svg`.
+- `source-sheets/subcategory-icons-1.webp` to `-4.webp`: the illustrated subcategory icons, cut to
+  `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` (200 px, rounded) and listed in
+  `src/lib/subcategory-art.ts`. Tiles were matched by their labels; sheet 3's fire tile (labelled Wedding) is
+  Homam, and tiles that didn't fit their subcategory were left out. Sheet 4's tiles are padded onto the
+  others' cream background so they sit the same size.
+- The drawn `.svg` next to each one (from `scripts/subcategory-icons.mjs`) is the fallback for any new
+  subcategory until it gets an illustration.
