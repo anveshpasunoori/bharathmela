@@ -166,7 +166,7 @@ export async function updateEvent(_: FormState, form: FormData): Promise<FormSta
     data: { ...input, status, moderationNote: status === "PENDING_REVIEW" ? decision.moderationNote || "edited after rejection" : "" },
   });
   revalidatePath("/vendor");
-  revalidatePath(`/events/${event.id}`);
+  revalidatePath("/events/[id]", "page");
   redirect(`/vendor?tab=events&${status === "PENDING_REVIEW" ? "review=event" : "updated=1"}`);
 }
 

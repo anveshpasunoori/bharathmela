@@ -3,7 +3,7 @@
 import { categoryLabel } from "./constants";
 import { readGarageSale } from "./garage-sales";
 import { metroName } from "./metros";
-import { absoluteUrl, cityCategoryPath, cityPath, listingPath, snippet } from "./seo";
+import { absoluteUrl, cityCategoryPath, cityPath, eventPath, listingPath, sellerPath, snippet } from "./seo";
 
 // Categories where the seller offers a service rather than selling an item.
 const SERVICE_CATEGORIES = new Set([
@@ -48,7 +48,7 @@ function seller(l: ListingForSchema, rating: Rating) {
   return {
     "@type": "LocalBusiness",
     name: l.vendor.businessName,
-    url: absoluteUrl(`/seller/${l.vendorId}`),
+    url: absoluteUrl(sellerPath({ id: l.vendorId, businessName: l.vendor.businessName })),
     address: { "@type": "PostalAddress", addressLocality: city(l.metro), addressRegion: region(l.metro), postalCode: l.zip, addressCountry: "US" },
     ...(rating && rating.count > 0
       ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating.average.toFixed(1), reviewCount: rating.count, bestRating: 5, worstRating: 1 } }
@@ -91,7 +91,7 @@ export function sellerSchema(s: { id: string; businessName: string; about: strin
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: s.businessName,
-    url: absoluteUrl(`/seller/${s.id}`),
+    url: absoluteUrl(sellerPath(s)),
     ...(s.about ? { description: snippet(s.about, 300) } : {}),
     telephone: s.phone,
     address: { "@type": "PostalAddress", addressLocality: city(s.metro), addressRegion: region(s.metro), postalCode: s.zip, addressCountry: "US" },
@@ -114,15 +114,34 @@ export function eventSchema(e: {
     endDate: e.endsAt.toISOString(),
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    url: absoluteUrl(`/events/${e.id}`),
+    url: absoluteUrl(eventPath(e)),
     location: { "@type": "Place", name: e.venueName, address: { "@type": "PostalAddress", streetAddress: e.address, addressLocality: city(e.metro), addressRegion: region(e.metro), addressCountry: "US" } },
-    organizer: { "@type": "Organization", name: e.vendor.businessName, url: absoluteUrl(`/seller/${e.vendor.id}`) },
+    organizer: { "@type": "Organization", name: e.vendor.businessName, url: absoluteUrl(sellerPath(e.vendor)) },
     offers: {
       "@type": "Offer",
       price: e.isFree ? "0" : ((e.priceCents ?? 0) / 100).toFixed(2),
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
-      url: e.ticketUrl || absoluteUrl(`/events/${e.id}`),
+      url: e.ticketUrl || absoluteUrl(eventPath(e)),
     },
+  };
+}
+
+// The listings shown on a city-category page, in order.
+export function itemListSchema(name: string, items: { id: string; title: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.slice(0, 30).map((l, i) => ({ "@type": "ListItem", position: i + 1, url: absoluteUrl(listingPath(l)), name: l.title })),
+  };
+}
+
+export function faqSchema(faq: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
   };
 }

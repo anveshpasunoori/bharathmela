@@ -12,7 +12,7 @@ import { CATEGORIES, DIET_TAGS, categoryLabel, tagLabel } from "@/lib/constants"
 import { upcomingEvents } from "@/lib/event-data";
 import { metroFor } from "@/lib/geo";
 import { getCurrentUser } from "@/lib/auth";
-import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, savedListingIds } from "@/lib/listings";
+import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, publicListing, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
@@ -21,7 +21,10 @@ import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
 import { cityCategoryPath, cityPath } from "@/lib/seo";
-import { citySubcategoryPath, pickedSubcategory, subcategoriesFor } from "@/lib/subcategories";
+import { citySubcategoryPath, listingSubcategories, pickedSubcategory, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
+import { pageFaq } from "@/lib/page-faq";
+import { breadcrumbs, faqSchema, itemListSchema } from "@/lib/structured-data";
+import { JsonLd } from "@/components/JsonLd";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
@@ -141,6 +144,26 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     <input type="hidden" name="metro" value={metro} />
   );
   const categoryInfo = CATEGORIES.find((c) => c.id === category);
+  // City-category and subcategory pages (no search): questions answered from the listings, links to the
+  // same category in other cities, and structured data. City pages link their busiest subcategories.
+  const seoPage = !!category && !q;
+  const [otherCities, popularSubs] = await Promise.all([
+    seoPage
+      ? db.listing.groupBy({ by: ["metro"], where: { ...publicListing(), category }, _count: true }).then((rows) =>
+          rows.filter((r) => r.metro !== metro && isMetro(r.metro)).sort((a, b) => b._count - a._count).map((r) => r.metro),
+        )
+      : Promise.resolve([]),
+    !showingListings && !nearMode
+      ? db.listing.findMany({ where: { ...publicListing(), metro }, select: { category: true, tags: true, details: true }, take: 5000 }).then((rows) => {
+          const counts = new Map<string, { category: string; id: string; n: number }>();
+          for (const r of rows) for (const id of listingSubcategories(r)) {
+            const k = `${r.category}/${id}`;
+            counts.set(k, { category: r.category, id, n: (counts.get(k)?.n ?? 0) + 1 });
+          }
+          return [...counts.values()].sort((a, b) => b.n - a.n).slice(0, 24);
+        })
+      : Promise.resolve([]),
+  ]);
   // Subcategory chips (Auto Services → Oil change, Towing…). Picking one keeps the other filters; plain
   // browsing in a city uses its clean page (/in/jacksonville/auto-services/oil-change).
   const subs = subcategoriesFor(category);
@@ -156,6 +179,24 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     if (id && subs) p.set(subs.param, id);
     return `/?${p}`;
   };
+
+  const pageWhat = picked?.label ?? categoryInfo?.label ?? "";
+  const pageCity = nearMode ? place!.city : metroName(metro).split(",")[0];
+  const faq = seoPage
+    ? pageFaq({ what: pageWhat, city: pageCity, listings, tip: LICENSE_TIPS[category!], buying: category === "GARAGE_SALE" })
+    : [];
+  const pageSchema = seoPage
+    ? [
+        breadcrumbs([
+          { name: "Home", path: "/" },
+          { name: metroName(metro), path: cityPath(metro) },
+          { name: categoryInfo!.label, path: cityCategoryPath(metro, category!) },
+          ...(picked ? [{ name: picked.label, path: citySubcategoryPath(metro, category!, picked.id) }] : []),
+        ]),
+        ...(listings.length ? [itemListSchema(`${pageWhat} in ${metroName(metro)}`, listings)] : []),
+        faqSchema(faq),
+      ]
+    : [];
 
   // The filter bar under the search box: distance, then the filters for this category.
   const pick = (key: string, label: string, anyLabel: string, param: string, opts: readonly { id: string; label: string }[], current?: string): FilterDef => ({
@@ -529,6 +570,56 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
         </div>
       )}
+
+      {faq.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-lg font-semibold">
+            {pageWhat} in {pageCity}: common questions
+          </h2>
+          <div className="divide-y divide-stone-200 rounded-xl bg-white ring-1 ring-stone-200">
+            {faq.map((f) => (
+              <details key={f.q} className="group px-4 py-3">
+                <summary className="cursor-pointer list-none font-medium text-stone-800 marker:hidden">
+                  <span className="flex items-center justify-between gap-3">
+                    {f.q}
+                    <span aria-hidden className="text-stone-400 transition group-open:rotate-45">+</span>
+                  </span>
+                </summary>
+                <p className="mt-2 text-sm text-stone-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {seoPage && otherCities.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-semibold text-stone-700">{pageWhat} in other cities</h2>
+          <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label={`${pageWhat} in other cities`}>
+            {otherCities.map((m) => (
+              <Link key={m} href={picked ? citySubcategoryPath(m, category!, picked.id) : cityCategoryPath(m, category!)} className="text-brand hover:underline">
+                {metroName(m)}
+              </Link>
+            ))}
+          </nav>
+        </section>
+      )}
+
+      {popularSubs.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-semibold text-stone-700">Popular in {metroName(metro)}</h2>
+          <nav className="flex flex-wrap gap-2 text-sm" aria-label={`Popular in ${metroName(metro)}`}>
+            {popularSubs.map((p) => (
+              <Link key={`${p.category}/${p.id}`} href={citySubcategoryPath(metro, p.category, p.id)} className="flex items-center gap-1.5 rounded-full bg-white py-1 pl-1 pr-3 ring-1 ring-stone-200 hover:text-brand">
+                <CategoryIcon id={p.category} sub={p.id} size={24} className="h-6 w-6" />
+                {subcategoryLabel(p.category, p.id)}
+              </Link>
+            ))}
+          </nav>
+        </section>
+      )}
+
+      {pageSchema.length > 0 && <JsonLd data={pageSchema} />}
 
       {category && (
         <section>

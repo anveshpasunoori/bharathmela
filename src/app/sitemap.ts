@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { publicEventWhere } from "@/lib/event-data";
 import { publicListing } from "@/lib/listings";
 import { METROS } from "@/lib/metros";
-import { ALL_CITY_CATEGORY_PAGES, absoluteUrl, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
+import { ALL_CITY_CATEGORY_PAGES, absoluteUrl, cityCategoryPath, cityPath, eventPath, listingPath, sellerPath } from "@/lib/seo";
 import { citySubcategoryPath, listingSubcategories } from "@/lib/subcategories";
 
 // Built on request from the live database (not at deploy time, so builds don't need a database).
@@ -15,10 +15,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const [listings, events, sellers, counts] = await Promise.all([
     db.listing.findMany({ where: publicListing(), select: { id: true, title: true, updatedAt: true, metro: true, category: true, tags: true, details: true }, orderBy: { updatedAt: "desc" }, take: 45_000 }),
-    db.event.findMany({ where: publicEventWhere(now), select: { id: true, updatedAt: true }, take: 5_000 }),
+    db.event.findMany({ where: publicEventWhere(now), select: { id: true, title: true, updatedAt: true }, take: 5_000 }),
     db.vendorProfile.findMany({
       where: { user: { suspendedAt: null, deletedAt: null }, listings: { some: publicListing() } },
-      select: { id: true },
+      select: { id: true, businessName: true },
       take: 20_000,
     }),
     db.listing.groupBy({ by: ["metro", "category"], where: publicListing(), _count: true, _max: { updatedAt: true } }),
@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...[...subPages].map(([url, updated]) => ({ url: absoluteUrl(url), lastModified: updated, changeFrequency: "daily" as const, priority: 0.8 })),
     ...listings.map((l) => ({ url: absoluteUrl(listingPath(l)), lastModified: l.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
-    ...events.map((e) => ({ url: absoluteUrl(`/events/${e.id}`), lastModified: e.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
-    ...sellers.map((s) => ({ url: absoluteUrl(`/seller/${s.id}`), changeFrequency: "weekly" as const, priority: 0.5 })),
+    ...events.map((e) => ({ url: absoluteUrl(eventPath(e)), lastModified: e.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
+    ...sellers.map((s) => ({ url: absoluteUrl(sellerPath(s)), changeFrequency: "weekly" as const, priority: 0.5 })),
   ];
 }

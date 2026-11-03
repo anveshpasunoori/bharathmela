@@ -5,7 +5,7 @@ import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { publicListing } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
-import { CATEGORY_PITCH, categoryFromSlug, cityCategoryPath } from "@/lib/seo";
+import { CATEGORY_PITCH, CATEGORY_SEO_TITLE, categoryFromSlug, cityCategoryPath } from "@/lib/seo";
 
 // One indexable page per city and category: "Home Food & Cloud Kitchens in Jacksonville, FL".
 // Rendered on request (it reads the visitor's location); the sitemap lists every combination.
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ metro: st
   if (!isMetro(metro) || !category) return {};
   const city = metroName(metro);
   const count = await db.listing.count({ where: { ...publicListing(), metro, category } });
-  const title = `${categoryLabel(category)} in ${city}`;
+  const title = `${CATEGORY_SEO_TITLE[category] ?? categoryLabel(category)} in ${city}`;
   const description = `${CATEGORY_PITCH[category]} in ${city}${count ? `: ${count} local listing${count === 1 ? "" : "s"}` : ""}. Compare prices and reviews and contact sellers directly on BharathMela.`;
   const path = cityCategoryPath(metro, category);
   return {

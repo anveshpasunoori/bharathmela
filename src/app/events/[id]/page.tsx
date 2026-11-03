@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
-import { snippet } from "@/lib/seo";
+import { eventPath, idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
 import { eventSchema } from "@/lib/structured-data";
 import { ContactButtons } from "@/components/ContactButtons";
 import { getCurrentUser } from "@/lib/auth";
@@ -14,7 +14,7 @@ import { metroName, metroTimeZone } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
 
 async function getEvent(id: string) {
-  return db.event.findFirst({ where: { id, ...publicEventWhere() }, include: { vendor: true } });
+  return db.event.findFirst({ where: { id: idFromSlugParam(id), ...publicEventWhere() }, include: { vendor: true } });
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -23,13 +23,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const when = formatEventTime(event.startsAt, event.endsAt, metroTimeZone(event.metro));
   const title = `${event.title} – ${metroName(event.metro)}`;
   const description = snippet(`${when} at ${event.venueName}. ${event.description}`);
-  return { title, description, alternates: { canonical: `/events/${event.id}` }, openGraph: { type: "website", title, description, url: `/events/${event.id}` } };
+  return { title, description, alternates: { canonical: eventPath(event) }, openGraph: { type: "website", title, description, url: eventPath(event) } };
 }
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const event = await getEvent(id);
+  const param = (await params).id;
+  const event = await getEvent(param);
   if (!event) notFound();
+  // Old and shortened links (/events/<id>) move to the readable address.
+  if (`/events/${param}` !== eventPath(event)) permanentRedirect(eventPath(event));
   const user = await getCurrentUser();
   if (user?.id !== event.vendor.userId) {
     await db.event.update({ where: { id: event.id }, data: { views: { increment: 1 } } });
@@ -76,7 +78,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <div>
             <dt className="text-stone-500">Organizer</dt>
             <dd>
-              <Link href={`/seller/${event.vendorId}`} className="font-medium hover:text-brand">{event.vendor.businessName}</Link>
+              <Link href={sellerPath(event.vendor)} className="font-medium hover:text-brand">{event.vendor.businessName}</Link>
             </dd>
           </div>
         </dl>

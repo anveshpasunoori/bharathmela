@@ -56,6 +56,29 @@ export const CATEGORY_PITCH: Record<string, string> = {
   GOODS: "Pickles, podis, plants, pooja items and other homemade goods",
 };
 
+// Page titles in the words people search with ("Indian tiffin service Jacksonville"); the page heading keeps
+// the category's own name.
+export const CATEGORY_SEO_TITLE: Record<string, string> = {
+  FOOD: "Indian Home Food & Tiffin Services",
+  TUTORING: "Indian Tutors & Classes",
+  DANCE_MUSIC: "Indian Dance & Music Classes",
+  PUJARI: "Hindu Pujaris & Priests",
+  EVENT_SERVICES: "Indian Wedding & Event Vendors",
+  DOMESTIC_HELP: "Indian Nannies, Cooks & Elder Care",
+  HOME_SERVICES: "Indian-Owned Home Services & Repairs",
+  AUTO: "Indian-Owned Auto Repair & Services",
+  BEAUTY: "Indian Beauty, Threading & Mehndi",
+  ROOM_RENTAL: "Rooms for Rent & Indian Roommates",
+  REALTOR: "Indian Realtors & Real Estate Agents",
+  LEGAL: "Indian Lawyers & Immigration Attorneys",
+  TAX_FINANCE: "Indian CPAs & Tax Preparers",
+  TRAVEL: "India Travel, Tickets & Visa Help",
+  ART: "Indian Art, Paintings & Crafts",
+  CLOTHING: "Indian Clothing, Sarees & Jewelry",
+  GARAGE_SALE: "Garage & Moving Sales",
+  GOODS: "Indian Pickles, Pooja Items & Homemade Goods",
+};
+
 export const categoryFromSlug = (slug: string) => Object.keys(CATEGORY_SLUGS).find((id) => CATEGORY_SLUGS[id] === slug);
 export const cityPath = (metro: string) => `/in/${metro}`;
 export const cityCategoryPath = (metro: string, category: string) => `/in/${metro}/${CATEGORY_SLUGS[category]}`;
@@ -67,6 +90,8 @@ export const cityCategoryTitle = (metro: string, category: string) => `${categor
 export const slugify = (text: string) =>
   text.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/, "");
 export const listingPath = (l: { id: string; title: string }) => `/listing/${l.id}${slugify(l.title) ? `-${slugify(l.title)}` : ""}`;
+export const sellerPath = (s: { id: string; businessName: string }) => `/seller/${s.id}${slugify(s.businessName) ? `-${slugify(s.businessName)}` : ""}`;
+export const eventPath = (e: { id: string; title: string }) => `/events/${e.id}${slugify(e.title) ? `-${slugify(e.title)}` : ""}`;
 export const idFromSlugParam = (param: string) => param.split("-")[0];
 
 // Trimmed to a search-result-friendly length on a word boundary.

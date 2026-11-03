@@ -55,7 +55,7 @@ export async function replyToReview(_: FormState, form: FormData): Promise<FormS
     if (problem) return { error: problem };
   }
   await db.review.update({ where: { id: review.id }, data: { vendorReply: reply, vendorRepliedAt: reply ? new Date() : null } });
-  revalidatePath(`/seller/${vendor.id}`);
+  revalidatePath("/seller/[id]", "page");
   revalidatePath("/vendor/reviews");
   return { message: reply ? "Reply posted." : "Reply removed." };
 }

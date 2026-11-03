@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ContactButtons } from "@/components/ContactButtons";
 import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
@@ -8,7 +8,7 @@ import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
 import { JsonLd } from "@/components/JsonLd";
 import { getCurrentUser } from "@/lib/auth";
-import { snippet } from "@/lib/seo";
+import { idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
 import { sellerSchema } from "@/lib/structured-data";
 import { db } from "@/lib/db";
 import { isNewListing } from "@/lib/time";
@@ -19,7 +19,7 @@ import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 
 async function getSeller(id: string) {
   return db.vendorProfile.findFirst({
-    where: { id, user: { suspendedAt: null, deletedAt: null } },
+    where: { id: idFromSlugParam(id), user: { suspendedAt: null, deletedAt: null } },
     include: { user: { select: { createdAt: true, lastSeenAt: true, emailVerifiedAt: true, phoneVerifiedAt: true } } },
   });
 }
@@ -29,13 +29,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!seller) return { title: "Seller not found", robots: { index: false } };
   const title = `${seller.businessName} – ${metroName(seller.metro)}`;
   const description = snippet(seller.about || `${seller.businessName} on BharathMela: listings, reviews and contact details in ${metroName(seller.metro)}.`);
-  return { title, description, alternates: { canonical: `/seller/${seller.id}` }, openGraph: { type: "profile", title, description, url: `/seller/${seller.id}` } };
+  return { title, description, alternates: { canonical: sellerPath(seller) }, openGraph: { type: "profile", title, description, url: sellerPath(seller) } };
 }
 
 export default async function SellerPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const seller = await getSeller(id);
+  const param = (await params).id;
+  const seller = await getSeller(param);
   if (!seller) notFound();
+  // Old and shortened links (/seller/<id>) move to the readable address.
+  if (`/seller/${param}` !== sellerPath(seller)) permanentRedirect(sellerPath(seller));
+  const id = seller.id;
 
   const now = new Date();
   const viewer = await getCurrentUser();

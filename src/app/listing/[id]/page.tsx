@@ -9,7 +9,7 @@ import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { JsonLd } from "@/components/JsonLd";
-import { idFromSlugParam, listingPath, snippet } from "@/lib/seo";
+import { idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
 import { breadcrumbs, listingCrumbs, listingSchema } from "@/lib/structured-data";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { readGarageSale, saleWhen } from "@/lib/garage-sales";
@@ -175,7 +175,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       <section className="card space-y-3" aria-label="Seller">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <Link href={`/seller/${listing.vendorId}`} className="text-lg font-semibold hover:text-brand">{listing.vendor.businessName}</Link>
+            <Link href={sellerPath(listing.vendor)} className="text-lg font-semibold hover:text-brand">{listing.vendor.businessName}</Link>
             {summary && <div><Stars rating={summary.average} count={summary.count} /></div>}
           </div>
           {sellerSince && (
@@ -228,7 +228,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         <div className="flex items-baseline justify-between">
           <h2 className="font-semibold">Reviews {summary && <span className="font-normal text-stone-500">({summary.count})</span>}</h2>
           {summary && summary.count > reviews.length && (
-            <Link href={`/seller/${listing.vendorId}`} className="text-sm text-brand">See all</Link>
+            <Link href={sellerPath(listing.vendor)} className="text-sm text-brand">See all</Link>
           )}
         </div>
         <ReviewList reviews={reviews} sellerName={listing.vendor.businessName} />

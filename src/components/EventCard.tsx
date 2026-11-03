@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { eventPath } from "@/lib/seo";
 import { eventDateBadge, eventTypeLabel, formatEventHours } from "@/lib/events";
 import { metroTimeZone } from "@/lib/metros";
 import { formatUSD } from "@/lib/plans";
@@ -24,7 +25,7 @@ export function EventCard({ event }: { event: CardEvent }) {
   const date = eventDateBadge(event.startsAt, tz);
   return (
     <Link
-      href={`/events/${event.id}`}
+      href={eventPath(event)}
       className="group flex min-w-0 items-start gap-4 rounded-xl border border-stone-200 bg-white p-4 transition hover:border-stone-300 hover:shadow-sm sm:p-5"
     >
       <div className="min-w-[3.75rem] shrink-0 rounded-lg bg-brand-soft px-2 py-2 text-center leading-tight text-brand">

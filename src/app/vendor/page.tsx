@@ -1,3 +1,4 @@
+import { eventPath, sellerPath } from "@/lib/seo";
 import Link from "next/link";
 import { deleteEvent, setEventVisibility } from "../actions/event";
 import { deleteListing, renewListing, setListingVisibility } from "../actions/vendor";
@@ -105,7 +106,7 @@ export default async function VendorDashboard({
           {rating ? <>★ {rating.average.toFixed(1)} ({rating.count})</> : "no ratings yet"} · {plan.name} plan
         </p>
         <p className="mt-1 flex flex-wrap gap-x-4 text-sm font-semibold text-brand">
-          <Link href={`/seller/${vendor.id}`}>Public page</Link>
+          <Link href={sellerPath(vendor)}>Public page</Link>
           <Link href="/vendor/profile">Edit profile</Link>
           <Link href="/vendor/reviews">Reviews</Link>
           <Link href="/requests?tab=near">Requests near you</Link>
@@ -280,7 +281,7 @@ export default async function VendorDashboard({
                 </div>
                 <div className="flex flex-wrap gap-2 text-sm">
                   {e.status === "ACTIVE" && !past && (
-                    <Link href={`/events/${e.id}`} className="btn-outline py-1.5">View</Link>
+                    <Link href={eventPath(e)} className="btn-outline py-1.5">View</Link>
                   )}
                   {e.status !== "REMOVED" && !past && (
                     <Link href={`/vendor/events/${e.id}/edit`} className="btn-outline py-1.5">

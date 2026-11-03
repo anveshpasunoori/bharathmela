@@ -1,3 +1,4 @@
+import { eventPath } from "@/lib/seo";
 import { db } from "@/lib/db";
 import { publicEventWhere } from "@/lib/event-data";
 
@@ -9,7 +10,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const event = await db.event.findFirst({ where: { id, ...publicEventWhere() } });
   if (!event) return new Response("Event not found", { status: 404 });
-  const url = new URL(`/events/${event.id}`, request.url).toString();
+  const url = new URL(eventPath(event), request.url).toString();
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",

@@ -347,7 +347,7 @@ export async function updateProfile(_: FormState, form: FormData): Promise<FormS
   if (toE164(phone) !== toE164(vendor.phone)) {
     await db.user.update({ where: { id: vendor.userId }, data: { phoneVerifiedAt: null } });
   }
-  revalidatePath(`/seller/${vendor.id}`);
+  revalidatePath("/seller/[id]", "page");
   return { message: "Profile saved." };
 }
 
