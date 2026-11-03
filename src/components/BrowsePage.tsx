@@ -20,7 +20,7 @@ import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
-import { CATEGORY_PITCH, cityCategoryPath, cityPath } from "@/lib/seo";
+import { cityCategoryPath, cityPath } from "@/lib/seo";
 import { citySubcategoryPath, pickedSubcategory, subcategoriesFor } from "@/lib/subcategories";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
@@ -233,7 +233,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
               {categoryInfo ? (
                 <>
-                  <CategoryIcon id={categoryInfo.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
+                  <CategoryIcon id={categoryInfo.id} sub={picked?.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
                   <span>
                     {picked?.label ?? categoryInfo.label}{" "}
                     <span className="font-semibold text-stone-500">{nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}</span>
@@ -243,11 +243,6 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <>Results for &ldquo;{q}&rdquo;</>
               )}
             </h1>
-            {categoryInfo && !q && !picked && CATEGORY_PITCH[categoryInfo.id] && (
-              <p className="mt-1 text-sm text-stone-600">
-                {CATEGORY_PITCH[categoryInfo.id]} from the Indian community {where}.
-              </p>
-            )}
           </div>
         ) : (
           <div>
@@ -283,8 +278,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                   key={o.id ?? "all"}
                   href={subHref(o.id)}
                   aria-current={on ? "page" : undefined}
-                  className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 ring-1 ${on ? "bg-stone-900 text-white ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-white ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
                 >
+                  <CategoryIcon id={category!} sub={o.id} size={24} className="h-6 w-6" />
                   {o.label}
                 </Link>
               );

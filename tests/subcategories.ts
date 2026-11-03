@@ -1,5 +1,6 @@
 // Run with `npm test`. Every category has subcategories with unique URL words, food's don't clash with
 // its dietary markers, and the browse links and sitemap agree on which subcategory a listing is under.
+import { existsSync } from "node:fs";
 import { CATEGORIES, DIET_TAGS } from "../src/lib/constants";
 import { citySubcategoryPath, listingSubcategories, subcategoriesFor, subcategoryFromSlug } from "../src/lib/subcategories";
 
@@ -16,6 +17,8 @@ for (const c of CATEGORIES) {
   const slugs = subs.options.map((o) => o.slug);
   check(new Set(slugs).size === slugs.length && slugs.every((x) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(x)), `${c.id} subcategory URLs are unique and clean`);
   check(subs.options.every((o) => subcategoryFromSlug(c.id, o.slug)?.id === o.id), `${c.id} subcategory URLs round-trip`);
+  const noIcon = subs.options.filter((o) => !existsSync(`public/subcategories/${c.id}/${o.id}.svg`)).map((o) => o.id);
+  check(!noIcon.length, `${c.id} subcategories have icons (run node scripts/subcategory-icons.mjs)${noIcon.length ? `: missing ${noIcon.join(", ")}` : ""}`);
 }
 const food = subcategoriesFor("FOOD")!.options.map((o) => o.id);
 check(!food.some((id) => DIET_TAGS.some((t) => t.id === id)), "food subcategories don't reuse dietary marker ids");

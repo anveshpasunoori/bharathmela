@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { listingPath } from "@/lib/seo";
 import { CategoryIcon } from "./CategoryIcon";
+import { listingSubcategories } from "@/lib/subcategories";
 import { SaveHeart } from "./SaveHeart";
 import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
 import { readEventService, serviceLabels } from "@/lib/event-services";
@@ -51,7 +52,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
             <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />
           ) : (
             <div className="grid h-full place-items-center">
-              <CategoryIcon id={listing.category} size={112} className="h-24 w-24 opacity-90 transition group-hover:scale-105 sm:h-28 sm:w-28" />
+              <CategoryIcon id={listing.category} sub={listingSubcategories(listing)[0]} size={112} className="h-24 w-24 opacity-90 transition group-hover:scale-105 sm:h-28 sm:w-28" />
             </div>
           )}
           <div className="absolute left-2 top-2 flex gap-1">
