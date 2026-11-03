@@ -480,7 +480,22 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       )}
 
-      {showingListings && category !== "ROOM_RENTAL" && (
+      {(category === "GARAGE_SALE" || category === "ROOM_RENTAL") && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
+          <div>
+            <p className="font-semibold">{category === "GARAGE_SALE" ? "Having a garage or moving sale?" : "Renting out a room?"}</p>
+            <p className="text-sm text-stone-600">List it free. No business needed: post under your own name.</p>
+          </div>
+          <Link
+            href={viewer?.vendor ? `/vendor/listings/new?category=${category}` : `/vendor/signup?kind=individual&next=${encodeURIComponent(`/vendor/listings/new?category=${category}`)}`}
+            className="btn"
+          >
+            {category === "GARAGE_SALE" ? "List your sale" : "List your room"}
+          </Link>
+        </div>
+      )}
+
+      {showingListings && category !== "ROOM_RENTAL" && category !== "GARAGE_SALE" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
           <div>
             <p className="font-semibold">Can&apos;t find the right person?</p>

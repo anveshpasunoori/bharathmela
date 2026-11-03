@@ -1,23 +1,31 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
+import { SellerKindFields } from "@/components/SellerSignupFields";
+import { getCurrentUser } from "@/lib/auth";
 import { METROS } from "@/lib/metros";
-import { vendorSignup } from "../../actions/auth";
+import { becomeSeller, vendorSignup } from "../../actions/auth";
 
-export default function VendorSignupPage() {
+export const metadata = { title: "Start selling", alternates: { canonical: "/vendor/signup" } };
+
+// New sellers sign up here; people who already have an account (buyers) just add seller details.
+// `kind=individual` and `next` come from links like "Having a garage sale? List it free".
+export default async function VendorSignupPage({ searchParams }: { searchParams: Promise<{ kind?: string; next?: string }> }) {
+  const params = await searchParams;
+  const user = await getCurrentUser();
+  if (user?.vendor) redirect("/vendor");
+  const kind = params.kind === "individual" ? "individual" : "business";
+  const next = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/vendor";
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="text-2xl font-bold">Sell on BharathMela</h1>
-      <p className="mb-4 mt-1 text-stone-600">Start free with one listing. Upgrade any time.</p>
+      <h1 className="text-2xl font-bold">{kind === "individual" ? "List something on BharathMela" : "Sell on BharathMela"}</h1>
+      <p className="mb-4 mt-1 text-stone-600">
+        {user ? `Add a few details to your account, ${user.name.split(" ")[0]}, and you can post right away.` : "Free to start with one listing. Upgrade any time."}
+      </p>
       <div className="card">
-        <ActionForm action={vendorSignup} submitLabel="Create seller account">
-          <div>
-            <label className="label" htmlFor="name">Your name</label>
-            <input className="input" id="name" name="name" required autoComplete="name" />
-          </div>
-          <div>
-            <label className="label" htmlFor="businessName">Business name</label>
-            <input className="input" id="businessName" name="businessName" required placeholder="e.g. Lakshmi's Andhra Kitchen" />
-          </div>
+        <ActionForm action={user ? becomeSeller : vendorSignup} submitLabel={user ? "Start selling" : "Create seller account"}>
+          <input type="hidden" name="next" value={next} />
+          <SellerKindFields initialKind={kind} showName={!user} />
           <div>
             <label className="label" htmlFor="phone">Phone (shown to buyers)</label>
             <input className="input" id="phone" name="phone" type="tel" required autoComplete="tel" placeholder="(408) 555-0123" />
@@ -42,14 +50,18 @@ export default function VendorSignupPage() {
               <input className="input" id="zip" name="zip" inputMode="numeric" maxLength={5} required autoComplete="postal-code" />
             </div>
           </div>
-          <div>
-            <label className="label" htmlFor="email">Email</label>
-            <input className="input" id="email" name="email" type="email" required autoComplete="email" />
-          </div>
-          <div>
-            <label className="label" htmlFor="password">Password (8+ characters)</label>
-            <input className="input" id="password" name="password" type="password" minLength={8} required autoComplete="new-password" />
-          </div>
+          {!user && (
+            <>
+              <div>
+                <label className="label" htmlFor="email">Email</label>
+                <input className="input" id="email" name="email" type="email" required autoComplete="email" />
+              </div>
+              <div>
+                <label className="label" htmlFor="password">Password (8+ characters)</label>
+                <input className="input" id="password" name="password" type="password" minLength={8} required autoComplete="new-password" />
+              </div>
+            </>
+          )}
           <label className="flex gap-2 text-sm text-stone-700">
             <input type="checkbox" name="terms" required className="mt-0.5" />
             <span>
@@ -59,6 +71,11 @@ export default function VendorSignupPage() {
             </span>
           </label>
         </ActionForm>
+        {!user && (
+          <p className="mt-3 text-sm text-stone-600">
+            Already have an account? <Link href="/login?next=/vendor/signup" className="font-semibold text-brand">Log in</Link> to add selling to it.
+          </p>
+        )}
       </div>
     </div>
   );

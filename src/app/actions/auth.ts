@@ -38,19 +38,28 @@ async function signupProblem(email: string, password: string, form: FormData) {
   return null;
 }
 
+// Seller details shared by new sign-ups and existing accounts becoming sellers. People selling for
+// themselves (a garage sale, a room) skip the business name and appear under their own name.
+function sellerDetails(form: FormData, name: string) {
+  const individual = field(form, "kind") === "individual";
+  const businessName = (individual ? name : field(form, "businessName")).slice(0, 100);
+  const phone = field(form, "phone");
+  const metro = field(form, "metro");
+  const zip = field(form, "zip");
+  if (!name || !businessName) return { error: individual ? "Please enter your name." : "Please enter your business name." };
+  if (phone.replace(/\D/g, "").length < 10) return { error: "Enter a 10-digit US phone number." };
+  if (!isMetro(metro)) return { error: "Choose your city." };
+  if (!/^\d{5}$/.test(zip)) return { error: "Enter a 5-digit ZIP code." };
+  return { businessName, phone, whatsapp: form.get("whatsapp") === "on", metro, zip };
+}
+
 export async function vendorSignup(_: FormState, form: FormData): Promise<FormState> {
   const name = field(form, "name").slice(0, 100);
   const email = field(form, "email").toLowerCase();
   const password = String(form.get("password") ?? "");
-  const businessName = field(form, "businessName").slice(0, 100);
-  const phone = field(form, "phone");
-  const metro = field(form, "metro");
-  const zip = field(form, "zip");
-
-  if (!name || !businessName) return { error: "Please fill in all fields." };
-  if (phone.replace(/\D/g, "").length < 10) return { error: "Enter a 10-digit US phone number." };
-  if (!isMetro(metro)) return { error: "Choose your city." };
-  if (!/^\d{5}$/.test(zip)) return { error: "Enter a 5-digit ZIP code." };
+  const seller = sellerDetails(form, name);
+  if ("error" in seller) return seller;
+  const next = safeNext(form, "/vendor");
   const problem = await signupProblem(email, password, form);
   if (problem) return { error: problem };
 
@@ -61,12 +70,33 @@ export async function vendorSignup(_: FormState, form: FormData): Promise<FormSt
       passwordHash: await bcrypt.hash(password, 10),
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
-      vendor: { create: { businessName, phone, whatsapp: form.get("whatsapp") === "on", metro, zip } },
+      vendor: { create: seller },
     },
   });
   await sendVerificationCode(user);
   await createSession(user.id);
-  redirect("/verify?next=/vendor");
+  redirect(`/verify?next=${encodeURIComponent(next)}`);
+}
+
+// A signed-in buyer starting to sell: add seller details to the account they already have.
+export async function becomeSeller(_: FormState, form: FormData): Promise<FormState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/vendor/signup");
+  if (user.vendor) redirect("/vendor");
+  if (form.get("terms") !== "on") return { error: "Please agree to the Terms of Service." };
+  const seller = sellerDetails(form, user.name);
+  if ("error" in seller) return seller;
+  await db.user.update({
+    where: { id: user.id },
+    data: {
+      role: user.role === "ADMIN" ? "ADMIN" : "VENDOR",
+      termsVersion: TERMS_VERSION,
+      termsAcceptedAt: new Date(),
+      vendor: { create: seller },
+    },
+  });
+  const next = safeNext(form, "/vendor");
+  redirect(user.emailVerifiedAt ? next : `/verify?next=${encodeURIComponent(next)}`);
 }
 
 export async function buyerSignup(_: FormState, form: FormData): Promise<FormState> {
