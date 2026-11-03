@@ -2,6 +2,7 @@ import Link from "next/link";
 import { deleteEvent, setEventVisibility } from "../actions/event";
 import { deleteListing, renewListing, setListingVisibility } from "../actions/vendor";
 import { requireVendor } from "@/lib/auth";
+import { requestsForVendor } from "@/lib/service-requests";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
@@ -80,7 +81,9 @@ export default async function VendorDashboard({
   const flashTone = { ok: "bg-green-50 text-green-800", info: "bg-amber-50 text-amber-900", error: "bg-red-50 text-red-700" };
 
   // Everything that needs the seller's attention, in one checklist.
+  const toAnswer = (await requestsForVendor(vendor.id, user.id)).filter((r) => !r.quoted).length;
   const todos: { text: string; href: string; action: string }[] = [
+    ...(toAnswer ? [{ text: `${toAnswer} buyer${toAnswer === 1 ? "" : "s"} near you posted what they need`, href: "/requests?tab=near", action: "Send quotes" }] : []),
     ...(!user.phoneVerifiedAt ? [{ text: "Verify your phone to get a ✓ badge buyers trust", href: "/vendor/verify-phone", action: "Verify" }] : []),
     ...(expiringCount ? [{ text: `Renew ${expiringCount} listing${expiringCount === 1 ? "" : "s"} expiring soon`, href: "/vendor?tab=listings", action: "Review" }] : []),
     ...(!listings.length ? [{ text: "Post your first listing", href: "/vendor/listings/new", action: "Start" }] : []),
@@ -100,6 +103,7 @@ export default async function VendorDashboard({
           <Link href={`/seller/${vendor.id}`}>Public page</Link>
           <Link href="/vendor/profile">Edit profile</Link>
           <Link href="/vendor/reviews">Reviews</Link>
+          <Link href="/requests?tab=near">Requests near you</Link>
         </p>
       </header>
 

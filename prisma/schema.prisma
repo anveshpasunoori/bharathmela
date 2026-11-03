@@ -24,6 +24,7 @@ model User {
   roomsWanted  RoomWanted[]
   favorites    Favorite[]
   savedSearches SavedSearch[]
+  serviceRequests ServiceRequest[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
@@ -68,6 +69,7 @@ model VendorProfile {
   aiDrafts      AiDraft[]
   reviews       Review[]
   events        Event[]
+  quotes        Quote[]
 }
 
 // One-time code texted to prove a seller owns their phone number.
@@ -369,5 +371,48 @@ model SavedSearch {
 
   @@index([userId])
   @@index([alerts, lastAlertAt])
+}
+
+// "Post what you need": a buyer describes a job once, nearby sellers in that category are emailed, and
+// they answer with a quote. The buyer's email stays private until they reply to a seller.
+model ServiceRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    String
+  serviceType String   @default("") // one of the category's service types, if it has them
+  title       String
+  description String
+  neededBy    String   @default("") // YYYY-MM-DD, or "" for flexible
+  budgetCents Int?
+  zip         String
+  city        String   @default("")
+  metro       String
+  lat         Float
+  lng         Float
+  status      String   @default("OPEN") // OPEN | CLOSED (by the buyer) | PENDING_REVIEW | REMOVED
+  moderationNote String @default("")
+  notifiedCount Int    @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  quotes      Quote[]
+
+  @@index([status, category, metro])
+  @@index([userId])
+}
+
+// A seller's answer to a request: one per seller, emailed to the buyer with the seller as reply-to.
+model Quote {
+  id         String         @id @default(cuid())
+  requestId  String
+  request    ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  vendorId   String
+  vendor     VendorProfile  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  message    String
+  priceCents Int?
+  priceUnit  String         @default("")
+  createdAt  DateTime       @default(now())
+
+  @@unique([requestId, vendorId])
 }
 

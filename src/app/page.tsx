@@ -287,8 +287,13 @@ export default async function Home({
               );
             })}
           </div>
-          <p className="mt-3 text-sm text-stone-600">
-            Need a room? <Link href={`/rooms-wanted/new?metro=${metro}`} className="font-semibold text-brand">Post what you&apos;re looking for</Link>
+          <p className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-stone-600">
+            <span>
+              Need something done? <Link href="/requests/new" className="font-semibold text-brand">Post what you need and get quotes</Link>
+            </span>
+            <span>
+              Need a room? <Link href={`/rooms-wanted/new?metro=${metro}`} className="font-semibold text-brand">Post what you&apos;re looking for</Link>
+            </span>
           </p>
         </section>
       )}
@@ -433,6 +438,16 @@ export default async function Home({
           <Link href="/vendor/signup" className="mt-3 inline-block font-semibold text-brand">
             Run a home business {nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}? List it free →
           </Link>
+        </div>
+      )}
+
+      {showingListings && category !== "ROOM_RENTAL" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
+          <div>
+            <p className="font-semibold">Can&apos;t find the right person?</p>
+            <p className="text-sm text-stone-600">Post what you need once. Sellers near you who offer it will send you quotes.</p>
+          </div>
+          <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
         </div>
       )}
     </div>

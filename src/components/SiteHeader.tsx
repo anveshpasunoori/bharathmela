@@ -53,6 +53,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
               <div className="border-t border-stone-100 bg-stone-50">
                 <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-6 py-3 text-sm">
                   <Link href="/" className="font-medium text-stone-700 hover:text-brand">All categories</Link>
+                  <Link href="/requests/new" className="font-medium text-stone-700 hover:text-brand">Post what you need</Link>
                   <Link href="/rooms-wanted" className="text-stone-600 hover:text-brand">People looking for a place</Link>
                   <Link href="/events" className="text-stone-600 hover:text-brand">Events near you</Link>
                   <Link href="/vendor/signup" className="ml-auto font-semibold text-brand">List your business free →</Link>
@@ -91,6 +92,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
                 <div className="py-1">
                   <Link href="/account" className={menuLink}>Account settings</Link>
                   <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
                   {user.vendor ? (
                     <Link href="/vendor" className={menuLink}>My business</Link>
@@ -140,10 +142,12 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
             <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">More</p>
             <div className="text-base">
               <Link href="/events" className={menuLink}>Events near you</Link>
+              <Link href="/requests/new" className={menuLink}>Post what you need</Link>
               <Link href="/rooms-wanted" className={menuLink}>People looking for a place</Link>
               {user && (
                 <>
                   <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
                   <Link href="/account" className={menuLink}>Account settings</Link>
                 </>
