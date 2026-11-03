@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FilterPanel } from "@/components/FilterPanel";
+import { FilterBar, type FilterDef } from "@/components/FilterBar";
 import { RentalTabs } from "@/components/RentalTabs";
 import { WantedCard } from "@/components/WantedCard";
 import { metroName } from "@/lib/metros";
@@ -27,6 +27,20 @@ export default async function RoomsWantedPage({
   const q = (p.q ?? "").slice(0, 100);
   const posts = await browseWanted({ metro, minBudget: rent, space, moveInBy: by, query: q });
 
+  // The same filter bar as listing results, worded for someone with a room to offer.
+  const filters: FilterDef[] = [
+    {
+      kind: "max", key: "rent", param: "rent", label: "My rent", prefix: "Rent", fieldLabel: "My rent", suffix: "per month",
+      hint: "Shows renters whose budget covers it.", value: rent ? rent / 100 : null, presets: [800, 1000, 1200, 1500, 2000, 2500],
+    },
+    {
+      kind: "choice", key: "space", label: "My space",
+      options: [{ label: "Any space", params: { space: null } }, ...SPACE_TYPES.map((t) => ({ label: t.label, params: { space: t.id } }))],
+      selected: space ? SPACE_TYPES.findIndex((t) => t.id === space) + 1 : null,
+    },
+    { kind: "date", key: "by", param: "by", label: "Available by", prefix: "Available", value: by ?? null },
+  ];
+
   return (
     <div className="space-y-4">
       <RentalTabs metro={metro} active="wanted" />
@@ -39,37 +53,17 @@ export default async function RoomsWantedPage({
         <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
       </section>
 
-      <FilterPanel active={[q, rent, space, by].filter(Boolean).length}>
-        <form className="grid gap-3 text-sm sm:grid-cols-4" aria-label="Filters">
+      <div className="space-y-3">
+        <form className="flex gap-2" role="search">
           <input type="hidden" name="metro" value={metro} />
-          <div>
-            <label className="label" htmlFor="q">Search</label>
-            <input id="q" name="q" type="search" defaultValue={q} className="input" placeholder="Sunnyvale, student…" />
-          </div>
-          <div>
-            <label className="label" htmlFor="rent">My rent / month</label>
-            <input id="rent" name="rent" inputMode="numeric" className="input" placeholder="1200" defaultValue={rent ? rent / 100 : ""} />
-          </div>
-          <div>
-            <label className="label" htmlFor="space">My space</label>
-            <select id="space" name="space" defaultValue={space ?? ""} className="input">
-              <option value="">Any</option>
-              {SPACE_TYPES.map((t) => (
-                <option key={t.id} value={t.id}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="by">Available by</label>
-            <input id="by" name="by" type="date" className="input" defaultValue={by ?? ""} />
-          </div>
-          <div className="flex gap-2 sm:col-span-4">
-            <button className="btn">Show renters</button>
-            <Link href={`/rooms-wanted?metro=${metro}`} className="btn-outline">Reset</Link>
-          </div>
-          <p className="text-xs text-stone-500 sm:col-span-4">&ldquo;My rent&rdquo; shows renters whose budget covers it.</p>
+          {rent && <input type="hidden" name="rent" value={rent / 100} />}
+          {space && <input type="hidden" name="space" value={space} />}
+          {by && <input type="hidden" name="by" value={by} />}
+          <input name="q" type="search" defaultValue={q} maxLength={100} className="input flex-1" placeholder="Search by area, job or school, e.g. “Sunnyvale”, “student”" aria-label="Search renters" />
+          <button className="btn">Search</button>
         </form>
-      </FilterPanel>
+        <FilterBar filters={filters} clearHref={`/rooms-wanted?${new URLSearchParams({ metro, ...(q ? { q } : {}) })}`} />
+      </div>
 
       <FarNote far={far} metro={metro} />
       <p className="text-sm text-stone-600">{posts.length} {posts.length === 1 ? "person" : "people"} looking in {metroName(metro)}</p>

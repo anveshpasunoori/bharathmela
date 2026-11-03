@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 // A row of filter buttons, each opening a small panel (a sheet from the bottom on phones). The page
@@ -12,8 +12,8 @@ export type FilterDef =
   | { kind: "choice"; key: string; label: string; options: { label: string; params: Changes }[]; selected: number | null; defaultIndex?: number }
   // Pick several, stored comma-separated in one param.
   | { kind: "multi"; key: string; param: string; label: string; options: readonly { id: string; label: string }[]; selected: string[] }
-  // An upper limit in dollars.
-  | { kind: "max"; key: string; param: string; label: string; value: number | null; presets: number[]; suffix?: string }
+  // A dollar amount, by default an upper limit ("Up to $1,500"); `prefix` and `fieldLabel` reword it.
+  | { kind: "max"; key: string; param: string; label: string; value: number | null; presets: number[]; suffix?: string; prefix?: string; fieldLabel?: string; hint?: string }
   | { kind: "date"; key: string; param: string; label: string; prefix: string; value: string | null }
   // Several yes/no filters grouped under one button.
   | { kind: "checks"; key: string; label: string; items: { param: string; label: string; checked: boolean }[] }
@@ -41,7 +41,7 @@ function buttonText(f: FilterDef) {
       const first = f.options.find((o) => o.id === f.selected[0])?.label;
       return first ? `${first}${f.selected.length > 1 ? ` +${f.selected.length - 1}` : ""}` : f.label;
     }
-    case "max": return f.value != null ? `Up to $${f.value.toLocaleString()}` : f.label;
+    case "max": return f.value != null ? `${f.prefix ?? "Up to"} $${f.value.toLocaleString()}` : f.label;
     case "date": return f.value ? `${f.prefix} ${shortDate(f.value)}` : f.label;
     case "checks": {
       const n = f.items.filter((i) => i.checked).length;
@@ -58,6 +58,7 @@ const pill = (active: boolean) =>
 
 export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearHref?: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const params = useSearchParams();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -84,7 +85,7 @@ export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearH
     }
     next.delete("from");
     setOpenKey(null);
-    router.push(`/?${next}`, { scroll: false });
+    router.push(`${pathname}?${next}`, { scroll: false });
   }
 
   const anyActive = filters.some(isActive);
@@ -203,12 +204,13 @@ function FilterPanelBody({ filter: f, onApply }: { filter: Exclude<FilterDef, { 
     const submit = () => onApply({ [f.param]: Number(amount) > 0 ? String(Math.round(Number(amount))) : null });
     return (
       <>
-        <label className="label" htmlFor={`${f.key}-amount`}>Maximum{f.suffix ? ` ${f.suffix}` : ""}</label>
+        <label className="label" htmlFor={`${f.key}-amount`}>{f.fieldLabel ?? "Maximum"}{f.suffix ? ` ${f.suffix}` : ""}</label>
         <div className="relative">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">$</span>
           <input id={`${f.key}-amount`} className="input pl-6" inputMode="numeric" placeholder="No max" value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} onKeyDown={(e) => e.key === "Enter" && submit()} />
         </div>
+        {f.hint && <p className="mt-1 text-xs text-stone-500">{f.hint}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5">
           {f.presets.map((p) => (
             <button key={p} type="button" className={pill(amount === String(p))} onClick={() => setAmount(String(p))}>
