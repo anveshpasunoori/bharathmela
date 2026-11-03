@@ -22,7 +22,7 @@ export function SaveHeart({ listingId, title, saved }: { listingId: string; titl
       onClick={() => {
         setOn(!on);
         start(async () => {
-          await toggleSaved(listingId);
+          await toggleSaved(listingId, `${window.location.pathname}${window.location.search}`);
           router.refresh();
         });
       }}

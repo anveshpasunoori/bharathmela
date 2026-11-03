@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { publicListing } from "@/lib/listings";
 import { screenListing } from "@/lib/moderation";
+import { REPORT_REASONS } from "@/lib/legal";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
 import { appUrl } from "@/lib/saved-searches";
 import { MAX_OPEN_REQUESTS, REQUEST_DAYS, notifyVendors, openRequest, parseRequestForm } from "@/lib/service-requests";
@@ -106,4 +107,28 @@ export async function deleteRequest(id: string) {
   await db.serviceRequest.delete({ where: { id } });
   revalidatePath("/requests");
   redirect("/requests?deleted=1");
+}
+
+// Sellers can report a request (spam, scams, abuse). Three open reports take it off sellers' lists until
+// an admin reviews it.
+export async function reportRequest(_: FormState, form: FormData): Promise<FormState> {
+  const id = String(form.get("id") ?? "");
+  const user = await requireVerified(`/requests/${id}`);
+  if (!user.vendor) return { error: "Only sellers can report requests." };
+  const reason = String(form.get("reason") ?? "");
+  if (!REPORT_REASONS.some((r) => r.id === reason)) return { error: "Choose a reason." };
+  if (!(await hit("report", user.id))) return { error: TOO_MANY };
+  const request = await db.serviceRequest.findUnique({ where: { id }, select: { id: true, status: true } });
+  if (!request) return { error: "This request no longer exists." };
+  if (await db.report.findFirst({ where: { serviceRequestId: id, reporterEmail: user.email, status: "OPEN" } })) {
+    return { message: "You've already reported this request. Our team will review it." };
+  }
+  await db.report.create({
+    data: { serviceRequestId: id, reason, details: String(form.get("details") ?? "").trim().slice(0, 2000), reporterEmail: user.email },
+  });
+  const open = await db.report.count({ where: { serviceRequestId: id, status: "OPEN" } });
+  if (open >= 3 && request.status === "OPEN") {
+    await db.serviceRequest.update({ where: { id }, data: { status: "PENDING_REVIEW", moderationNote: `held automatically after ${open} reports` } });
+  }
+  return { message: "Thanks. Our team will review this request." };
 }

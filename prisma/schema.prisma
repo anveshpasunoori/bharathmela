@@ -168,6 +168,8 @@ model Report {
   event         Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   roomWantedId  String?
   roomWanted    RoomWanted? @relation(fields: [roomWantedId], references: [id], onDelete: Cascade)
+  serviceRequestId String?
+  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   reason        String // see REPORT_REASONS in src/lib/legal.ts
   details       String    @default("")
   reporterEmail String    @default("")
@@ -396,6 +398,7 @@ model ServiceRequest {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   quotes      Quote[]
+  reports     Report[]
 
   @@index([status, category, metro])
   @@index([userId])

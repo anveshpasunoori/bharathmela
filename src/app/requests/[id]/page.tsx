@@ -6,13 +6,14 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { categoryLabel } from "@/lib/constants";
+import { REPORT_REASONS } from "@/lib/legal";
 import { db } from "@/lib/db";
 import { publicListing } from "@/lib/listings";
 import { ratingsFor } from "@/lib/reviews";
 import { firstName } from "@/lib/rooms-wanted";
 import { requestServiceLabel } from "@/lib/service-requests";
 import { timeAgo } from "@/lib/time";
-import { closeRequest, deleteRequest, sendQuote } from "../../actions/service-request";
+import { closeRequest, deleteRequest, reportRequest, sendQuote } from "../../actions/service-request";
 
 export const metadata = { title: "Request", robots: { index: false } };
 
@@ -30,9 +31,10 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
   });
   if (!request) notFound();
   const own = request.userId === user.id;
+  const admin = user.role === "ADMIN";
   const now = new Date();
   const open = request.status === "OPEN" && request.expiresAt > now;
-  if (!own && !user.vendor) {
+  if (!own && !user.vendor && !admin) {
     return (
       <div className="card mx-auto max-w-md space-y-2 text-center">
         <h1 className="text-xl font-bold">Only sellers can see requests</h1>
@@ -41,7 +43,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
       </div>
     );
   }
-  if (!own && !open) {
+  if (!own && !open && !admin) {
     return (
       <div className="card mx-auto max-w-md space-y-2 text-center">
         <h1 className="text-xl font-bold">This request is closed</h1>
@@ -167,6 +169,23 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
           Add a live listing in {categoryLabel(request.category)} to quote on requests like this.{" "}
           <Link href="/vendor/listings/new" className="font-semibold text-brand">Create a listing</Link>
         </p>
+      )}
+      {!own && user.vendor && (
+        <details className="text-sm text-stone-500">
+          <summary className="cursor-pointer">Report this request</summary>
+          <div className="card mt-2">
+            <ActionForm action={reportRequest} submitLabel="Send report" secondary>
+              <input type="hidden" name="id" value={request.id} />
+              <select name="reason" required className="input" defaultValue="">
+                <option value="" disabled>Why are you reporting it?</option>
+                {REPORT_REASONS.map((r) => (
+                  <option key={r.id} value={r.id}>{r.label}</option>
+                ))}
+              </select>
+              <textarea name="details" maxLength={2000} className="input" placeholder="Anything that helps us review it (optional)" />
+            </ActionForm>
+          </div>
+        </details>
       )}
     </div>
   );

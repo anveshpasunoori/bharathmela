@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import type { FormState } from "@/components/ActionForm";
 import { createSession, destroySession, getCurrentUser, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { publicListing } from "@/lib/listings";
 import { checkEmailDomain } from "@/lib/email";
 import { TERMS_VERSION } from "@/lib/legal";
 import { isMetro } from "@/lib/metros";
@@ -122,8 +123,19 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
   }
   await createSession(user.id);
   if (user.role === "ADMIN") redirect("/admin");
-  const next = safeNext(form, user.role === "VENDOR" ? "/vendor" : "/");
+  let next = safeNext(form, user.role === "VENDOR" ? "/vendor" : "/");
+  // Tapped a heart while logged out: save it now, before the page (and its saved count) is drawn.
+  if (next.startsWith("/saved/add?")) next = await saveAfterLogin(user.id, new URLSearchParams(next.split("?")[1]));
   redirect(user.emailVerifiedAt ? next : `/verify?next=${encodeURIComponent(next)}`);
+}
+
+async function saveAfterLogin(userId: string, params: URLSearchParams) {
+  const id = params.get("id") ?? "";
+  const back = params.get("back") ?? "/saved";
+  if (/^[a-z0-9]+$/i.test(id) && (await db.listing.findFirst({ where: { id, ...publicListing() }, select: { id: true } }))) {
+    await db.favorite.upsert({ where: { userId_listingId: { userId, listingId: id } }, create: { userId, listingId: id }, update: {} });
+  }
+  return back.startsWith("/") && !back.startsWith("//") ? back : "/saved";
 }
 
 export async function logout() {

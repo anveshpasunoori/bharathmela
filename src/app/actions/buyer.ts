@@ -12,10 +12,15 @@ import { TOO_MANY, hit } from "@/lib/rate-limit";
 const DAY_MS = 86_400_000;
 const MIN_ACCOUNT_AGE_MS = 10 * 60_000;
 
-// Adds or removes a listing from the buyer's shortlist.
-export async function toggleSaved(listingId: string) {
+// Adds or removes a listing from the buyer's shortlist. Logged-out visitors log in, and the save is
+// finished on the way back to `back` (the page they tapped the heart on).
+// (Used directly by the card hearts and as a bound form action, which passes form data instead.)
+export async function toggleSaved(listingId: string, back?: string | FormData) {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/listing/${listingId}`);
+  if (!user) {
+    const returnTo = typeof back === "string" && back.startsWith("/") && !back.startsWith("//") ? back : `/listing/${listingId}`;
+    redirect(`/login?next=${encodeURIComponent(`/saved/add?id=${listingId}&back=${encodeURIComponent(returnTo)}`)}`);
+  }
   const key = { userId_listingId: { userId: user.id, listingId } };
   if (await db.favorite.findUnique({ where: key })) {
     await db.favorite.delete({ where: key });

@@ -50,10 +50,20 @@ export async function resolveReport(reportId: string, remove: boolean, form: For
         db.report.updateMany({ where: { roomWantedId: report.roomWantedId, status: "OPEN" }, data: closeReports }),
       ]);
       await audit(admin.id, "roomWanted.remove", "roomWanted", report.roomWantedId, reason);
+    } else if (report.serviceRequestId) {
+      await db.$transaction([
+        db.serviceRequest.update({ where: { id: report.serviceRequestId }, data: removed }),
+        db.report.updateMany({ where: { serviceRequestId: report.serviceRequestId, status: "OPEN" }, data: closeReports }),
+      ]);
+      await audit(admin.id, "serviceRequest.remove", "serviceRequest", report.serviceRequestId, reason);
     }
   } else {
     await db.report.update({ where: { id: reportId }, data: { status: "DISMISSED", resolvedAt: now } });
     await audit(admin.id, "report.dismiss", "report", reportId);
+    // A request held after reports goes back up once no reports on it are left open.
+    if (report.serviceRequestId && !(await db.report.count({ where: { serviceRequestId: report.serviceRequestId, status: "OPEN" } }))) {
+      await db.serviceRequest.updateMany({ where: { id: report.serviceRequestId, status: "PENDING_REVIEW" }, data: { status: "OPEN", moderationNote: "" } });
+    }
   }
   revalidatePath("/admin");
 }

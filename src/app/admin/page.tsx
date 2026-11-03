@@ -27,6 +27,7 @@ export default async function AdminPage() {
         listing: { include: { vendor: { select: { businessName: true } } } },
         event: { include: { vendor: { select: { businessName: true } } } },
         roomWanted: { include: { user: { select: { name: true, email: true } } } },
+        serviceRequest: { include: { user: { select: { name: true, email: true } } } },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -81,10 +82,10 @@ export default async function AdminPage() {
         {reports.length === 0 && <p className="card text-stone-600">No open reports.</p>}
         <ul className="space-y-3">
           {reports.map((r) => {
-            const target = r.listing ?? r.event ?? r.roomWanted;
+            const target = r.listing ?? r.event ?? r.roomWanted ?? r.serviceRequest;
             if (!target) return null;
-            const kind = r.listing ? "listing" : r.event ? "event" : "room request";
-            const url = r.listing ? `/listing/${target.id}` : r.event ? `/events/${target.id}` : `/rooms-wanted/${target.id}`;
+            const kind = r.listing ? "listing" : r.event ? "event" : r.roomWanted ? "room request" : "service request";
+            const url = r.listing ? `/listing/${target.id}` : r.event ? `/events/${target.id}` : r.roomWanted ? `/rooms-wanted/${target.id}` : `/requests/${target.id}`;
             const owner = "vendor" in target ? target.vendor.businessName : `${target.user.name} (${target.user.email})`;
             return (
             <li key={r.id} className="card space-y-2">
