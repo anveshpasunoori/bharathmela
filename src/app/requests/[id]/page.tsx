@@ -153,11 +153,11 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="label" htmlFor="price">Price in $ <span className="font-normal text-stone-400">(optional)</span></label>
+                <label className="label" htmlFor="price">Price in $ <span className="font-normal text-stone-500">(optional)</span></label>
                 <input id="price" name="price" inputMode="decimal" className="input" placeholder="e.g. 250" />
               </div>
               <div>
-                <label className="label" htmlFor="priceUnit">Per <span className="font-normal text-stone-400">(optional)</span></label>
+                <label className="label" htmlFor="priceUnit">Per <span className="font-normal text-stone-500">(optional)</span></label>
                 <input id="priceUnit" name="priceUnit" maxLength={40} className="input" placeholder="e.g. per visit, total, per hour" />
               </div>
             </div>

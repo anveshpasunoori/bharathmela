@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useNavigate } from "./NavProgress";
 
 export function SortSelect({ options, value }: { options: readonly { id: string; label: string }[]; value: string }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const params = useSearchParams();
   return (
     <label className="flex items-center gap-2 text-sm">
@@ -15,7 +16,7 @@ export function SortSelect({ options, value }: { options: readonly { id: string;
           const next = new URLSearchParams(params);
           if (e.target.value === "best") next.delete("sort");
           else next.set("sort", e.target.value);
-          router.push(`?${next}`);
+          navigate(`?${next}`);
         }}
       >
         {options.map((o) => (

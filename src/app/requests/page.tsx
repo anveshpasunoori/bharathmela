@@ -41,10 +41,10 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       {user.vendor && (
         <nav className="flex gap-6 border-b border-stone-200" aria-label="Requests">
           <Link href="/requests?tab=mine" className={tabLink(tab === "mine")} aria-current={tab === "mine" ? "page" : undefined}>
-            My requests <span className="font-normal text-stone-400">{mine.length}</span>
+            My requests <span className="font-normal text-stone-500">{mine.length}</span>
           </Link>
           <Link href="/requests?tab=near" className={tabLink(tab === "near")} aria-current={tab === "near" ? "page" : undefined}>
-            Near you <span className="font-normal text-stone-400">{near.length}</span>
+            Near you <span className="font-normal text-stone-500">{near.length}</span>
             {unanswered > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-white">{unanswered} to answer</span>}
           </Link>
         </nav>

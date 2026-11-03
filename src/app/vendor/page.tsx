@@ -36,7 +36,7 @@ export default async function VendorDashboard({
 
   const [{ plan, subscription }, listings, payments, ratings, events] = await Promise.all([
     getVendorPlan(vendor.id),
-    db.listing.findMany({ where: { vendorId: vendor.id }, orderBy: { createdAt: "desc" } }),
+    db.listing.findMany({ where: { vendorId: vendor.id }, include: { _count: { select: { photos: true } } }, orderBy: { createdAt: "desc" } }),
     db.payment.findMany({
       where: { vendorId: vendor.id },
       include: { subscription: true, adBoost: { include: { listing: { select: { title: true } } } } },
@@ -82,7 +82,12 @@ export default async function VendorDashboard({
 
   // Everything that needs the seller's attention, in one checklist.
   const toAnswer = (await requestsForVendor(vendor.id, user.id)).filter((r) => !r.quoted).length;
+  // Cards without a photo all look alike, so nudge sellers to add one.
+  const noPhotos = listings.filter((l) => (l.status === "ACTIVE" || l.status === "PENDING_REVIEW") && l._count.photos === 0);
   const todos: { text: string; href: string; action: string }[] = [
+    ...(noPhotos.length
+      ? [{ text: `Add a photo to ${noPhotos.length === 1 ? `"${noPhotos[0].title}"` : `${noPhotos.length} listings`}: listings with real photos get far more calls`, href: `/vendor/listings/${noPhotos[0].id}/edit`, action: "Add photo" }]
+      : []),
     ...(toAnswer ? [{ text: `${toAnswer} buyer${toAnswer === 1 ? "" : "s"} near you posted what they need`, href: "/requests?tab=near", action: "Send quotes" }] : []),
     ...(!user.phoneVerifiedAt ? [{ text: "Verify your phone to get a ✓ badge buyers trust", href: "/vendor/verify-phone", action: "Verify" }] : []),
     ...(expiringCount ? [{ text: `Renew ${expiringCount} listing${expiringCount === 1 ? "" : "s"} expiring soon`, href: "/vendor?tab=listings", action: "Review" }] : []),

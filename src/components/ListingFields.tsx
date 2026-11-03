@@ -170,7 +170,7 @@ export function ListingFields({
             <input id="saleStart" name="saleStart" type="date" required className="input" defaultValue={initialGarageSale?.startDate} />
           </div>
           <div>
-            <label className="label" htmlFor="saleEnd">Last day <span className="font-normal text-stone-400">(if more than one)</span></label>
+            <label className="label" htmlFor="saleEnd">Last day <span className="font-normal text-stone-500">(if more than one)</span></label>
             <input id="saleEnd" name="saleEnd" type="date" className="input" defaultValue={initialGarageSale?.endDate} />
           </div>
           <div>
@@ -178,7 +178,7 @@ export function ListingFields({
             <input id="saleHours" name="saleHours" required maxLength={40} className="input" placeholder="8 AM – 1 PM" defaultValue={initialGarageSale?.hours} />
           </div>
           <div>
-            <label className="label" htmlFor="saleAddress">Address or cross streets <span className="font-normal text-stone-400">(optional)</span></label>
+            <label className="label" htmlFor="saleAddress">Address or cross streets <span className="font-normal text-stone-500">(optional)</span></label>
             <input id="saleAddress" name="saleAddress" maxLength={120} className="input" placeholder="e.g. Nocatee, near Crosswater Pkwy" defaultValue={initialGarageSale?.address} />
           </div>
           <p className="text-xs text-stone-500 sm:col-span-2">

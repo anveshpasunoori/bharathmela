@@ -112,11 +112,11 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
         <nav className="flex gap-6 border-b border-stone-200" aria-label="Saved">
           <Link href="/saved?tab=listings" className={tabLink(tab === "listings")} aria-current={tab === "listings" ? "page" : undefined}>
             <HeartIcon filled={tab === "listings"} className="h-4 w-4" />
-            Listings <span className="font-normal text-stone-400">{available.length}</span>
+            Listings <span className="font-normal text-stone-500">{available.length}</span>
           </Link>
           <Link href="/saved?tab=searches" className={tabLink(tab === "searches")} aria-current={tab === "searches" ? "page" : undefined}>
             <BellIcon filled={tab === "searches"} />
-            Searches <span className="font-normal text-stone-400">{searches.length}</span>
+            Searches <span className="font-normal text-stone-500">{searches.length}</span>
             {totalNew > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-white">{totalNew} new</span>}
           </Link>
         </nav>
@@ -139,13 +139,13 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
           {counts.size > 1 && (
             <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0" aria-label="Filter saved listings by category">
               <Link href={chipHref()} className={`${chip(!cat)} pl-3.5`} aria-current={!cat ? "page" : undefined}>
-                All <span className={!cat ? "text-brand/70" : "text-stone-400"}>{available.length}</span>
+                All <span className={!cat ? "text-brand/70" : "text-stone-500"}>{available.length}</span>
               </Link>
               {CATEGORIES.filter((c) => counts.has(c.id)).map((c) => (
                 <Link key={c.id} href={chipHref(c.id)} className={chip(cat === c.id)} aria-current={cat === c.id ? "page" : undefined}>
                   <CategoryIcon id={c.id} size={24} className="h-6 w-6" />
                   {c.label}
-                  <span className={cat === c.id ? "text-brand/70" : "text-stone-400"}>{counts.get(c.id)}</span>
+                  <span className={cat === c.id ? "text-brand/70" : "text-stone-500"}>{counts.get(c.id)}</span>
                 </Link>
               ))}
             </nav>
@@ -187,7 +187,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
                     <CategoryIcon id={listing.category} size={40} className="h-10 w-10 opacity-50 grayscale" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-stone-500 line-through decoration-stone-300">{listing.title}</p>
-                      <p className="text-xs text-stone-400">
+                      <p className="text-xs text-stone-500">
                         {listing.vendor.businessName} · removed or expired ·{" "}
                         <Link href={`/?category=${listing.category}`} className="font-medium text-brand hover:underline">
                           Find similar

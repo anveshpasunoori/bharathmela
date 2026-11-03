@@ -25,6 +25,8 @@ import { sameLocation } from "@/lib/saved-searches";
 import { CATEGORY_PITCH, cityCategoryPath, cityPath } from "@/lib/seo";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
+import { NearMePrompt } from "@/components/NearMePrompt";
+import { ShowAllCategories } from "@/components/ShowAllCategories";
 
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
 
@@ -112,6 +114,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const searchSaved = mySearches.some((s) => s.params === searchQuery && sameLocation(s, here));
   if (viewer && params.ss) await db.savedSearch.updateMany({ where: { id: params.ss, userId: viewer.id }, data: { viewedAt: new Date() } });
   const pageQuery = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => typeof e[1] === "string")).toString();
+  // Busiest categories first; the rest keep their usual order.
+  const tileOrder = [...CATEGORIES].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
+  const totalListings = [...counts.values()].reduce((sum, n) => sum + n, 0);
   const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
 
   // Links keep the current location mode: "near you" (radius) or a picked metro.
@@ -283,16 +288,34 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           </nav>
         )}
         {!nearMode && <FarNote far={far} metro={metro} />}
+        {!place && !showingListings && <NearMePrompt city={metroName(metro)} />}
       </section>
 
       {!showingListings && (
-        <section>
+        <section className="group">
+          {totalListings < 5 && (
+            <div className="mb-4 rounded-xl bg-sky-50 px-5 py-4 text-sm ring-1 ring-sky-100">
+              <p className="font-semibold text-stone-800">BharathMela is just getting started {where}.</p>
+              <p className="mt-1 text-stone-600">
+                Tell us what you need and sellers here will get your request as they join, or be one of the first businesses listed.
+              </p>
+              <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 font-semibold">
+                <Link href="/requests/new" className="text-brand">Post what you need →</Link>
+                <Link href="/vendor/signup" className="text-brand">List your business free →</Link>
+              </p>
+            </div>
+          )}
           <h2 className="mb-3 text-lg font-semibold">What are you looking for?</h2>
+          {/* Phones show the 8 busiest categories first; "See all" reveals the rest. */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {CATEGORIES.map((c) => {
+            {tileOrder.map((c, i) => {
               const n = counts.get(c.id) ?? 0;
               return (
-                <Link key={c.id} href={href(c.id)} className="card flex items-center gap-3 p-3 transition hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:p-4">
+                <Link
+                  key={c.id}
+                  href={href(c.id)}
+                  className={`card items-center gap-3 p-3 transition hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:flex sm:p-4 ${i < 8 ? "flex" : "hidden group-data-[all=true]:flex"}`}
+                >
                   <CategoryIcon id={c.id} size={56} className="h-12 w-12 sm:h-14 sm:w-14" />
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold leading-tight sm:text-base">{c.label}</span>
@@ -302,6 +325,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               );
             })}
           </div>
+          <ShowAllCategories total={CATEGORIES.length} />
           <p className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-stone-600">
             <span>
               Need something done? <Link href="/requests/new" className="font-semibold text-brand">Post what you need and get quotes</Link>

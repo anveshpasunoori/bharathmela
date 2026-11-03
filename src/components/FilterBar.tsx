@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useNavigate } from "./NavProgress";
 import { useEffect, useRef, useState } from "react";
 
 // A row of filter buttons, each opening a small panel (a sheet from the bottom on phones). The page
@@ -57,7 +58,7 @@ const pill = (active: boolean) =>
   }`;
 
 export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearHref?: string }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const pathname = usePathname();
   const params = useSearchParams();
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -85,7 +86,7 @@ export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearH
     }
     next.delete("from");
     setOpenKey(null);
-    router.push(`${pathname}?${next}`, { scroll: false });
+    navigate(`${pathname}?${next}`);
   }
 
   const anyActive = filters.some(isActive);
@@ -113,7 +114,7 @@ export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearH
               onClick={() => setOpenKey(open ? null : f.key)}
             >
               {buttonText(f)}
-              <span aria-hidden className={`text-xs transition ${open ? "rotate-180" : ""} ${active ? "text-brand" : "text-stone-400"}`}>▾</span>
+              <span aria-hidden className={`text-xs transition ${open ? "rotate-180" : ""} ${active ? "text-brand" : "text-stone-500"}`}>▾</span>
             </button>
             {open && (
               <>
@@ -133,7 +134,7 @@ export function FilterBar({ filters, clearHref }: { filters: FilterDef[]; clearH
         );
       })}
       {anyActive && clearHref && (
-        <button type="button" className="shrink-0 whitespace-nowrap px-2 text-sm font-medium text-stone-500 underline-offset-2 hover:text-brand hover:underline" onClick={() => router.push(clearHref, { scroll: false })}>
+        <button type="button" className="shrink-0 whitespace-nowrap px-2 text-sm font-medium text-stone-500 underline-offset-2 hover:text-brand hover:underline" onClick={() => navigate(clearHref)}>
           Clear all
         </button>
       )}
@@ -206,7 +207,7 @@ function FilterPanelBody({ filter: f, onApply }: { filter: Exclude<FilterDef, { 
       <>
         <label className="label" htmlFor={`${f.key}-amount`}>{f.fieldLabel ?? "Maximum"}{f.suffix ? ` ${f.suffix}` : ""}</label>
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-400">$</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-stone-500">$</span>
           <input id={`${f.key}-amount`} className="input pl-6" inputMode="numeric" placeholder="No max" value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} onKeyDown={(e) => e.key === "Enter" && submit()} />
         </div>

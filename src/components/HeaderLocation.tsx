@@ -15,7 +15,7 @@ export async function HeaderLocation() {
       <summary className="flex cursor-pointer list-none items-center gap-1 text-sm text-stone-700 hover:text-brand">
         <span aria-hidden>📍</span>
         <span className="max-w-[60vw] truncate font-semibold sm:max-w-xs">{label}</span>
-        <span className="text-stone-400 group-open:rotate-180" aria-hidden>▾</span>
+        <span className="text-stone-500 group-open:rotate-180" aria-hidden>▾</span>
         <span className="sr-only">Change location</span>
       </summary>
       <div className="absolute left-0 z-30 mt-2 w-72 rounded-xl border border-stone-200 bg-white p-4 shadow-lg">

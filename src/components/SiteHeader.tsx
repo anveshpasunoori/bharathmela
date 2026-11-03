@@ -27,13 +27,13 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
         <div className="hidden items-center gap-1 md:flex">
           <details data-dropdown className="group">
             <summary className={`${navLink} flex cursor-pointer list-none items-center gap-1 group-open:bg-stone-100 group-open:text-stone-900`}>
-              Browse <span aria-hidden className="text-xs text-stone-400 transition group-open:rotate-180">▾</span>
+              Browse <span aria-hidden className="text-xs text-stone-500 transition group-open:rotate-180">▾</span>
             </summary>
             <div className="absolute inset-x-0 top-full z-30 border-y border-stone-200 bg-white shadow-lg">
               <div className="mx-auto grid max-w-5xl grid-cols-3 gap-x-6 gap-y-5 px-4 py-6 lg:grid-cols-5">
                 {NAV_GROUPS.map((g) => (
                   <div key={g.title}>
-                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-stone-400">{g.title}</p>
+                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-stone-500">{g.title}</p>
                     <ul className="space-y-0.5">
                       {g.items.map((c) => (
                         <li key={c.id}>
@@ -131,7 +131,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
                 <Link href="/signup" className="btn">Sign up</Link>
               </div>
             )}
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Browse</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Browse</p>
             <div className="grid grid-cols-2 gap-1.5">
               {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
                 <Link key={c.id} href={c.href} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm hover:bg-stone-100">
@@ -140,7 +140,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
                 </Link>
               ))}
             </div>
-            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">More</p>
+            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-500">More</p>
             <div className="text-base">
               <Link href="/events" className={menuLink}>Events near you</Link>
               <Link href="/requests/new" className={menuLink}>Post what you need</Link>
@@ -156,7 +156,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
               {user?.role === "ADMIN" && <Link href="/admin" className={menuLink}>Admin</Link>}
               <Link href="/safety" className={menuLink}>Safety tips</Link>
             </div>
-            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-400">Sellers</p>
+            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-500">Sellers</p>
             <div className="text-base">
               {user?.vendor ? (
                 <Link href="/vendor" className={menuLink}>My business</Link>

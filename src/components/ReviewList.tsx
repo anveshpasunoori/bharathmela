@@ -21,7 +21,7 @@ export function ReviewList({ reviews, sellerName }: { reviews: Review[]; sellerN
             </span>
             <span className="flex items-center gap-2">
               <Stars rating={r.rating} />
-              <span className="text-xs text-stone-400">{r.updatedAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+              <span className="text-xs text-stone-500">{r.updatedAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
             </span>
           </div>
           {r.comment && <p className="mt-1 whitespace-pre-line text-sm text-stone-700">{r.comment}</p>}

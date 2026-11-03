@@ -51,11 +51,11 @@ export function RequestFields({
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="label" htmlFor="neededBy">Needed by <span className="font-normal text-stone-400">(optional)</span></label>
+          <label className="label" htmlFor="neededBy">Needed by <span className="font-normal text-stone-500">(optional)</span></label>
           <input id="neededBy" name="neededBy" type="date" className="input" />
         </div>
         <div>
-          <label className="label" htmlFor="budget">Budget in $ <span className="font-normal text-stone-400">(optional)</span></label>
+          <label className="label" htmlFor="budget">Budget in $ <span className="font-normal text-stone-500">(optional)</span></label>
           <input id="budget" name="budget" inputMode="decimal" className="input" placeholder="e.g. 300" />
         </div>
         <div>

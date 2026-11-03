@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
+import { NavProgress } from "@/components/NavProgress";
 import { DropdownCloser } from "@/components/DropdownCloser";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCurrentUser } from "@/lib/auth";
@@ -54,6 +56,8 @@ export default async function RootLayout({
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-white focus:px-3 focus:py-2">
           Skip to content
         </a>
+        <Suspense>
+        <NavProgress>
         <SiteHeader user={user} savedCount={savedCount} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
@@ -92,6 +96,8 @@ export default async function RootLayout({
           <p className="mx-auto max-w-5xl px-4 pb-6 text-xs text-stone-500">{PLATFORM_DISCLAIMER}</p>
           <JsonLd data={SITE_JSON_LD} />
         </footer>
+        </NavProgress>
+        </Suspense>
       </body>
     </html>
   );
