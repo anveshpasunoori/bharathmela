@@ -1,15 +1,17 @@
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/constants";
+import { ILLUSTRATED_SUBCATEGORIES } from "@/lib/subcategory-art";
 
 // Categories with a drawing in public/categories/<CATEGORY>.svg (made by scripts/category-icons.mjs). Any
 // category without one shows its emoji on a matching tile.
 const ILLUSTRATED = new Set<string>(CATEGORIES.map((c) => c.id));
 
 // Decorative: the category name is always shown next to it. With `sub`, shows that subcategory's drawing
-// (public/subcategories/<CATEGORY>/<SUBCATEGORY>.svg, made by scripts/subcategory-icons.mjs).
+// (an illustrated .png where there is one, else the .svg made by scripts/subcategory-icons.mjs).
 export function CategoryIcon({ id, sub, size, className = "" }: { id: string; sub?: string; size: number; className?: string }) {
   if (sub) {
-    return <Image src={`/subcategories/${id}/${sub}.svg`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
+    const ext = ILLUSTRATED_SUBCATEGORIES.has(`${id}/${sub}`) ? "png" : "svg";
+    return <Image src={`/subcategories/${id}/${sub}.${ext}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
   }
   if (ILLUSTRATED.has(id)) {
     // Square tiles: the class sets the width and the height follows.

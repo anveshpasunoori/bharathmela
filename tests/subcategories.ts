@@ -2,6 +2,7 @@
 // its dietary markers, and the browse links and sitemap agree on which subcategory a listing is under.
 import { existsSync } from "node:fs";
 import { CATEGORIES, DIET_TAGS } from "../src/lib/constants";
+import { ILLUSTRATED_SUBCATEGORIES } from "../src/lib/subcategory-art";
 import { citySubcategoryPath, listingSubcategories, subcategoriesFor, subcategoryFromSlug } from "../src/lib/subcategories";
 
 let failed = 0;
@@ -20,6 +21,8 @@ for (const c of CATEGORIES) {
   const noIcon = subs.options.filter((o) => !existsSync(`public/subcategories/${c.id}/${o.id}.svg`)).map((o) => o.id);
   check(!noIcon.length, `${c.id} subcategories have icons (run node scripts/subcategory-icons.mjs)${noIcon.length ? `: missing ${noIcon.join(", ")}` : ""}`);
 }
+const missingArt = [...ILLUSTRATED_SUBCATEGORIES].filter((k) => !existsSync(`public/subcategories/${k}.png`));
+check(!missingArt.length, `illustrated subcategory icons exist${missingArt.length ? `: missing ${missingArt.join(", ")}` : ""}`);
 const food = subcategoriesFor("FOOD")!.options.map((o) => o.id);
 check(!food.some((id) => DIET_TAGS.some((t) => t.id === id)), "food subcategories don't reuse dietary marker ids");
 check(citySubcategoryPath("jacksonville", "AUTO", "OIL_CHANGE") === "/in/jacksonville/auto-services/oil-change", "clean subcategory path");

@@ -25,3 +25,11 @@ Photos used earlier: `HANDYMAN` for Home Services, `CAR_DETAILING` for Auto, `PE
 `OFFICE_STATIONERY` for Tax & Accounting (copies in `in-app/`).
 
 To use a photo instead of a drawing, copy it to `public/categories/` and point `CategoryIcon` at it.
+
+## Subcategory icons
+
+- `source-sheets/subcategory-icons-1.webp`: illustrated subcategory icons (8 per row, in the order of the sheet's
+  labels), cut to `public/subcategories/<CATEGORY>/<SUBCATEGORY>.png` and listed in `src/lib/subcategory-art.ts`.
+  The veena (Dance/Carnatic) on it was skipped, as it came out as a plain stick.
+- `icons-to-draw/sheet-2.png` and `sheet-3.png`: the drawn icons still waiting for illustrated versions, laid out
+  the same way, to have them redrawn. Subcategories without an illustration use the drawn `.svg`.
