@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7ed"/><stop offset="1" stop-color="#ffedd5"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fcd34d" stop-opacity=".9"/><stop offset="1" stop-color="#fcd34d" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="2" y="2" width="156" height="156" rx="24" fill="url(#bg)" stroke="#fed7aa" stroke-width="1.5"/>
+
+<ellipse cx="56" cy="74" rx="24" ry="9" fill="#fed7aa" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M32 74 L36 126 Q56 134 76 126 L80 74" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M36 92 Q56 100 78 92" fill="none" stroke="#fed7aa" stroke-width="3"/>
+<ellipse cx="56" cy="74" rx="9" ry="3.5" fill="#7c2d12"/>
+<ellipse cx="110" cy="88" rx="22" ry="8" fill="#fed7aa" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M88 88 Q84 112 96 126 Q110 134 124 126 Q136 112 132 88" fill="#c2410c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="110" cy="88" rx="8" ry="3" fill="#7c2d12"/>
+<path d="M98 106 Q110 112 122 106" fill="none" stroke="#fb923c" stroke-width="3"/>
+<path d="M102 30 L102 56 M102 30 L122 26 L122 50" fill="none" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="97" cy="57" rx="6" ry="4.5" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="117" cy="51" rx="6" ry="4.5" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M50 30 L50 50" fill="none" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="45" cy="51" rx="6" ry="4.5" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M50 30 Q58 34 60 42" fill="none" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M140 60 Q140 66 146 66 Q140 66 140 72 Q140 66 134 66 Q140 66 140 60Z" fill="#f59e0b"/><path d="M24 103 Q24 108 29 108 Q24 108 24 113 Q24 108 19 108 Q24 108 24 103Z" fill="#fb923c"/><circle cx="76" cy="36" r="2.4" fill="#fb923c"/>
+</svg>

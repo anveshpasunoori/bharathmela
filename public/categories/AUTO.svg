@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7ed"/><stop offset="1" stop-color="#ffedd5"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fcd34d" stop-opacity=".9"/><stop offset="1" stop-color="#fcd34d" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="2" y="2" width="156" height="156" rx="24" fill="url(#bg)" stroke="#fed7aa" stroke-width="1.5"/>
+
+<path d="M20 108 L20 92 Q20 82 30 80 L50 76 L66 58 Q71 52 80 52 L108 52 Q116 52 120 58 L132 76 L138 78 Q146 80 146 90 L146 108 Z" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M70 76 L80 63 Q82 60 86 60 L96 60 L96 76 Z" fill="#ffedd5" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M104 60 L110 60 Q114 60 116 63 L124 76 L104 76 Z" fill="#ffedd5" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M20 96 L146 96" fill="none" stroke="#c2410c" stroke-width="3"/>
+<rect x="136" y="84" width="10" height="6" rx="2" fill="#fcd34d" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="20" y="84" width="8" height="6" rx="2" fill="#c2410c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="50" cy="110" r="14" fill="#7c2d12"/><circle cx="50" cy="110" r="6" fill="#fcd34d"/>
+<circle cx="116" cy="110" r="14" fill="#7c2d12"/><circle cx="116" cy="110" r="6" fill="#fcd34d"/>
+<path d="M14 132 L150 132" fill="none" stroke="#fed7aa" stroke-width="3" stroke-linecap="round"/>
+<path d="M8 74 L22 74 M4 84 L14 84" fill="none" stroke="#fb923c" stroke-width="3" stroke-linecap="round"/>
+<path d="M134 25 Q134 32 141 32 Q134 32 134 39 Q134 32 127 32 Q134 32 134 25Z" fill="#f59e0b"/><path d="M32 35 Q32 40 37 40 Q32 40 32 45 Q32 40 27 40 Q32 40 32 35Z" fill="#fb923c"/><circle cx="150" cy="54" r="2.4" fill="#fb923c"/>
+</svg>

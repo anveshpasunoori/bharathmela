@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7ed"/><stop offset="1" stop-color="#ffedd5"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fcd34d" stop-opacity=".9"/><stop offset="1" stop-color="#fcd34d" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="2" y="2" width="156" height="156" rx="24" fill="url(#bg)" stroke="#fed7aa" stroke-width="1.5"/>
+
+<path d="M80 30 L80 122" fill="none" stroke="#7c2d12" stroke-width="5" stroke-linecap="round"/>
+<path d="M80 30 L80 122" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="80" cy="30" r="6" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M36 44 Q80 36 124 44" fill="none" stroke="#7c2d12" stroke-width="4" stroke-linecap="round"/>
+<path d="M40 46 L26 82 M40 46 L54 82 M120 46 L106 82 M120 46 L134 82" fill="none" stroke="#7c2d12" stroke-width="2" stroke-linecap="round"/>
+<path d="M22 82 Q40 100 58 82 Z" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M102 82 Q120 100 138 82 Z" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M58 132 Q58 118 80 118 Q102 118 102 132 Z" fill="#c2410c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="50" y="130" width="60" height="8" rx="3" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M138 112 Q138 118 144 118 Q138 118 138 124 Q138 118 132 118 Q138 118 138 112Z" fill="#f59e0b"/><path d="M22 113 Q22 118 27 118 Q22 118 22 123 Q22 118 17 118 Q22 118 22 113Z" fill="#fb923c"/><circle cx="130" cy="26" r="2.4" fill="#fb923c"/><circle cx="30" cy="26" r="2.4" fill="#f59e0b"/>
+</svg>

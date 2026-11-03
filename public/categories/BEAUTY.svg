@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7ed"/><stop offset="1" stop-color="#ffedd5"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fcd34d" stop-opacity=".9"/><stop offset="1" stop-color="#fcd34d" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="2" y="2" width="156" height="156" rx="24" fill="url(#bg)" stroke="#fed7aa" stroke-width="1.5"/>
+
+<path d="M60 92 L56 132 Q56 138 62 138 L74 138 Q80 138 80 132 L76 92 Z" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="68" cy="64" r="32" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="68" cy="64" r="23" fill="#ffedd5" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M54 56 Q58 46 68 44" fill="none" stroke="#fffbf5" stroke-width="4" stroke-linecap="round"/>
+<rect x="108" y="96" width="24" height="40" rx="3" fill="#c2410c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="108" y="86" width="24" height="12" rx="2" fill="#fcd34d" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M112 86 L112 64 Q120 52 128 60 L128 86 Z" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<g fill="#fb923c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><circle cx="132" cy="26" r="6"/><circle cx="142" cy="33" r="6"/><circle cx="138" cy="45" r="6"/><circle cx="126" cy="45" r="6"/><circle cx="122" cy="33" r="6"/></g>
+<circle cx="132" cy="36" r="5" fill="#fcd34d" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M26 28 Q26 34 32 34 Q26 34 26 40 Q26 34 20 34 Q26 34 26 28Z" fill="#f59e0b"/><path d="M104 30 Q104 34 108 34 Q104 34 104 38 Q104 34 100 34 Q104 34 104 30Z" fill="#fb923c"/><circle cx="26" cy="120" r="2.4" fill="#fb923c"/>
+</svg>

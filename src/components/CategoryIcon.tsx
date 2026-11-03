@@ -1,19 +1,15 @@
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/constants";
 
-// Categories with an illustration in public/categories/<CATEGORY>.webp. The rest show their emoji on a
-// matching tile until they get one.
-const ILLUSTRATED = new Set([
-  "FOOD", "TUTORING", "DANCE_MUSIC", "PUJARI", "EVENT_SERVICES", "DOMESTIC_HELP",
-  "ROOM_RENTAL", "REALTOR", "LEGAL", "ART", "CLOTHING", "GOODS",
-  "HOME_SERVICES", "AUTO", "BEAUTY", "TAX_FINANCE",
-]);
+// Categories with a drawing in public/categories/<CATEGORY>.svg (made by scripts/category-icons.mjs). Any
+// category without one shows its emoji on a matching tile.
+const ILLUSTRATED = new Set<string>(CATEGORIES.map((c) => c.id));
 
 // Decorative: the category name is always shown next to it.
 export function CategoryIcon({ id, size, className = "" }: { id: string; size: number; className?: string }) {
   if (ILLUSTRATED.has(id)) {
     // Square tiles: the class sets the width and the height follows.
-    return <Image src={`/categories/${id}.webp`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
+    return <Image src={`/categories/${id}.svg`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
   }
   return (
     <span
