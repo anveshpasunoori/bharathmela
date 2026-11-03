@@ -18,6 +18,7 @@ import { formatUSD } from "@/lib/plans";
 import { EVENT_SERVICES, OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, SPECIALTIES, isProfessional } from "@/lib/professionals";
 import { SPACE_TYPES } from "@/lib/rentals";
+import { SERVICE_TYPES, hasServiceTypes } from "@/lib/service-types";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
@@ -25,6 +26,15 @@ import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 
 const POPULAR = ["Biryani", "Tiffin", "Bharatanatyam", "Pooja", "Math tutor", "Mehndi", "Room for rent"];
+
+// A one-line reminder under results in categories where the seller needs a license.
+const LICENSE_TIPS: Record<string, string> = {
+  LEGAL: "Always check a lawyer's license with the state bar before hiring.",
+  REALTOR: "Always check a realtor's license with your state's real estate department before hiring.",
+  HOME_SERVICES: "Check a contractor's license with your state's licensing board and ask for proof of insurance before work starts.",
+  TAX_FINANCE: "Ask for the preparer's IRS PTIN, and never let a refund go to the preparer's account.",
+  AUTO: "Get a written estimate before any repair. Driving instructors should show a state license.",
+};
 
 export default async function Home({
   searchParams,
@@ -61,7 +71,7 @@ export default async function Home({
   const nearMode = !!place && !isMetro(params.metro);
   const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
   const placeMetro = place ? metroFor(place) : null;
-  const { category, q, diet, rentalFilters, proFilters, eventFilters } = parseFilters(params);
+  const { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters } = parseFilters(params);
   await syncExpirations();
   const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
@@ -84,7 +94,7 @@ export default async function Home({
   const showingListings = !!(category || q);
   const [{ listings, search }, events, counts] = await Promise.all([
     showingListings
-      ? browseListings({ metro, category, query: q, diet, rentalFilters, proFilters, eventFilters, near, sort })
+      ? browseListings({ metro, category, query: q, diet, serviceType, rentalFilters, proFilters, eventFilters, near, sort })
       : Promise.resolve({ listings: [], search: { active: false, suggestion: null, otherMetros: [], hintedCategory: undefined, maxPriceCents: undefined, minPriceCents: undefined } }),
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
@@ -143,6 +153,9 @@ export default async function Home({
       selected: nearMode ? RADII.indexOf(radius) : far ? null : RADII.length,
       defaultIndex: RADII.indexOf(25),
     });
+  }
+  if (category && hasServiceTypes(category)) {
+    filterBar.push(pick("type", "Service", "Any service", "type", SERVICE_TYPES[category], serviceType));
   }
   if (category === "FOOD") {
     filterBar.push({ kind: "multi", key: "diet", param: "diet", label: "Dietary", options: DIET_TAGS, selected: diet });
@@ -311,11 +324,7 @@ export default async function Home({
         </nav>
       )}
 
-      {category && isProfessional(category) && (
-        <p className="text-xs text-stone-500">
-          Always check a {category === "LEGAL" ? "lawyer's license with the state bar" : "realtor's license with your state's real estate department"} before hiring.
-        </p>
-      )}
+      {category && LICENSE_TIPS[category] && <p className="text-xs text-stone-500">{LICENSE_TIPS[category]}</p>}
 
       {category === "ROOM_RENTAL" && (
         <div className="space-y-3">

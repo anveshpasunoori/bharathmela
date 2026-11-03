@@ -105,6 +105,8 @@ The `EVENT_SERVICES` category (`src/lib/event-services.ts`) covers photographers
 
 ## Realtors and lawyers
 
+Service categories with service types (`src/lib/service-types.ts`): Home Services & Repairs (electrician, plumbing, AC & heating, handyman, painting, roofing, landscaping, pest control, remodeling, pavers, appliance repair, movers), Auto Services (mechanic, oil change, tires, body shop, detailing, driving lessons), Beauty & Wellness (threading, bridal makeup, mehndi, haircuts at home, saree draping, yoga, fitness), Tax & Accounting (tax filing, ITIN, FBAR, bookkeeping, business taxes, insurance) and Travel Help (India tickets, tours, travel companions, notary). Sellers tick the services they offer (stored in the listing's `tags`, like food's dietary markers); buyers filter by one with the Service button, and cards and listing pages show them. Each category has its own seller rules and buyer tips in `CATEGORY_RULES` (contractor and cosmetology licenses, PTINs, sellers of travel, no visa advice), and Tax & Accounting listings are reviewed before going live.
+
 Two licensed-professional categories, `REALTOR` and `LEGAL` (`src/lib/professionals.ts`):
 - **Required details:** license number, issuing state, and firm (brokerage or law firm). Sellers also pick services or practice areas (immigration, family, wills, NRI matters and more) and languages (Hindi, Telugu, Tamil and others), and can offer a free consultation.
 - **Review:** every listing goes to admin review. The queue shows the license with a lookup link and asks the admin to confirm the name matches.

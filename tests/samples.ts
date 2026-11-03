@@ -3,6 +3,7 @@ import { SAMPLE_VENDORS } from "../prisma/samples";
 import { CATEGORIES } from "../src/lib/constants";
 import { isMetro } from "../src/lib/metros";
 import { screenListing } from "../src/lib/moderation";
+import { hasServiceTypes, parseServiceTypes } from "../src/lib/service-types";
 
 let failed = 0;
 const fail = (msg: string) => {
@@ -15,6 +16,11 @@ for (const v of SAMPLE_VENDORS) {
   for (const l of v.listings) {
     const r = screenListing(`${l.title}\n${l.description}`, l.category);
     if (r.block || r.flags.length) fail(`${l.title}: ${r.block ?? r.flags.join(", ")}`);
+    // Service types must belong to the category, and categories that have them need at least one.
+    if (hasServiceTypes(l.category)) {
+      const valid = parseServiceTypes(l.category, `,${(l.tags ?? []).join(",")},`);
+      if (!valid.length || valid.length !== (l.tags ?? []).length) fail(`${l.title}: service types ${JSON.stringify(l.tags)}`);
+    }
   }
 }
 for (const metro of ["bay-area", "jacksonville"]) {

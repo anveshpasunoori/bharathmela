@@ -7,7 +7,8 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
     items: [
       ["FOOD", "Tiffins, meal boxes, party trays"],
       ["DOMESTIC_HELP", "Nannies, cooks, elder care"],
-      ["GOODS", "Pickles, plants, pooja items"],
+      ["HOME_SERVICES", "Electrician, plumber, AC, movers"],
+      ["AUTO", "Mechanic, tires, driving lessons"],
     ],
   },
   {
@@ -22,6 +23,7 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
     items: [
       ["PUJARI", "Pujas, homams, weddings"],
       ["EVENT_SERVICES", "Photo, DJ, decor, mehndi, rentals"],
+      ["BEAUTY", "Threading, bridal makeup, yoga"],
     ],
   },
   {
@@ -30,6 +32,8 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
       ["ROOM_RENTAL", "Rooms, apartments, in-law units"],
       ["REALTOR", "Buy or sell a home"],
       ["LEGAL", "Immigration, family, business"],
+      ["TAX_FINANCE", "Tax filing, ITIN, FBAR, insurance"],
+      ["TRAVEL", "India tickets, tours, notary"],
     ],
   },
   {
@@ -37,6 +41,7 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
     items: [
       ["CLOTHING", "Sarees, lehengas, jewelry"],
       ["ART", "Paintings, crafts, decor"],
+      ["GOODS", "Pickles, plants, pooja items"],
     ],
   },
 ];

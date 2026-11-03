@@ -74,6 +74,52 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
     buyer:
       "Check the lawyer's license with the state bar before hiring. Contacting a lawyer through BharathMela doesn't create an attorney-client relationship, and what you send isn't confidential until you've hired them. Beware of anyone who guarantees a visa, green card or court result.",
   },
+  HOME_SERVICES: {
+    seller: [
+      "Most states and many cities require a contractor's license for electrical, plumbing, HVAC, roofing and remodeling work, and permits for many jobs. Only offer work you're licensed for, and put your license number in your description.",
+      "Pest control needs a state pesticide applicator license. Movers crossing state lines need a USDOT number.",
+      "Only say you're insured or bonded if you have a current policy, and give clients a written estimate before you start.",
+    ],
+    buyer:
+      "Check the contractor's license with your state's licensing board, ask for proof of insurance, and get a written estimate. Don't pay most of the price up front; pay by a method you can dispute, and pay the balance when the work passes inspection.",
+  },
+  AUTO: {
+    seller: [
+      "Follow your state's rules for auto repair shops (many require registration and written estimates) and for disposing of oil, tires and fluids.",
+      "Driving instructors must be licensed by the state and use a properly insured vehicle; many states require a dual-control car.",
+    ],
+    buyer:
+      "Get a written estimate before any repair, ask for your old parts back, and keep receipts. For driving lessons, ask to see the instructor's state license and insurance.",
+  },
+  BEAUTY: {
+    seller: [
+      "Cosmetology, threading and waxing work usually needs a state license, and home salons may need a salon permit. Follow your state's hygiene rules: clean tools and single-use supplies.",
+      "Mehndi: use natural henna only. \"Black henna\" (PPD) causes serious skin reactions and isn't allowed.",
+      "Yoga and fitness: don't claim to treat or cure medical conditions.",
+    ],
+    buyer:
+      "Ask about the provider's license and hygiene practices, and do a patch test before henna or new products if you have sensitive skin.",
+  },
+  TAX_FINANCE: {
+    requiresReview: true,
+    seller: [
+      "Anyone paid to prepare federal tax returns must have an IRS PTIN. Say whether you're a CPA, an Enrolled Agent or a tax preparer, and only use \"CPA\" if you hold an active state license.",
+      "ITIN help must come from an IRS Certifying Acceptance Agent if you certify documents.",
+      "Insurance agents must be licensed in the client's state; list your license number. Don't give investment advice unless you're registered to.",
+      "Never promise a refund amount, and never have refunds deposited to your own account.",
+    ],
+    buyer:
+      "Ask for the preparer's PTIN and credentials, get a written fee quote, and never sign a blank return or let a refund go to the preparer's account. Check insurance agents' licenses with your state insurance department.",
+  },
+  TRAVEL: {
+    seller: [
+      "Travel sellers may need to register in their state (California, Florida, Hawaii and Washington require it) and keep client payments in a trust account.",
+      "Don't give visa, OCI, passport or immigration advice beyond helping fill in forms; legal advice must come from a lawyer.",
+      "Notaries must hold a current commission in their state. Travel companions arrange their own tickets and don't act as medical caregivers.",
+    ],
+    buyer:
+      "Pay for tickets by credit card and check the booking directly with the airline before paying anything extra. For visa, OCI or passport questions, rely on the official consulate or government site.",
+  },
   ROOM_RENTAL: {
     requiresReview: true,
     seller: [

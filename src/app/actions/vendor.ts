@@ -7,6 +7,7 @@ import { aiConfigured, draftListing, type ListingDraft } from "@/lib/ai";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
+import { hasServiceTypes, serializeServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
 import { parseEventServiceForm } from "@/lib/event-services";
@@ -82,8 +83,12 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     priceCents = Math.round(n * 100);
   }
   if (form.get("confirm") !== "on") return { error: "Please confirm the listing follows the rules and Terms." };
-  // Dietary markers only apply to food.
-  const tags = category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String))) : "";
+  // Dietary markers for food; the services offered for categories that have service types.
+  const tags =
+    category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String)))
+    : hasServiceTypes(category) ? serializeServiceTypes(category, form.getAll("types").map(String))
+    : "";
+  if (hasServiceTypes(category) && !tags) return { error: "Pick at least one service you offer, so buyers can find you." };
   if (category === "ROOM_RENTAL") {
     const rental = parseRentalForm(form);
     if ("error" in rental) return rental;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
+import { SERVICE_TYPES, hasServiceTypes } from "@/lib/service-types";
 import type { EventServiceDetails } from "@/lib/event-services";
 import type { ProfessionalDetails } from "@/lib/professionals";
 import type { RentalDetails } from "@/lib/rentals";
@@ -13,7 +14,8 @@ import { ProfessionalFields } from "./ProfessionalFields";
 import { RentalFields } from "./RentalFields";
 
 // Listing inputs plus the AI ad writer, which fills them in from the seller's rough idea.
-export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[] };
+// `types` are the services offered, for categories with service types (Home Services, Auto, Beauty…).
+export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[]; types?: string[] };
 
 export function ListingFields({
   canUseAI,
@@ -34,6 +36,7 @@ export function ListingFields({
   const [price, setPrice] = useState(initial?.price ?? "");
   const [priceUnit, setPriceUnit] = useState(initial?.priceUnit ?? "");
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [types, setTypes] = useState<string[]>(initial?.types ?? []);
   const [idea, setIdea] = useState("");
   const [aiError, setAiError] = useState("");
   const [writing, startWriting] = useTransition();
@@ -124,6 +127,35 @@ export function ListingFields({
             })}
           </div>
           <p className="mt-1 text-xs text-stone-500">Vegan also marks Vegetarian, Eggless and Dairy-free; Jain also marks Vegetarian.</p>
+        </fieldset>
+      )}
+
+      {hasServiceTypes(category) && (
+        <fieldset>
+          <legend className="label">Services you offer (pick all that apply)</legend>
+          <div className="flex flex-wrap gap-2">
+            {SERVICE_TYPES[category].map((t) => {
+              const on = types.includes(t.id);
+              return (
+                <label
+                  key={t.id}
+                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-brand-soft text-brand ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}
+                >
+                  <input
+                    type="checkbox"
+                    name="types"
+                    value={t.id}
+                    checked={on}
+                    onChange={() => setTypes(on ? types.filter((x) => x !== t.id) : [...types, t.id])}
+                    className="sr-only"
+                  />
+                  {on ? "✓ " : ""}
+                  {t.label}
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-1 text-xs text-stone-500">Buyers filter by these, so pick only what you actually do.</p>
         </fieldset>
       )}
 

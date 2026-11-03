@@ -200,6 +200,55 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     ],
   },
 
+  {
+    email: "fixit.home@bharathmela.test", name: "Suresh Babu", businessName: "FixIt Home Services", phone: "(408) 555-0151",
+    metro: "bay-area", zip: "95050", plan: "PRO", phoneVerified: true,
+    listings: [
+      { title: "Licensed electrician and handyman – same-week visits", category: "HOME_SERVICES", priceCents: 9500, priceUnit: "per visit", featured: true,
+        tags: ["ELECTRICAL", "HANDYMAN", "APPLIANCE"],
+        description: "CA-licensed electrical contractor (license in profile). Outlets, ceiling fans, EV chargers, TV mounting, furniture assembly and small repairs. Insured; written estimate before any job." },
+    ],
+  },
+  {
+    email: "bay.auto@bharathmela.test", name: "Manoj Pillai", businessName: "Manoj Mobile Mechanic", phone: "(510) 555-0136",
+    metro: "bay-area", zip: "94536", plan: "BASIC", phoneVerified: true,
+    listings: [
+      { title: "Mobile mechanic – oil change, brakes and batteries at your home", category: "AUTO", priceCents: 6000, priceUnit: "starting at",
+        tags: ["MECHANIC", "OIL_CHANGE"],
+        description: "ASE-certified mechanic, 14 years. Oil changes, brake pads, batteries and check-engine diagnostics in your driveway across Fremont, Newark and Union City. Written estimate first." },
+      { title: "Driving lessons for new arrivals and teens", category: "AUTO", priceCents: 7000, priceUnit: "per lesson",
+        tags: ["DRIVING_LESSONS"],
+        description: "State-licensed instructor with a dual-control car. Freeway practice, parallel parking and DMV test route prep. Lessons in English, Hindi and Malayalam." },
+    ],
+  },
+  {
+    email: "glow.beauty@bharathmela.test", name: "Pooja Mehta", businessName: "Glow by Pooja", phone: "(408) 555-0119",
+    metro: "bay-area", zip: "95131", plan: "BASIC", phoneVerified: true,
+    listings: [
+      { title: "Eyebrow threading and bridal makeup – home studio", category: "BEAUTY", priceCents: 1200, priceUnit: "starting at",
+        tags: ["THREADING", "BRIDAL_MAKEUP", "SAREE_DRAPING"],
+        description: "Licensed esthetician. Threading in my North San Jose home studio, and bridal and party makeup with saree draping at your venue. Single-use supplies, clean tools every time." },
+    ],
+  },
+  {
+    email: "bay.tax@bharathmela.test", name: "Ramya Krishnan", businessName: "Krishnan Tax & Books, EA", phone: "(650) 555-0128",
+    metro: "bay-area", zip: "94086", plan: "PRO", phoneVerified: true,
+    listings: [
+      { title: "Enrolled Agent – H-1B, NRI and small business taxes", category: "TAX_FINANCE", priceCents: 20000, priceUnit: "starting at",
+        tags: ["TAX_FILING", "FBAR", "BUSINESS_TAX", "ITIN"],
+        description: "IRS Enrolled Agent with a PTIN. Federal and California returns, FBAR and FATCA for India accounts, ITIN applications for spouses and parents, and LLC returns. Flat fees quoted up front." },
+    ],
+  },
+  {
+    email: "bay.travel@bharathmela.test", name: "Anand Rao", businessName: "Namaste Travels", phone: "(408) 555-0174",
+    metro: "bay-area", zip: "95054", plan: "FREE",
+    listings: [
+      { title: "India flight tickets and travel companions for parents", category: "TRAVEL", priceCents: 2500, priceUnit: "booking fee",
+        tags: ["TICKETS", "COMPANION"],
+        description: "Registered California seller of travel. Fares to Hyderabad, Bengaluru, Chennai, Delhi and Mumbai, and we match your parents with a vetted travel companion on the same flight. Pay the airline fare by card." },
+    ],
+  },
+
   // ── Jacksonville, FL ───────────────────────────────────────────────────────
   {
     email: "jax.kitchen@bharathmela.test", name: "Sowmya K", businessName: "Sowmya's Kitchen", phone: "(904) 555-0131",
@@ -353,6 +402,73 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     ],
   },
 
+  {
+    email: "jax.home@bharathmela.test", name: "Kiran Gowda", businessName: "First Coast Home Pros", phone: "(904) 555-0160",
+    metro: "jacksonville", zip: "32259", plan: "PRO", phoneVerified: true,
+    listings: [
+      { title: "AC repair, plumbing and handyman – St. Johns & Ponte Vedra", category: "HOME_SERVICES", priceCents: 8900, priceUnit: "service call", featured: true,
+        tags: ["HVAC", "PLUMBING", "HANDYMAN"],
+        description: "Florida-licensed HVAC and plumbing contractor (license numbers on request). AC tune-ups before summer, leaks, water heaters and odd jobs. Insured, upfront written quotes." },
+      { title: "Lawn care, pavers and pest control packages", category: "HOME_SERVICES", priceCents: 4500, priceUnit: "per visit",
+        tags: ["LANDSCAPING", "PAVERS", "PEST_CONTROL"],
+        description: "Weekly or biweekly mowing, edging and hedge trimming, paver patio cleaning and sealing, and licensed quarterly pest control for Nocatee and St. Johns homes." },
+    ],
+  },
+  {
+    email: "jax.movers@bharathmela.test", name: "Ravi Teja", businessName: "Desi Movers Jax", phone: "(904) 555-0109",
+    metro: "jacksonville", zip: "32256", plan: "FREE",
+    listings: [
+      { title: "Local movers – apartments and houses", category: "HOME_SERVICES", priceCents: 12000, priceUnit: "per hour (2 movers)",
+        tags: ["MOVING"],
+        description: "Two-person crew with a 20-foot truck for local moves around Jacksonville. Packing materials available. Insured; we give a written estimate after a quick video walkthrough." },
+    ],
+  },
+  {
+    email: "jax.auto@bharathmela.test", name: "Sandeep Nair", businessName: "Southside Auto Care", phone: "(904) 555-0147",
+    metro: "jacksonville", zip: "32256", plan: "BASIC", phoneVerified: true,
+    listings: [
+      { title: "Tires, oil change and detailing near Deerwood", category: "AUTO", priceCents: 4900, priceUnit: "starting at",
+        tags: ["TIRES", "OIL_CHANGE", "DETAILING"],
+        description: "Registered Florida repair shop. Synthetic oil changes, new and used tires with balancing, and interior and exterior detailing while you wait. Written estimates on all repairs." },
+      { title: "Driving lessons – learner's permit to road test", category: "AUTO", priceCents: 6500, priceUnit: "per lesson",
+        tags: ["DRIVING_LESSONS"],
+        description: "Florida-licensed driving instructor with a dual-control car. Pickup from home in St. Johns and Southside. Patient lessons for newcomers, parents visiting on long stays and teens." },
+    ],
+  },
+  {
+    email: "jax.beauty@bharathmela.test", name: "Lavanya Reddy", businessName: "Lavanya Beauty & Yoga", phone: "(904) 555-0183",
+    metro: "jacksonville", zip: "32082", plan: "BASIC", phoneVerified: true,
+    listings: [
+      { title: "Threading, waxing and party makeup in Ponte Vedra", category: "BEAUTY", priceCents: 1000, priceUnit: "starting at",
+        tags: ["THREADING", "BRIDAL_MAKEUP", "HAIRCUT"],
+        description: "Licensed cosmetologist. Eyebrow threading, waxing, and makeup and hair for festivals and weddings. Home studio in Ponte Vedra Beach or at your home." },
+      { title: "Morning yoga and meditation classes", category: "BEAUTY", priceCents: 6000, priceUnit: "per month",
+        tags: ["YOGA", "FITNESS"],
+        description: "Gentle hatha yoga and pranayama in a small group by the beach, Tuesdays and Saturdays at 7 AM. Beginners and seniors welcome." },
+    ],
+  },
+  {
+    email: "jax.tax@bharathmela.test", name: "Venkatesh Iyer", businessName: "Iyer CPA & Insurance", phone: "(904) 555-0198",
+    metro: "jacksonville", zip: "32246", plan: "PRO", phoneVerified: true,
+    listings: [
+      { title: "CPA for families and small businesses – FBAR, ITIN, payroll", category: "TAX_FINANCE", priceCents: 25000, priceUnit: "starting at",
+        tags: ["TAX_FILING", "FBAR", "ITIN", "BOOKKEEPING", "BUSINESS_TAX"],
+        description: "Florida-licensed CPA. Individual and business returns, FBAR for India accounts, ITIN help as a Certifying Acceptance Agent, and monthly bookkeeping for home businesses." },
+      { title: "Home, auto and life insurance quotes", category: "TAX_FINANCE", priceCents: null, priceUnit: "",
+        tags: ["INSURANCE"],
+        description: "Licensed Florida insurance agent (license number on request). Compare home, auto and term life quotes from several carriers, including flood and wind coverage for coastal homes." },
+    ],
+  },
+  {
+    email: "jax.travel@bharathmela.test", name: "Shanti Prasad", businessName: "Jax Desi Travels & Notary", phone: "(904) 555-0112",
+    metro: "jacksonville", zip: "32224", plan: "FREE",
+    listings: [
+      { title: "India tickets, tour packages and notary services", category: "TRAVEL", priceCents: 3000, priceUnit: "starting at",
+        tags: ["TICKETS", "TOURS", "NOTARY"],
+        description: "Registered Florida seller of travel and commissioned Florida notary. Fares to India, Kerala and Kashmir tour packages, and notarizing forms and affidavits. Evenings and weekends." },
+    ],
+  },
+
   // ── Other cities ───────────────────────────────────────────────────────────
   {
     email: "meena.tutor@bharathmela.test", name: "Meena K", businessName: "Meena's Math & Telugu Classes", phone: "(972) 555-0123",
@@ -408,7 +524,8 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     email: "nj.cpa@bharathmela.test", name: "Vikram Shah", businessName: "Shah Tax & Books", phone: "(201) 555-0184",
     metro: "new-jersey", zip: "07302", plan: "BASIC", phoneVerified: true,
     listings: [
-      { title: "Tax filing for H-1B and NRI families, FBAR included", category: "GOODS", priceCents: 25000, priceUnit: "starting at",
+      { title: "Tax filing for H-1B and NRI families, FBAR included", category: "TAX_FINANCE", priceCents: 25000, priceUnit: "starting at",
+        tags: ["TAX_FILING", "FBAR", "BOOKKEEPING"],
         description: "Federal and state returns, FBAR and FATCA reporting for India accounts, and bookkeeping for small businesses." },
     ],
   },

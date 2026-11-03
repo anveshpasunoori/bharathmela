@@ -115,6 +115,20 @@ const SYNONYMS: string[][] = [
   ["jewelry", "jewellery", "jewels", "bangles", "earrings", "necklace", "jhumka", "jhumkas"],
   ["blouse", "blouses", "blouse stitching"],
   ["tailor", "tailoring", "stitching", "alterations", "alteration"],
+  // Home services, auto, beauty, tax and travel.
+  ["plumber", "plumbers", "plumbing", "leak", "leaking", "clogged", "drain"],
+  ["electrician", "electricians", "electrical", "wiring"],
+  ["hvac", "air conditioning", "ac repair", "furnace", "heating repair"],
+  ["handyman", "handymen", "odd jobs"],
+  ["pest control", "termite", "termites", "exterminator", "pests"],
+  ["movers", "packers", "packers and movers", "moving company"],
+  ["lawn", "lawn care", "mowing", "landscaping", "landscaper", "yard work"],
+  ["mechanic", "mechanics", "auto repair", "car repair"],
+  ["driving lessons", "driving school", "driving instructor", "learn to drive"],
+  ["threading", "eyebrow", "eyebrows", "eyebrow threading"],
+  ["accountant", "cpa", "enrolled agent", "tax preparer", "tax filing", "tax return", "taxes"],
+  ["flight", "flights", "air tickets", "airfare", "plane tickets"],
+  ["notary", "apostille", "notarize", "notarization"],
 ];
 
 // Words that hint at a category: they rank that category higher, and a search that clearly belongs to
@@ -129,6 +143,11 @@ const CATEGORY_HINTS: Record<string, string[]> = {
   REALTOR: ["realtor", "buy home", "sell home"],
   EVENT_SERVICES: ["photographer", "videographer", "dj", "bartender", "decorator", "makeup", "dhol", "emcee", "choreographer", "planner", "photo booth", "party rentals", "wedding", "sangeet", "mehndi", "decor", "catering", "cake"],
   LEGAL: ["lawyer", "immigration", "divorce", "wills", "llc", "nri"],
+  HOME_SERVICES: ["plumber", "electrician", "hvac", "handyman", "painter", "painting", "roofing", "gutters", "pest control", "movers", "lawn", "remodeling", "renovation", "appliance repair", "contractor"],
+  AUTO: ["mechanic", "car", "auto", "oil change", "tires", "detailing", "body shop", "driving lessons"],
+  BEAUTY: ["threading", "waxing", "salon", "haircut", "beauty", "bridal makeup", "makeup", "mehndi", "saree draping", "yoga", "fitness", "trainer"],
+  TAX_FINANCE: ["accountant", "itin", "fbar", "bookkeeping", "insurance", "payroll"],
+  TRAVEL: ["flight", "travel", "travel agent", "tour", "tours", "notary", "travel companion"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],
 };

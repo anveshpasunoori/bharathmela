@@ -4,6 +4,7 @@ import { CATEGORIES, categoryLabel, isDietTag, tagLabel } from "./constants";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "./event-services";
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "./professionals";
 import { type RentalFilters, SPACE_TYPES } from "./rentals";
+import { SERVICE_TYPES, serviceTypeLabel } from "./service-types";
 
 type Params = Record<string, string | undefined>;
 
@@ -12,7 +13,7 @@ export const RADII = [5, 10, 25, 50, 100];
 
 // The query-string keys that make up a search (location and sort are kept separately).
 export const SEARCH_PARAMS = [
-  "category", "q", "diet", "space", "maxRent", "by", "pbath", "furn", "pets", "spec", "lang", "free", "svc", "item", "occ", "ins",
+  "category", "q", "diet", "type", "space", "maxRent", "by", "pbath", "furn", "pets", "spec", "lang", "free", "svc", "item", "occ", "ins",
 ] as const;
 
 export function parseFilters(params: Params) {
@@ -20,6 +21,8 @@ export function parseFilters(params: Params) {
   const q = (params.q ?? "").slice(0, 100);
   // Dietary filters only apply to food.
   const diet = category === "FOOD" ? (params.diet ?? "").split(",").filter(isDietTag) : [];
+  // The kind of service, for categories that have them (Home Services: plumbing, electrician…).
+  const serviceType = category && SERVICE_TYPES[category]?.some((t) => t.id === params.type) ? params.type : undefined;
   // Rental filters only apply to room rentals.
   const rentalFilters: RentalFilters =
     category === "ROOM_RENTAL"
@@ -51,7 +54,7 @@ export function parseFilters(params: Params) {
           insured: params.ins === "1",
         }
       : {};
-  return { category, q, diet, rentalFilters, proFilters, eventFilters };
+  return { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters };
 }
 
 export type Filters = ReturnType<typeof parseFilters>;
@@ -74,6 +77,7 @@ export function describeSearch(f: Filters, where: string) {
   if (f.category) parts.push(categoryLabel(f.category));
   if (f.q) parts.push(`“${f.q}”`);
   if (f.diet.length) parts.push(f.diet.map(tagLabel).join(", "));
+  if (f.serviceType && f.category) parts.push(serviceTypeLabel(f.category, f.serviceType));
   const r = f.rentalFilters;
   if (r.space) parts.push(label(SPACE_TYPES, r.space)!);
   if (r.maxRent) parts.push(`up to $${(r.maxRent / 100).toLocaleString("en-US")}`);

@@ -6,6 +6,7 @@ import { PhotoField } from "@/components/PhotoField";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { parseTags } from "@/lib/constants";
+import { parseServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
 import { AI_WRITER_PLANS } from "@/lib/plans";
 import { readEventService } from "@/lib/event-services";
@@ -53,6 +54,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
               price: listing.priceCents != null ? (listing.priceCents / 100).toFixed(2) : "",
               priceUnit: listing.priceUnit,
               tags: parseTags(listing.tags),
+              types: parseServiceTypes(listing.category, listing.tags),
             }}
           />
           <PhotoField existing={listing.photos} />

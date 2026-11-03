@@ -37,7 +37,7 @@ export function savedSearchHref(s: Pick<SavedSearch, "id" | "params" | "metro" |
 export async function savedSearchResults(s: SavedSearch) {
   const f = parseFilters(Object.fromEntries(new URLSearchParams(s.params)));
   const near = s.nearLat != null && s.nearLng != null ? { lat: s.nearLat, lng: s.nearLng, radiusMiles: s.radiusMiles } : undefined;
-  const { listings } = await browseListings({ metro: s.metro, category: f.category, query: f.q, diet: f.diet, rentalFilters: f.rentalFilters, proFilters: f.proFilters, eventFilters: f.eventFilters, near, sort: "new" });
+  const { listings } = await browseListings({ metro: s.metro, category: f.category, query: f.q, diet: f.diet, serviceType: f.serviceType, rentalFilters: f.rentalFilters, proFilters: f.proFilters, eventFilters: f.eventFilters, near, sort: "new" });
   return listings;
 }
 

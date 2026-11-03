@@ -80,6 +80,16 @@ const moves: [string, string, string[]][] = [
   ["tent rental", "EVENT_SERVICES", []],
   ["vegan", "FOOD", []],
   ["xyzzy", "FOOD", []], // no hint words: decided by where the listings are
+  ["plumber", "FOOD", ["HOME_SERVICES"]],
+  ["leaking pipe", "TUTORING", ["HOME_SERVICES"]],
+  ["mechanic", "FOOD", ["AUTO"]],
+  ["driving school", "TUTORING", ["AUTO"]],
+  ["eyebrow threading", "FOOD", ["BEAUTY"]],
+  ["mehndi", "BEAUTY", []], // fits here too, so stay
+  ["makeup", "FOOD", ["EVENT_SERVICES", "BEAUTY"]],
+  ["cpa", "LEGAL", ["TAX_FINANCE"]],
+  ["flight tickets", "GOODS", ["TRAVEL"]],
+  ["painting", "HOME_SERVICES", []], // house painting stays in home services
 ];
 for (const [q, current, want] of moves) {
   const got = betterCategories(parseQuery(q, current), current);

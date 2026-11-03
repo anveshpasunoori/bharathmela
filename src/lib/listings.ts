@@ -42,6 +42,8 @@ export type BrowseOptions = {
   category?: string;
   query?: string;
   diet?: string[];
+  // One of the category's service types (lib/service-types), e.g. "PLUMBING".
+  serviceType?: string;
   rentalFilters?: RentalFilters;
   proFilters?: ProfessionalFilters;
   eventFilters?: EventServiceFilters;
@@ -69,6 +71,7 @@ export async function browseListings({
   category,
   query = "",
   diet = [],
+  serviceType,
   rentalFilters = {},
   proFilters = {},
   eventFilters = {},
@@ -80,8 +83,8 @@ export async function browseListings({
   const filters: Prisma.ListingWhereInput = {
     ...publicListing(),
     ...(category ? { category } : {}),
-    // Every chosen dietary marker must be on the listing.
-    AND: diet.map((tag) => ({ tags: { contains: `,${tag},` } })),
+    // Every chosen dietary marker, and the chosen service type, must be on the listing.
+    AND: [...diet, ...(serviceType ? [serviceType] : [])].map((tag) => ({ tags: { contains: `,${tag},` } })),
   };
   const parsed = parseQuery(query, category);
   const searching = parsed.terms.length > 0 || parsed.maxPriceCents != null || parsed.minPriceCents != null;

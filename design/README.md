@@ -19,4 +19,7 @@ Images kept for later use. Pictures the app shows live in `public/categories/` (
   dance, realtors and events, replaced by photos.
 - `source-sheets/`: the original sheets the tiles were cut from (5 tiles per row; cut to 172 px squares with rounded corners).
 
+In use (copied to `public/categories/`): `HANDYMAN` for Home Services, `CAR_DETAILING` for Auto, `PERSONAL_CARE` for
+Beauty & Wellness, `OFFICE_STATIONERY` for Tax & Accounting.
+
 To use a tile, copy it to `public/categories/<CATEGORY>.webp` and add the category to `ILLUSTRATED`.

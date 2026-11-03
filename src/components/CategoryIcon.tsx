@@ -6,6 +6,7 @@ import { CATEGORIES } from "@/lib/constants";
 const ILLUSTRATED = new Set([
   "FOOD", "TUTORING", "DANCE_MUSIC", "PUJARI", "EVENT_SERVICES", "DOMESTIC_HELP",
   "ROOM_RENTAL", "REALTOR", "LEGAL", "ART", "CLOTHING", "GOODS",
+  "HOME_SERVICES", "AUTO", "BEAUTY", "TAX_FINANCE",
 ]);
 
 // Decorative: the category name is always shown next to it.

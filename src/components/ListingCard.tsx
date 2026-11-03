@@ -8,6 +8,7 @@ import type { BrowseListing } from "@/lib/listings";
 import { priceLabel } from "@/lib/plans";
 import { isProfessional, readProfessional, specialtyLabels } from "@/lib/professionals";
 import { readRental, rentalSummary } from "@/lib/rentals";
+import { hasServiceTypes, parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 
 // The one line of facts a buyer scans for in each category.
 function keyFacts(listing: BrowseListing) {
@@ -22,6 +23,10 @@ function keyFacts(listing: BrowseListing) {
   if (isProfessional(listing.category)) {
     const p = readProfessional(listing.details);
     if (p) return [p.firm, specialtyLabels(listing.category, p)[0], p.languages.filter((l) => l !== "English").join(", ")].filter(Boolean).join(" · ");
+  }
+  if (hasServiceTypes(listing.category)) {
+    const types = parseServiceTypes(listing.category, listing.tags);
+    if (types.length) return types.slice(0, 3).map((t) => serviceTypeLabel(listing.category, t)).join(" · ");
   }
   const diet = parseTags(listing.tags);
   if (diet.length) return diet.filter((t) => !(t === "VEGETARIAN" && diet.includes("VEGAN"))).slice(0, 3).map(tagLabel).join(" · ");

@@ -8,6 +8,7 @@ import { HeartIcon } from "@/components/HeartIcon";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
 import { DietBadges } from "@/components/DietBadges";
+import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
 import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
 import { RentalDetailsView } from "@/components/RentalDetailsView";
@@ -117,6 +118,13 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         )}
         <p className="text-sm text-stone-500">{facts.join(" · ")}</p>
         <DietBadges tags={listing.tags} className="pt-1" />
+        {parseServiceTypes(listing.category, listing.tags).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {parseServiceTypes(listing.category, listing.tags).map((t) => (
+              <span key={t} className="badge bg-brand-soft text-brand ring-1 ring-orange-200">{serviceTypeLabel(listing.category, t)}</span>
+            ))}
+          </div>
+        )}
       </header>
 
       {rental && (
