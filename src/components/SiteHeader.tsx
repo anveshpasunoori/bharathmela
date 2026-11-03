@@ -64,6 +64,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
           <Link href="/?category=ROOM_RENTAL" className={navLink}>Rooms</Link>
           <Link href="/events" className={navLink}>Events</Link>
           <Link href={user?.vendor ? "/vendor" : "/pricing"} className={navLink}>{user?.vendor ? "My business" : "Sell"}</Link>
+          <Link href="/requests/new" className="rounded-md px-3 py-2 font-semibold text-brand hover:bg-brand-soft">Post your need</Link>
         </div>
 
         <div className="ml-auto flex items-center gap-1">
