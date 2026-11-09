@@ -40,8 +40,9 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
   (each centered on a cream tile). In use: 2 Kathak, 4 Odissi, 5 Kuchipudi. Spare for future styles: 1 (male
   dancer), 3 (aramandi, like Bharatanatyam), 6 (wide fan skirt), 7 (saree-draped, e.g. Mohiniyattam), 8 (crowned
   folk dancer, e.g. Kathakali or Yakshagana).
-- `source-sheets/category-dance-music.webp`: the four-dancer group, used as the Dance, Music & Sangeetham
-  category icon (`public/categories/DANCE_MUSIC.png`).
+- `source-sheets/category-dance-music.webp`: the dancer among instruments, used as the Dance, Music & Sangeetham
+  category icon (`public/categories/DANCE_MUSIC.png`). The earlier four-statue group is kept as
+  `category-dance-music-statues.webp`.
 - `source-sheets/cultural-icons.jpg`: 22 sketch-style cultural tiles, cut to `cultural-icons/01-…png` … `22-…png`
   (each centered on its own cream square). In use: 01 Bharatanatyam, 04 Kathak, 05 Percussion, 09 Griha pravesh,
   11 Satyanarayana vratam, 13 Indian languages, 14 Jewelry, 15 Kuchipudi (dancing on the brass plate), 18
