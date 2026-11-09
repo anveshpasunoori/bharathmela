@@ -191,7 +191,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
             />
           )}
         </div>
-        <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
+        <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} vendorId={listing.vendorId} listingId={listing.id} />
         {!own && (
           <details id="message" className="text-sm">
             <summary className="cursor-pointer font-semibold text-brand">✉ Message instead</summary>
@@ -294,7 +294,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
       {!own && (
         // Contact stays in reach on phones while the buyer reads the listing.
         <div className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 p-3 backdrop-blur sm:hidden">
-          <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} compact />
+          <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} vendorId={listing.vendorId} listingId={listing.id} compact />
         </div>
       )}
       <JsonLd data={schema ? [schema, breadcrumbs(crumbs)] : breadcrumbs(crumbs)} />

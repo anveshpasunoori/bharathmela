@@ -1,24 +1,40 @@
+import { TrackedContactLink } from "./TrackedContactLink";
 import { t } from "@/lib/i18n";
 import { getLang } from "@/lib/lang";
 
 // Call and WhatsApp buttons for a seller's US phone number, in the visitor's language.
-export async function ContactButtons({ phone, whatsapp, name, compact = false }: { phone: string; whatsapp: boolean; name: string; compact?: boolean }) {
+// `vendorId` (and `listingId`) count the tap as a lead for the seller.
+export async function ContactButtons({
+  phone,
+  whatsapp,
+  name,
+  compact = false,
+  vendorId,
+  listingId,
+}: {
+  phone: string;
+  whatsapp: boolean;
+  name: string;
+  compact?: boolean;
+  vendorId?: string;
+  listingId?: string;
+}) {
   const lang = await getLang();
   const digits = phone.replace(/\D/g, "");
   const intl = digits.length === 10 ? `1${digits}` : digits;
   const text = encodeURIComponent(`Hi ${name}, I saw your listing on BharathMela.`);
   return (
     <div className={compact ? "grid grid-flow-col gap-2" : "flex flex-wrap gap-2"}>
-      <a href={`tel:+${intl}`} className="btn">
+      <TrackedContactLink href={`tel:+${intl}`} kind="CALL" vendorId={vendorId} listingId={listingId} className="btn">
         {compact ? `📞 ${t(lang, "call")}` : `${t(lang, "call")} ${phone}`}
-      </a>
-      <a href={`sms:+${intl}`} className="btn-outline">
+      </TrackedContactLink>
+      <TrackedContactLink href={`sms:+${intl}`} kind="TEXT" vendorId={vendorId} listingId={listingId} className="btn-outline">
         {t(lang, "text")}
-      </a>
+      </TrackedContactLink>
       {whatsapp && (
-        <a href={`https://wa.me/${intl}?text=${text}`} target="_blank" rel="noopener noreferrer" className="btn-outline">
+        <TrackedContactLink href={`https://wa.me/${intl}?text=${text}`} kind="WHATSAPP" vendorId={vendorId} listingId={listingId} className="btn-outline" external>
           WhatsApp
-        </a>
+        </TrackedContactLink>
       )}
     </div>
   );

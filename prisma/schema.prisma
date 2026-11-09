@@ -85,6 +85,7 @@ model VendorProfile {
   referralRewardedAt DateTime?
   createdAt          DateTime        @default(now())
   reviewRequests     ReviewRequest[]
+  leads              Lead[]
   listings           Listing[]
   subscriptions      Subscription[]
   payments           Payment[]
@@ -149,6 +150,7 @@ model Listing {
   id             String         @id @default(cuid())
   vendorId       String
   vendor         VendorProfile  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  leads          Lead[]
   title          String
   description    String
   category       String
@@ -475,4 +477,20 @@ model PasswordReset {
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+// A buyer tapping Call, Text or WhatsApp on a seller's listing or page: counted once per visitor, seller and
+// kind each day, and shown to the seller as leads.
+model Lead {
+  id         String        @id @default(cuid())
+  vendorId   String
+  vendor     VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  listingId  String?
+  listing    Listing?      @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  kind       String // CALL | TEXT | WHATSAPP
+  visitorKey String // hash of the visitor and the day, for counting each visitor once a day
+  createdAt  DateTime      @default(now())
+
+  @@unique([vendorId, kind, visitorKey])
+  @@index([vendorId, createdAt])
 }

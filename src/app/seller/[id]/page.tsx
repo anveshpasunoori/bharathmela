@@ -96,7 +96,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             replyLabel={await replyTimeLabel(seller.userId)}
           />
           {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
-          <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />
+          <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} vendorId={seller.id} />
           <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
             <span>Share:</span>
             <ShareButtons compact url={absoluteUrl(sellerPath(seller))} text={`${seller.businessName} on BharathMela`} campaign="seller" />

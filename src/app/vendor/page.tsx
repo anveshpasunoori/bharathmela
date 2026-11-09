@@ -67,6 +67,9 @@ export default async function VendorDashboard({
   const usedCount = listings.filter((l) => l.status === "ACTIVE" || l.status === "PENDING_REVIEW").length;
   const canAdd = usedCount < plan.maxListings;
   const totalViews = listings.reduce((sum, l) => sum + l.views, 0);
+  // Leads this month: taps on Call, Text and WhatsApp, and messages sent through the site.
+  const { leadsByKind, leadsByListing, messagesThisMonth } = await monthLeads(vendor.id, user.id);
+  const leadTotal = Object.values(leadsByKind).reduce((a, b) => a + b, 0) + messagesThisMonth;
   const rating = ratings.get(vendor.id);
   const tab = params.tab === "events" || params.tab === "billing" ? params.tab : "listings";
   const inReview = listings.filter((l) => l.status === "PENDING_REVIEW").length + events.filter((e) => e.status === "PENDING_REVIEW").length;
@@ -134,6 +137,33 @@ export default async function VendorDashboard({
       </header>
 
       {flash && <p className={`rounded-md px-4 py-3 text-sm ${flashTone[flash[1]]}`}>{flash[0]}</p>}
+
+      <section className="card py-4" aria-label="Leads this month">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold">This month</h2>
+          <p className="text-xs text-stone-500">People who tapped to contact you, counted once a day each</p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
+          {[
+            ["📞", "Calls", leadsByKind.CALL],
+            ["💬", "Texts", leadsByKind.TEXT],
+            ["🟢", "WhatsApp", leadsByKind.WHATSAPP],
+            ["✉️", "Messages", messagesThisMonth],
+            ["👁", "Listing views", totalViews],
+          ].map(([icon, label, n]) => (
+            <div key={label as string} className="rounded-lg bg-stone-50 px-2 py-2.5">
+              <p className="text-xl font-bold">{(n as number).toLocaleString()}</p>
+              <p className="text-xs text-stone-600"><span aria-hidden>{icon}</span> {label}</p>
+            </div>
+          ))}
+        </div>
+        {leadTotal === 0 && (
+          <p className="mt-3 text-sm text-stone-600">
+            No contacts yet this month. Listings with photos get far more calls, and sharing your page brings people in:{" "}
+            <Link href="/vendor/promote" className="font-semibold text-brand">share your page</Link>.
+          </p>
+        )}
+      </section>
 
       {todos.length > 0 && (
         <section className="card space-y-2 py-4">
@@ -214,6 +244,7 @@ export default async function VendorDashboard({
                   </div>
                   <p className="text-sm text-stone-500">
                     {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
+                    {leadsByListing.get(l.id) ? <> · <b className="text-stone-800">{leadsByListing.get(l.id)} contact{leadsByListing.get(l.id) === 1 ? "" : "s"}</b> this month</> : null}
                     {l.expiresAt && (l.status === "ACTIVE" || l.status === "HIDDEN") && (
                       <>
                         {" · "}
@@ -387,4 +418,19 @@ function StatusBadge({ status }: { status: string }) {
   };
   const labels: Record<string, string> = { PENDING: "Waiting for confirmation", APPROVED: "Confirmed", REJECTED: "Rejected" };
   return <span className={`badge ${styles[status] ?? ""}`}>{labels[status] ?? status}</span>;
+}
+
+// Contacts since the 1st of this month: taps by kind, per listing, and messages received.
+async function monthLeads(vendorId: string, sellerUserId: string) {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  const [byKind, byListing, messagesThisMonth] = await Promise.all([
+    db.lead.groupBy({ by: ["kind"], where: { vendorId, createdAt: { gte: start } }, _count: true }),
+    db.lead.groupBy({ by: ["listingId"], where: { vendorId, createdAt: { gte: start }, listingId: { not: null } }, _count: true }),
+    db.message.count({ where: { toUserId: sellerUserId, createdAt: { gte: start } } }),
+  ]);
+  const leadsByKind = { CALL: 0, TEXT: 0, WHATSAPP: 0 } as Record<string, number>;
+  for (const r of byKind) leadsByKind[r.kind] = r._count;
+  return { leadsByKind, leadsByListing: new Map(byListing.map((r) => [r.listingId!, r._count])), messagesThisMonth };
 }

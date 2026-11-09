@@ -105,7 +105,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
       <div className="card space-y-3">
         <p className="text-sm text-stone-600">Questions about this event? Contact the organizer.</p>
-        <ContactButtons phone={event.vendor.phone} whatsapp={event.vendor.whatsapp} name={event.vendor.businessName} />
+        <ContactButtons phone={event.vendor.phone} whatsapp={event.vendor.whatsapp} name={event.vendor.businessName} vendorId={event.vendorId} />
         <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
           <span>Share:</span>
           <ShareButtons compact url={absoluteUrl(eventPath(event))} text={`${event.title} – on BharathMela`} campaign="event" />
