@@ -42,3 +42,10 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
   folk dancer, e.g. Kathakali or Yakshagana).
 - `source-sheets/category-dance-music.webp`: the four-dancer group, used as the Dance, Music & Sangeetham
   category icon (`public/categories/DANCE_MUSIC.png`).
+- `source-sheets/cultural-icons.jpg`: 22 sketch-style cultural tiles, cut to `cultural-icons/01-…png` … `22-…png`
+  (each centered on its own cream square). In use: 01 Bharatanatyam, 04 Kathak, 05 Percussion, 09 Griha pravesh,
+  11 Satyanarayana vratam, 13 Indian languages, 14 Jewelry, 15 Kuchipudi (dancing on the brass plate), 18
+  Instruments, 19 Pooja items. Spare: Kathakali face, Nataraja, family, brass lamp, mudras, bells, Om, arch,
+  mridangam on a stand, guru with students, temple pillar, temple tank. The bronze statues they replaced are in
+  `dance-statues/`.
+
