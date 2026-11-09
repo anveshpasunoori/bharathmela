@@ -73,6 +73,8 @@ model VendorProfile {
   about              String          @default("")
   // One of the first sellers in their city, given free Pro (see src/lib/growth.ts).
   foundingSeller     Boolean         @default(false)
+  // Set by an admin after checking the business is real (license, registration or a shop visit).
+  businessVerifiedAt DateTime?
   // The seller whose referral link this seller signed up through; rewarded once this seller posts a listing.
   referredById       String?
   referredBy         VendorProfile?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)

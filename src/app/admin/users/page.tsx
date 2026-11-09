@@ -1,4 +1,4 @@
-import { setSuspended } from "../../actions/admin";
+import { setBusinessVerified, setSuspended } from "../../actions/admin";
 import { db } from "@/lib/db";
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -11,7 +11,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         ? { OR: [{ email: { contains: query, mode: "insensitive" } }, { name: { contains: query, mode: "insensitive" } }, { vendor: { businessName: { contains: query, mode: "insensitive" } } }] }
         : {}),
     },
-    include: { vendor: { select: { businessName: true, _count: { select: { listings: true } } } }, _count: { select: { reviews: true } } },
+    include: { vendor: { select: { id: true, businessName: true, businessVerifiedAt: true, _count: { select: { listings: true } } } }, _count: { select: { reviews: true } } },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -61,7 +61,12 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                     <span className="badge bg-stone-200 text-stone-700">Unverified</span>
                   )}
                 </td>
-                <td className="px-4 py-2">
+                <td className="space-y-2 px-4 py-2">
+                  {u.vendor && (
+                    <form action={setBusinessVerified.bind(null, u.vendor.id, !u.vendor.businessVerifiedAt)}>
+                      <button className="btn-outline py-1.5">{u.vendor.businessVerifiedAt ? "Remove verified badge" : "Mark business verified"}</button>
+                    </form>
+                  )}
                   {u.role !== "ADMIN" &&
                     (u.suspendedAt ? (
                       <form action={setSuspended.bind(null, u.id, false)}>

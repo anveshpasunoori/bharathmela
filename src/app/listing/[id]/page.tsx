@@ -24,6 +24,7 @@ import { timeAgo } from "@/lib/time";
 import { getUserLocation } from "@/lib/user-location";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
+import { replyTimeLabel } from "@/lib/reply-time";
 import { CATEGORY_RULES } from "@/lib/legal";
 import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
@@ -185,6 +186,8 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
               emailVerified={!!sellerSince.emailVerifiedAt}
               phoneVerified={!!sellerSince.phoneVerifiedAt}
               lastSeenAt={sellerSince.lastSeenAt}
+              businessVerified={!!listing.vendor.businessVerifiedAt}
+              replyLabel={await replyTimeLabel(listing.vendor.userId)}
             />
           )}
         </div>
@@ -279,7 +282,10 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
       <footer className="space-y-1 border-t border-stone-200 pt-4 text-xs text-stone-500">
         {buyerNote && <p>{buyerNote}</p>}
         <p>
-          Listed by an independent seller. BharathMela doesn&apos;t verify sellers or take part in deals.{" "}
+          Listed by an independent seller.{" "}
+          {listing.vendor.businessVerifiedAt
+            ? "BharathMela checked that this business is real, but doesn't vouch for its work or take part in deals."
+            : "BharathMela doesn't verify sellers or take part in deals."}{" "}
           <Link href="/safety" className="underline">Safety tips</Link> ·{" "}
           <Link href={`/listing/${listing.id}/report`} className="font-semibold text-red-700 underline">Report</Link>
         </p>

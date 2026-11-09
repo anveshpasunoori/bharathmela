@@ -7,7 +7,7 @@ export const SITE_NAME = "BharathMela";
 
 export const PLATFORM_DISCLAIMER =
   `${SITE_NAME} is a listing platform only. Listings are posted by independent sellers, not by ${SITE_NAME}. ` +
-  "We do not verify, employ, endorse or guarantee any seller, product, service or property, and we are not a party to any deal you make. " +
+  "Apart from checking that businesses marked \"Verified business\" exist, we do not verify, employ, endorse or guarantee any seller, product, service or property, and we are not a party to any deal you make. " +
   "Meet safely, check credentials yourself, and never pay in advance to someone you haven't verified.";
 
 // A new seller's first listing waits for an admin before going live.

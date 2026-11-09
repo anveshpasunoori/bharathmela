@@ -123,6 +123,14 @@ export async function setReviewVisibility(reviewId: string, visible: boolean) {
   revalidatePath("/admin");
 }
 
+// Marks a seller's business as checked (license, registration or a visit), shown as "Verified business".
+export async function setBusinessVerified(vendorId: string, verified: boolean) {
+  const admin = await requireAdmin();
+  await db.vendorProfile.update({ where: { id: vendorId }, data: { businessVerifiedAt: verified ? new Date() : null } });
+  await audit(admin.id, verified ? "vendor.verify" : "vendor.unverify", "vendor", vendorId);
+  revalidatePath("/admin/users");
+}
+
 // Suspension signs the user out everywhere and hides their listings and reviews.
 export async function setSuspended(userId: string, suspend: boolean, form: FormData) {
   const admin = await requireAdmin();

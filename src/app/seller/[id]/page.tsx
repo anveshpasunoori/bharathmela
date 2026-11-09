@@ -13,6 +13,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { absoluteUrl, idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
 import { sellerSchema } from "@/lib/structured-data";
 import { db } from "@/lib/db";
+import { replyTimeLabel } from "@/lib/reply-time";
 import { isNewListing } from "@/lib/time";
 import { publicEventWhere } from "@/lib/event-data";
 import { publicListing, savedListingIds } from "@/lib/listings";
@@ -91,6 +92,8 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             emailVerified={!!seller.user.emailVerifiedAt}
             phoneVerified={!!seller.user.phoneVerifiedAt}
             lastSeenAt={seller.user.lastSeenAt}
+            businessVerified={!!seller.businessVerifiedAt}
+            replyLabel={await replyTimeLabel(seller.userId)}
           />
           {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
           <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />

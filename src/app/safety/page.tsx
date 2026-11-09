@@ -54,7 +54,7 @@ export default function SafetyPage() {
         <h1 className="text-2xl font-bold">Stay safe on BharathMela</h1>
         <p className="mt-1 text-stone-600">
           BharathMela connects you with independent sellers in your community. We screen listings for prohibited items and discriminatory
-          wording, verify email addresses, and act on reports, but we don&apos;t vet sellers or take part in deals. These habits protect you.
+          wording, verify email addresses, and act on reports, but apart from checking that businesses marked &ldquo;Verified business&rdquo; are real, we don&apos;t vet sellers or take part in deals. These habits protect you.
         </p>
       </div>
       {SECTIONS.map((s) => (
