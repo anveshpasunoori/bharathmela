@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/constants";
-import { ILLUSTRATED_SUBCATEGORIES } from "@/lib/subcategory-art";
+import { ILLUSTRATED_CATEGORIES, ILLUSTRATED_SUBCATEGORIES } from "@/lib/subcategory-art";
 
-// Categories with a drawing in public/categories/<CATEGORY>.svg (made by scripts/category-icons.mjs). Any
-// category without one shows its emoji on a matching tile.
+// Categories with a drawing in public/categories/<CATEGORY>.svg (made by scripts/category-icons.mjs), or an
+// illustrated .png where ILLUSTRATED_CATEGORIES lists one. Any other category shows its emoji on a tile.
 const ILLUSTRATED = new Set<string>(CATEGORIES.map((c) => c.id));
 
 // Decorative: the category name is always shown next to it. With `sub`, shows that subcategory's drawing
@@ -15,7 +15,7 @@ export function CategoryIcon({ id, sub, size, className = "" }: { id: string; su
   }
   if (ILLUSTRATED.has(id)) {
     // Square tiles: the class sets the width and the height follows.
-    return <Image src={`/categories/${id}.svg`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
+    return <Image src={`/categories/${id}.${ILLUSTRATED_CATEGORIES.has(id) ? "png" : "svg"}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
   }
   return (
     <span

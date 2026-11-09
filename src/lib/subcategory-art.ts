@@ -168,3 +168,7 @@ export const ILLUSTRATED_SUBCATEGORIES = new Set<string>([
   "TUTORING/SCIENCE",
   "TUTORING/TEST_PREP",
 ]);
+
+// Categories with an illustrated icon (public/categories/<CATEGORY>.png); the rest use the drawn .svg from
+// scripts/category-icons.mjs.
+export const ILLUSTRATED_CATEGORIES = new Set<string>(["DOMESTIC_HELP"]);
