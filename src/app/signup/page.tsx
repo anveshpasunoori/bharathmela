@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SocialLogin } from "@/components/SocialLogin";
 import { ActionForm } from "@/components/ActionForm";
 import { buyerSignup } from "../actions/auth";
 
@@ -8,7 +9,8 @@ export default async function BuyerSignupPage({ searchParams }: { searchParams: 
     <div className="mx-auto max-w-sm">
       <h1 className="text-2xl font-bold">Create an account</h1>
       <p className="mb-4 mt-1 text-stone-600">Free. Needed to rate sellers. We&apos;ll email you a code to confirm your address.</p>
-      <div className="card">
+      <div className="card space-y-3">
+        <SocialLogin next={next} label="Sign up" />
         <ActionForm action={buyerSignup} submitLabel="Create account">
           <input type="hidden" name="next" value={next} />
           <div>

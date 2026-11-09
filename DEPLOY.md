@@ -40,6 +40,8 @@ email and SMS APIs).
 | `PAY_ZELLE`, `PAY_VENMO` | yes | Where sellers send plan payments |
 | `SUPPORT_EMAIL` | yes | Where Contact page messages go, and the address shown on Contact, Terms and Privacy (e.g. `support@yourdomain.com`) |
 | `EMAIL_FOOTER_ADDRESS` | yes for alerts | Your business mailing address for email footers (CAN-SPAM) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | optional | "Continue with Google" (see below) |
+| `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` | optional | "Continue with Apple" (see below) |
 | `ANTHROPIC_API_KEY` | optional | Turns on the AI ad writer |
 | `GOOGLE_SITE_VERIFICATION` | optional | Search Console "HTML tag" code |
 | `FOUNDING_SELLERS_PER_CITY` | optional | How many sellers per city get free Pro as founding sellers (default 50; 0 turns it off) |
@@ -47,6 +49,27 @@ email and SMS APIs).
 
 The server logs a `[config]` line at startup for anything missing, and `/api/health` returns 503 until
 the required settings and the database are in place.
+
+### Sign in with Google and Apple (optional)
+
+The buttons appear on the login and sign-up pages once a provider's settings are present.
+
+**Google** (free):
+1. Google Cloud Console → create a project → **APIs & Services → OAuth consent screen**: External, app name
+   BharathMela, your support email, and your domain under authorized domains. Publish it.
+2. **Credentials → Create credentials → OAuth client ID** → Web application. Authorized redirect URI:
+   `https://yourdomain.com/api/auth/google/callback`.
+3. Put the client ID and secret in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+
+**Apple** (needs an Apple Developer account, $99 a year):
+1. Certificates, Identifiers & Profiles → **Identifiers → App ID** with "Sign in with Apple" enabled.
+2. **Identifiers → Services ID** (e.g. `com.yourdomain.web`) → enable Sign in with Apple → configure:
+   domain `yourdomain.com`, return URL `https://yourdomain.com/api/auth/apple/callback`. This is `APPLE_CLIENT_ID`.
+3. **Keys → +** → Sign in with Apple → download the `.p8` file once. Its Key ID is `APPLE_KEY_ID`; paste the
+   whole file (with the BEGIN/END lines) into `APPLE_PRIVATE_KEY`. Your Team ID (top right) is `APPLE_TEAM_ID`.
+
+People who sign in this way get an account with their email already verified; someone who already has an
+account with that email is signed into it. Add Google and Apple to the processors in the Privacy Policy.
 
 ## 3. Build and first deploy
 

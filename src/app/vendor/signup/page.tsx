@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SocialLogin } from "@/components/SocialLogin";
 import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { SellerKindFields } from "@/components/SellerSignupFields";
@@ -22,7 +23,8 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
       <p className="mb-4 mt-1 text-stone-600">
         {user ? `Add a few details to your account, ${user.name.split(" ")[0]}, and you can post right away.` : "Free to start with one listing. Upgrade any time."}
       </p>
-      <div className="card">
+      <div className="card space-y-3">
+        {!user && <SocialLogin next="/vendor/signup" label="Sign up" />}
         <ActionForm action={user ? becomeSeller : vendorSignup} submitLabel={user ? "Start selling" : "Create seller account"}>
           <input type="hidden" name="next" value={next} />
           <SellerKindFields initialKind={kind} showName={!user} />

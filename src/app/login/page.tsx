@@ -1,13 +1,22 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
+import { SocialLogin } from "@/components/SocialLogin";
 import { login } from "../actions/auth";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next = "/" } = await searchParams;
+const PROVIDER_ERRORS: Record<string, string> = {
+  oauth: "That sign-in didn't go through. Please try again.",
+  unverified: "That account's email isn't verified with the provider. Try another way to sign in.",
+  suspended: "This account has been suspended. Contact support if you think this is a mistake.",
+};
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
+  const { next = "/", error } = await searchParams;
   return (
     <div className="mx-auto max-w-sm">
       <h1 className="mb-4 text-2xl font-bold">Log in</h1>
-      <div className="card">
+      {error && PROVIDER_ERRORS[error] && <p className="mb-3 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{PROVIDER_ERRORS[error]}</p>}
+      <div className="card space-y-3">
+        <SocialLogin next={next} />
         <ActionForm action={login} submitLabel="Log in">
           <input type="hidden" name="next" value={next} />
           <div>
