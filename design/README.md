@@ -44,9 +44,9 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
   category icon (`public/categories/DANCE_MUSIC.png`). The earlier four-statue group is kept as
   `category-dance-music-statues.webp`.
 - `source-sheets/cultural-icons.jpg`: 22 sketch-style cultural tiles, cut to `cultural-icons/01-…png` … `22-…png`
-  (each centered on its own cream square). In use: 01 Bharatanatyam, 04 Kathak, 05 Percussion, 09 Griha pravesh,
+  (each centered on its own cream square). In use: 01 Bharatanatyam, 02 Kathakali, 04 Kathak, 05 Percussion, 07 Pujari category icon, 09 Griha pravesh,
   11 Satyanarayana vratam, 13 Indian languages, 14 Jewelry, 15 Kuchipudi (dancing on the brass plate), 18
-  Instruments, 19 Pooja items. Spare: Kathakali face, Nataraja, family, brass lamp, mudras, bells, Om, arch,
-  mridangam on a stand, guru with students, temple pillar, temple tank. The bronze statues they replaced are in
+  Instruments, 19 Pooja items, 20 Shlokas & Sanskrit. Spare: Nataraja, family, mudras, bells, Om, arch,
+  mridangam on a stand, temple pillar, temple tank. The bronze statues they replaced are in
   `dance-statues/`.
 

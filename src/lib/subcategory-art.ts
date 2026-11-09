@@ -41,6 +41,7 @@ export const ILLUSTRATED_SUBCATEGORIES = new Set<string>([
   "DANCE_MUSIC/HINDUSTANI",
   "DANCE_MUSIC/INSTRUMENTS",
   "DANCE_MUSIC/KATHAK",
+  "DANCE_MUSIC/KATHAKALI",
   "DANCE_MUSIC/KEYBOARD",
   "DANCE_MUSIC/KUCHIPUDI",
   "DANCE_MUSIC/ODISSI",
@@ -166,9 +167,10 @@ export const ILLUSTRATED_SUBCATEGORIES = new Set<string>([
   "TUTORING/MATH",
   "TUTORING/READING",
   "TUTORING/SCIENCE",
+  "TUTORING/SHLOKAS",
   "TUTORING/TEST_PREP",
 ]);
 
 // Categories with an illustrated icon (public/categories/<CATEGORY>.png); the rest use the drawn .svg from
 // scripts/category-icons.mjs.
-export const ILLUSTRATED_CATEGORIES = new Set<string>(["DANCE_MUSIC", "DOMESTIC_HELP"]);
+export const ILLUSTRATED_CATEGORIES = new Set<string>(["DANCE_MUSIC", "DOMESTIC_HELP", "PUJARI"]);
