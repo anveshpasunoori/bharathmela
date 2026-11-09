@@ -5,6 +5,8 @@ import { requireVendor } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { BOOSTS, formatUSD } from "@/lib/plans";
 import { requestBoost } from "../../../../actions/vendor";
+import { payBoostByCard } from "../../../../actions/stripe";
+import { stripeEnabled } from "@/lib/stripe";
 
 export default async function BoostPage({
   params,
@@ -38,13 +40,24 @@ export default async function BoostPage({
           </a>
         ))}
       </div>
-      <div className="card">
-        <ActionForm action={requestBoost} submitLabel="I've paid – submit for confirmation">
-          <input type="hidden" name="listingId" value={listing.id} />
-          <input type="hidden" name="days" value={option.days} />
-          <PaymentFields amountCents={option.priceCents} />
-        </ActionForm>
-      </div>
+      {stripeEnabled() && listing.status === "ACTIVE" && (
+        <div className="card space-y-2">
+          <form action={payBoostByCard.bind(null, listing.id, option.days)}>
+            <button className="btn w-full">Pay {formatUSD(option.priceCents)} by card, start now</button>
+          </form>
+          <p className="text-center text-xs text-stone-500">One-time payment. Secure checkout by Stripe.</p>
+        </div>
+      )}
+      <details className="card mt-4" open={!stripeEnabled()}>
+        <summary className="cursor-pointer font-semibold">{stripeEnabled() ? "Or pay by Zelle or Venmo" : "Pay by Zelle or Venmo"}</summary>
+        <div className="mt-3">
+          <ActionForm action={requestBoost} submitLabel="I've paid – submit for confirmation">
+            <input type="hidden" name="listingId" value={listing.id} />
+            <input type="hidden" name="days" value={option.days} />
+            <PaymentFields amountCents={option.priceCents} />
+          </ActionForm>
+        </div>
+      </details>
     </div>
   );
 }

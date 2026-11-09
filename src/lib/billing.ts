@@ -110,21 +110,21 @@ export async function approvePayment(paymentId: string, adminId: string) {
       await enforceListingLimit(payment.vendorId, tx);
     }
 
-    if (payment.adBoost) {
-      const boost = payment.adBoost;
-      const listing = boost.listing;
-      // Stack on top of any boost that is still running.
-      const startsAt = listing.featuredUntil && listing.featuredUntil > now ? listing.featuredUntil : now;
-      const endsAt = new Date(startsAt.getTime() + boost.days * DAY_MS);
-      await tx.adBoost.update({ where: { id: boost.id }, data: { status: "ACTIVE", startsAt, endsAt } });
-      await tx.listing.update({ where: { id: listing.id }, data: { featuredUntil: endsAt } });
-    }
+    if (payment.adBoost) await activateBoost(tx, payment.adBoost, payment.adBoost.listing, now);
 
     await tx.payment.update({
       where: { id: payment.id },
       data: { status: "APPROVED", reviewedById: adminId, reviewedAt: now },
     });
   });
+}
+
+// Starts a paid boost: the listing is featured for its days, stacked after any boost still running.
+export async function activateBoost(tx: Tx, boost: { id: string; days: number }, listing: { id: string; featuredUntil: Date | null }, now = new Date()) {
+  const startsAt = listing.featuredUntil && listing.featuredUntil > now ? listing.featuredUntil : now;
+  const endsAt = new Date(startsAt.getTime() + boost.days * DAY_MS);
+  await tx.adBoost.update({ where: { id: boost.id }, data: { status: "ACTIVE", startsAt, endsAt } });
+  await tx.listing.update({ where: { id: listing.id }, data: { featuredUntil: endsAt } });
 }
 
 export async function rejectPayment(paymentId: string, adminId: string, note: string) {

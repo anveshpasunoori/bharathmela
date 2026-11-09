@@ -65,34 +65,37 @@ model Session {
 }
 
 model VendorProfile {
-  id                 String          @id @default(cuid())
-  userId             String          @unique
-  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessName       String
-  phone              String
-  whatsapp           Boolean         @default(false) // phone number also takes WhatsApp messages
-  metro              String // metro slug, see src/lib/metros.ts
-  zip                String
-  about              String          @default("")
+  id                   String          @id @default(cuid())
+  userId               String          @unique
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName         String
+  phone                String
+  whatsapp             Boolean         @default(false) // phone number also takes WhatsApp messages
+  metro                String // metro slug, see src/lib/metros.ts
+  zip                  String
+  about                String          @default("")
   // One of the first sellers in their city, given free Pro (see src/lib/growth.ts).
-  foundingSeller     Boolean         @default(false)
+  foundingSeller       Boolean         @default(false)
   // Set by an admin after checking the business is real (license, registration or a shop visit).
-  businessVerifiedAt DateTime?
+  businessVerifiedAt   DateTime?
+  // Card payments through Stripe (src/lib/stripe.ts): the customer, and their current plan subscription.
+  stripeCustomerId     String?         @unique
+  stripeSubscriptionId String?
   // The seller whose referral link this seller signed up through; rewarded once this seller posts a listing.
-  referredById       String?
-  referredBy         VendorProfile?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals          VendorProfile[] @relation("Referrals")
-  referralRewardedAt DateTime?
-  createdAt          DateTime        @default(now())
-  reviewRequests     ReviewRequest[]
-  leads              Lead[]
-  listings           Listing[]
-  subscriptions      Subscription[]
-  payments           Payment[]
-  aiDrafts           AiDraft[]
-  reviews            Review[]
-  events             Event[]
-  quotes             Quote[]
+  referredById         String?
+  referredBy           VendorProfile?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals            VendorProfile[] @relation("Referrals")
+  referralRewardedAt   DateTime?
+  createdAt            DateTime        @default(now())
+  reviewRequests       ReviewRequest[]
+  leads                Lead[]
+  listings             Listing[]
+  subscriptions        Subscription[]
+  payments             Payment[]
+  aiDrafts             AiDraft[]
+  reviews              Review[]
+  events               Event[]
+  quotes               Quote[]
 }
 
 // One-time code texted to prove a seller owns their phone number.
@@ -206,16 +209,18 @@ model Report {
 
 // A paid monthly plan. Free plan has no row: no active subscription means FREE.
 model Subscription {
-  id        String        @id @default(cuid())
-  vendorId  String
-  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  plan      String // BASIC | PRO
-  status    String        @default("PENDING") // PENDING | ACTIVE | EXPIRED | REJECTED
-  source    String        @default("PAID") // PAID | FOUNDING | REFERRAL (free months, no payment)
-  startsAt  DateTime?
-  endsAt    DateTime?
-  createdAt DateTime      @default(now())
-  payment   Payment?
+  id              String        @id @default(cuid())
+  vendorId        String
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  plan            String // BASIC | PRO
+  status          String        @default("PENDING") // PENDING | ACTIVE | EXPIRED | REJECTED
+  source          String        @default("PAID") // PAID | STRIPE | FOUNDING | REFERRAL (the last two are free months)
+  // The Stripe invoice that paid for this period, so each invoice counts once.
+  stripeInvoiceId String?       @unique
+  startsAt        DateTime?
+  endsAt          DateTime?
+  createdAt       DateTime      @default(now())
+  payment         Payment?
 }
 
 // A paid "featured" placement for one listing.

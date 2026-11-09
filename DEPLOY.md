@@ -37,6 +37,7 @@ email and SMS APIs).
 | `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | yes (else photos are lost on redeploy) | From R2: endpoint `https://<account>.r2.cloudflarestorage.com`, region `auto` |
 | `S3_PUBLIC_URL` | with S3 | `https://photos.yourdomain.com` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | recommended | From Twilio |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | recommended | Card payments with automatic monthly renewal (see below); Zelle/Venmo stays as an option |
 | `PAY_ZELLE`, `PAY_VENMO` | yes | Where sellers send plan payments |
 | `ALERT_EMAIL` | optional | Where error alerts go (at most one email an hour per error); defaults to `SUPPORT_EMAIL` |
 | `SUPPORT_EMAIL` | yes | Where Contact page messages go, and the address shown on Contact, Terms and Privacy (e.g. `support@yourdomain.com`) |
@@ -50,6 +51,21 @@ email and SMS APIs).
 
 The server logs a `[config]` line at startup for anything missing, and `/api/health` returns 503 until
 the required settings and the database are in place.
+
+### Card payments with Stripe (recommended)
+
+1. Create a Stripe account and finish **Activate payments** (business details and bank account).
+2. **Developers → API keys**: copy the secret key into `STRIPE_SECRET_KEY` (`sk_live_…`; use `sk_test_…` first).
+3. **Developers → Webhooks → Add endpoint**: `https://yourdomain.com/api/stripe/webhook`, with the events
+   `checkout.session.completed`, `invoice.paid` and `customer.subscription.deleted`. Copy its signing secret
+   into `STRIPE_WEBHOOK_SECRET`.
+4. **Settings → Billing → Customer portal**: turn it on, and allow updating the payment method, cancelling, and
+   switching between the plans (the products appear after the first card checkout).
+5. Test in test mode with card `4242 4242 4242 4242`, any future date and any CVC: the plan turns on by itself
+   and the payment shows as approved in the seller's Plan & payments.
+
+Plans renew monthly on the card; each paid invoice adds a month (with a day of grace). Boosts are one-time.
+Stripe's fees (about 2.9% + 30¢) come out of each payment.
 
 ### Sign in with Google and Apple (optional)
 

@@ -7,6 +7,7 @@ import { requireVendor } from "@/lib/auth";
 import { requestsForVendor } from "@/lib/service-requests";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
 import { welcomeVerifiedSeller } from "@/lib/growth";
+import { openBillingPortal } from "../actions/stripe";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatEventTime } from "@/lib/events";
@@ -32,6 +33,7 @@ export default async function VendorDashboard({
     phoneVerified?: string;
     founding?: string;
     reset?: string;
+    paid?: string;
     tab?: string;
   }>;
 }) {
@@ -89,6 +91,8 @@ export default async function VendorDashboard({
               ? ["✓ Your phone is verified.", "ok"]
               : params.reset
                 ? ["Your password is changed, and you're logged in.", "ok"]
+              : params.paid
+                ? ["Thanks! Your card payment went through. Your plan or boost turns on within a minute.", "ok"]
               : params.founding
                 ? ["Welcome, founding seller! You're one of the first sellers in your city, so Pro is free for you for the next few months.", "ok"]
               : params.error === "limit"
@@ -209,10 +213,17 @@ export default async function VendorDashboard({
               Basic · {formatUSD(PLANS.BASIC.priceCents)}
             </Link>
           )}
-          {plan.id !== "FREE" && (
-            <Link href={`/vendor/upgrade?plan=${plan.id}`} className="btn-outline">
-              Renew {plan.name}
-            </Link>
+          {vendor.stripeSubscriptionId ? (
+            // Paying by card: renewals are automatic; changes happen on Stripe's billing page.
+            <form action={openBillingPortal}>
+              <button className="btn-outline">Manage billing</button>
+            </form>
+          ) : (
+            plan.id !== "FREE" && (
+              <Link href={`/vendor/upgrade?plan=${plan.id}`} className="btn-outline">
+                Renew {plan.name}
+              </Link>
+            )
           )}
         </div>
       </section>
@@ -385,6 +396,7 @@ export default async function VendorDashboard({
                     <td className="px-4 py-2">{formatUSD(p.amountCents)}</td>
                     <td className="px-4 py-2">
                       <StatusBadge status={p.status} />
+                      {p.method === "CARD" && <span className="ml-2 text-stone-500">Card</span>}
                       {p.adminNote && <span className="ml-2 text-stone-500">{p.adminNote}</span>}
                     </td>
                   </tr>
