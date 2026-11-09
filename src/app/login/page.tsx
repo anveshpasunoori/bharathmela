@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
+import { PasskeyLoginButton } from "@/components/Passkeys";
 import { SocialLogin } from "@/components/SocialLogin";
 import { login } from "../actions/auth";
 
@@ -16,7 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <h1 className="mb-4 text-2xl font-bold">Log in</h1>
       {error && PROVIDER_ERRORS[error] && <p className="mb-3 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{PROVIDER_ERRORS[error]}</p>}
       <div className="card space-y-3">
-        <SocialLogin next={next} />
+        <SocialLogin next={next} passkey={<PasskeyLoginButton next={next} />} />
         <ActionForm action={login} submitLabel="Log in">
           <input type="hidden" name="next" value={next} />
           <div>

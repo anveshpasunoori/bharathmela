@@ -51,6 +51,7 @@ model User {
   cityEmailToken        String           @unique @default(cuid())
   reviewRequests        ReviewRequest[]
   passwordResets        PasswordReset[]
+  passkeys              Passkey[]
   // A new address waiting for its emailed code before it replaces `email`.
   pendingEmail          String?
   createdAt             DateTime         @default(now())
@@ -527,4 +528,22 @@ model Conversation {
 
   @@index([startedById, lastMessageAt])
   @@index([otherId, lastMessageAt])
+}
+
+// A passkey (Face ID, Touch ID, Windows Hello, a phone or a security key) the person added on the Account
+// page. Only the public key is stored; signing in proves they hold the private key on their device.
+model Passkey {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The credential id from the browser (base64url).
+  credentialId String    @unique
+  publicKey    Bytes
+  counter      Int       @default(0)
+  transports   String    @default("") // comma-separated hints, e.g. "internal,hybrid"
+  name         String    @default("")
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  @@index([userId])
 }

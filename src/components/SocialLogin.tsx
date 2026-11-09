@@ -1,11 +1,13 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { enabledProviders } from "@/lib/oauth";
 
 // "Continue with Google / Apple" buttons, for the providers that are set up, with an "or" divider before
-// the email form. Signing in this way also creates an account for someone new.
-export function SocialLogin({ next = "/", label = "Continue" }: { next?: string; label?: string }) {
+// the email form. Signing in this way also creates an account for someone new. The login page also passes
+// its "Sign in with a passkey" button, shown with them.
+export function SocialLogin({ next = "/", label = "Continue", passkey }: { next?: string; label?: string; passkey?: ReactNode }) {
   const providers = enabledProviders();
-  if (!providers.length) return null;
+  if (!providers.length && !passkey) return null;
   const href = (p: string) => `/api/auth/${p}/start?next=${encodeURIComponent(next)}`;
   return (
     <div className="space-y-2">
@@ -28,6 +30,7 @@ export function SocialLogin({ next = "/", label = "Continue" }: { next?: string;
           {label} with Apple
         </a>
       )}
+      {passkey}
       <p className="text-center text-xs text-stone-500">
         By continuing you agree to the <Link href="/terms" className="underline">Terms of Service</Link>.
       </p>

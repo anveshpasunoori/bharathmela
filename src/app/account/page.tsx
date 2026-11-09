@@ -5,12 +5,16 @@ import { changePassword, deleteAccount } from "../actions/auth";
 import { updateCityEmails } from "../actions/city-emails";
 import { cancelEmailChange, changeEmail, confirmEmailChange } from "../actions/account";
 import { METROS, metroName } from "@/lib/metros";
+import { AddPasskeyButton } from "@/components/Passkeys";
+import { removePasskey } from "../actions/passkeys";
+import { db } from "@/lib/db";
 
 export const metadata = { title: "Account", robots: { index: false } };
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
   const user = await requireUser("/account");
   const { reset } = await searchParams;
+  const passkeys = await db.passkey.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } });
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <div>
@@ -80,6 +84,35 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </select>
           </div>
         </ActionForm>
+      </section>
+
+      <section className="card space-y-3">
+        <div>
+          <h2 className="font-semibold">Passkeys</h2>
+          <p className="mt-1 text-sm text-stone-600">
+            Sign in with Face ID, Touch ID, Windows Hello or your phone&apos;s screen lock instead of a password. Your fingerprint or face never
+            leaves your device.
+          </p>
+        </div>
+        {passkeys.length > 0 && (
+          <ul className="divide-y divide-stone-100 rounded-md ring-1 ring-stone-200">
+            {passkeys.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                <span>
+                  <span className="font-medium text-stone-800">{p.name || "Passkey"}</span>
+                  <span className="block text-xs text-stone-500">
+                    Added {p.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {p.lastUsedAt ? ` · last used ${p.lastUsedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : " · not used yet"}
+                  </span>
+                </span>
+                <form action={removePasskey.bind(null, p.id)}>
+                  <button className="text-xs font-semibold text-red-700 hover:underline">Remove</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        <AddPasskeyButton />
       </section>
 
       <section className="card">

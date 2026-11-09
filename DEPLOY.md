@@ -88,6 +88,11 @@ The buttons appear on the login and sign-up pages once a provider's settings are
 People who sign in this way get an account with their email already verified; someone who already has an
 account with that email is signed into it. Add Google and Apple to the processors in the Privacy Policy.
 
+**Passkeys** need no settings. Anyone logged in can add one under **Account → Passkeys** (Face ID, Touch ID,
+Windows Hello or a phone), then use "Sign in with a passkey" on the login page. Passkeys are tied to the domain
+in `APP_URL` (without `www.`, so both `www.yourdomain.com` and `yourdomain.com` work); changing to a different
+domain later means people add their passkeys again.
+
 ## 3. Build and first deploy
 
 - **Build command:** `npm run db:deploy && npm run build` (applies database migrations, then builds).
