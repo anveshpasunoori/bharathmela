@@ -29,6 +29,8 @@ import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
 import { ShowAllCategories } from "@/components/ShowAllCategories";
+import { HeroArt, TrustStrip } from "@/components/HomeHero";
+import { ListingRow } from "@/components/ListingRow";
 
 // A one-line reminder under results in categories where the seller needs a license.
 const LICENSE_TIPS: Record<string, string> = {
@@ -103,9 +105,16 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
   ]);
+  // The home page also shows what's new and what buyers rate highest here.
+  const [newest, topRated] = showingListings
+    ? [[], []]
+    : await Promise.all([
+        browseListings({ metro, near, sort: "new" }).then((r) => r.listings.slice(0, 8)),
+        browseListings({ metro, near, sort: "rating" }).then((r) => r.listings.filter((l) => l.rating && l.rating.count > 0).slice(0, 8)),
+      ]);
   // Hearts on the cards: which results the visitor saved; none on a seller's own listings.
   const viewer = await getCurrentUser();
-  const savedIds = await savedListingIds(viewer?.id, listings.map((l) => l.id));
+  const savedIds = await savedListingIds(viewer?.id, [...listings, ...newest, ...topRated].map((l) => l.id));
   // "Save search": whether this search, at this location, is already saved. Opening a saved search
   // (marked with `ss`) resets its count of new listings.
   const searchQuery = searchQueryString(params);
@@ -253,7 +262,12 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       {params.deleted && (
         <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">Your account has been deleted.</p>
       )}
-      <section className={showingListings ? "space-y-3" : "space-y-3 rounded-xl bg-gradient-to-br from-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"}>
+      <section
+        className={
+          showingListings ? "space-y-3" : "relative isolate space-y-3 overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 via-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"
+        }
+      >
+        {!showingListings && <HeroArt />}
         {showingListings ? (
           <div>
             <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
@@ -287,7 +301,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           </div>
         ) : (
           <div>
-            <h1 className="text-2xl font-bold sm:text-3xl">
+            <h1 className="relative text-2xl font-bold sm:text-4xl sm:tracking-tight">
               {isMetro(params.metro) ? `Local Businesses in ${metroName(metro)}` : "Local Businesses near you"}
             </h1>
           </div>
@@ -365,6 +379,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         )}
         {!nearMode && <FarNote far={far} metro={metro} />}
         {!place && !showingListings && <NearMePrompt city={metroName(metro)} />}
+        {!showingListings && <TrustStrip />}
       </section>
 
       {!showingListings && (
@@ -412,6 +427,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           </p>
         </section>
       )}
+
+      {newest.length > 0 && <ListingRow title={`New ${where}`} listings={newest} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
+      {topRated.length > 0 && <ListingRow title="Top rated by buyers" listings={topRated} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
 
       {events.length > 0 && (
         <section>

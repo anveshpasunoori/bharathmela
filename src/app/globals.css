@@ -15,6 +15,15 @@
   }
 }
 
+/* Listing cards without a photo: a warm panel with a faint dot pattern behind the drawing. */
+@utility card-pattern {
+  background-color: var(--color-brand-soft);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(251 146 60 / 0.22) 1px, transparent 0),
+    linear-gradient(160deg, #fff7ed 0%, #ffedd5 100%);
+  background-size: 14px 14px, 100% 100%;
+}
+
 /* The page-loading bar (NavProgress) sweeping across the top. */
 @keyframes navbar {
   0% { transform: translateX(-100%); }

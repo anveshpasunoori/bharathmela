@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { ContactButtons } from "@/components/ContactButtons";
 import { ShareButtons } from "@/components/ShareButtons";
 import { EventCard } from "@/components/EventCard";
@@ -57,30 +58,46 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
   const savedIds = await savedListingIds(viewer?.id, listings.map((l) => l.id));
   const summary = ratings.get(id);
 
+  // The category they list most in sets the shop's picture.
+  const mainCategory = [...listings.reduce((m, l) => m.set(l.category, (m.get(l.category) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1])[0]?.[0];
+
   return (
     <div className="space-y-6">
-      <header className="card space-y-3">
-        <div>
-          <p className="text-xs text-stone-500">Independent seller</p>
-          <h1 className="text-2xl font-bold">
-            {seller.businessName} {pro > 0 && <span className="badge bg-amber-100 align-middle text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
-          </h1>
-          <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
-            {summary ? <Stars rating={summary.average} count={summary.count} /> : <span>No ratings yet</span>}
-            <span>{metroName(seller.metro)}</span>
-            <span>Member since {seller.user.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+      <header className="overflow-hidden rounded-xl bg-white ring-1 ring-stone-200">
+        <div className="card-pattern h-24 sm:h-32" aria-hidden />
+        <div className="space-y-3 px-5 pb-5">
+          <div className="-mt-10 flex items-end gap-3 sm:-mt-12">
+            <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white shadow-md ring-4 ring-white sm:h-24 sm:w-24">
+              {mainCategory ? (
+                <CategoryIcon id={mainCategory} size={96} className="h-full w-full" />
+              ) : (
+                <span className="text-3xl font-bold text-brand">{seller.businessName.charAt(0)}</span>
+              )}
+            </span>
           </div>
-        </div>
-        <TrustBadges
-          emailVerified={!!seller.user.emailVerifiedAt}
-          phoneVerified={!!seller.user.phoneVerifiedAt}
-          lastSeenAt={seller.user.lastSeenAt}
-        />
-        {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
-        <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />
-        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
-          <span>Share:</span>
-          <ShareButtons compact url={absoluteUrl(sellerPath(seller))} text={`${seller.businessName} on BharathMela`} campaign="seller" />
+          <div>
+            <p className="text-xs text-stone-500">Independent seller</p>
+            <h1 className="text-2xl font-bold">
+              {seller.businessName} {pro > 0 && <span className="badge bg-amber-100 align-middle text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}{" "}
+              {seller.foundingSeller && <span className="badge bg-orange-100 align-middle text-orange-800" title="One of the first sellers on BharathMela in this city">★ Founding seller</span>}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
+              {summary ? <Stars rating={summary.average} count={summary.count} /> : <span>No ratings yet</span>}
+              <span>{metroName(seller.metro)}</span>
+              <span>Member since {seller.user.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+            </div>
+          </div>
+          <TrustBadges
+            emailVerified={!!seller.user.emailVerifiedAt}
+            phoneVerified={!!seller.user.phoneVerifiedAt}
+            lastSeenAt={seller.user.lastSeenAt}
+          />
+          {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
+          <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />
+          <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+            <span>Share:</span>
+            <ShareButtons compact url={absoluteUrl(sellerPath(seller))} text={`${seller.businessName} on BharathMela`} campaign="seller" />
+          </div>
         </div>
       </header>
 

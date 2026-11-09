@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { listingPath } from "@/lib/seo";
 import { CategoryIcon } from "./CategoryIcon";
-import { listingSubcategories } from "@/lib/subcategories";
+import { listingSubcategories, subcategoryLabel } from "@/lib/subcategories";
 import { SaveHeart } from "./SaveHeart";
 import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
 import { readEventService, serviceLabels } from "@/lib/event-services";
@@ -44,15 +44,26 @@ function keyFacts(listing: BrowseListing) {
 export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?: boolean }) {
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
   const miles = listing.distanceMiles;
+  const sub = listingSubcategories(listing)[0];
+  const subLabel = sub ? subcategoryLabel(listing.category, sub) : undefined;
   return (
     <div className="group relative">
       <Link href={listingPath(listing)} className="block overflow-hidden rounded-xl bg-white ring-1 ring-stone-200 transition hover:shadow-md">
-        <div className="relative aspect-[4/3] bg-brand-soft">
+        <div className="relative aspect-[16/10] bg-brand-soft">
           {listing.photos[0] ? (
-            <Image src={listing.photos[0].thumbUrl} alt="" width={600} height={450} className="h-full w-full object-cover" />
+            <Image
+              src={listing.photos[0].thumbUrl}
+              alt=""
+              width={600}
+              height={450}
+              sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
+              className="h-full w-full object-cover"
+            />
           ) : (
-            <div className="grid h-full place-items-center">
-              <CategoryIcon id={listing.category} sub={listingSubcategories(listing)[0]} size={112} className="h-24 w-24 opacity-90 transition group-hover:scale-105 sm:h-28 sm:w-28" />
+            // No photo yet: the subcategory's drawing on a warm patterned panel, with its name.
+            <div className="card-pattern flex h-full flex-col items-center justify-center gap-1.5">
+              <CategoryIcon id={listing.category} sub={sub} size={88} className="h-16 w-16 drop-shadow-sm transition group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]" />
+              <span className="rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-medium text-stone-600">{subLabel ?? categoryLabel(listing.category)}</span>
             </div>
           )}
           <div className="absolute left-2 top-2 flex gap-1">
