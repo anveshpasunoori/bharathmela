@@ -14,17 +14,19 @@ import { metroFor } from "@/lib/geo";
 import { getCurrentUser } from "@/lib/auth";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, publicListing, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
-import { formatUSD } from "@/lib/plans";
+import { formatUSD, priceLabel } from "@/lib/plans";
 import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
-import { cityCategoryPath, cityPath } from "@/lib/seo";
+import { cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
 import { citySubcategoryPath, listingSubcategories, pickedSubcategory, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
 import { pageFaq } from "@/lib/page-faq";
 import { breadcrumbs, faqSchema, itemListSchema } from "@/lib/structured-data";
 import { JsonLd } from "@/components/JsonLd";
+import { ListingsMap, type MapPoint } from "@/components/ListingsMap";
+import { zipCoords } from "@/lib/geo";
 import { resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
@@ -67,6 +69,7 @@ export type BrowseParams = {
   from?: string;
   stay?: string;
   ss?: string;
+  view?: string;
 };
 
 // The browse page: category tiles, or listings for a category or search. Rendered by the home page and
@@ -105,6 +108,25 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
   ]);
+  // Map view: each listing at its ZIP code's center, nudged a little by its id so pins in one ZIP don't
+  // stack and no seller's address is shown.
+  const mapView = showingListings && params.view === "map";
+  const mapPoints: MapPoint[] = mapView
+    ? listings.flatMap((l) => {
+        const c = zipCoords(l.zip);
+        if (!c) return [];
+        const h = [...l.id].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+        const price = l.priceCents != null ? priceLabel(l.priceCents, l.priceUnit).main : null;
+        return [{ id: l.id, href: listingPath(l), title: l.title, price, lat: c.lat + ((h % 200) - 100) / 12000, lng: c.lng + (((h >> 8) % 200) - 100) / 12000 }];
+      })
+    : [];
+  const viewHref = (view: "list" | "map") => {
+    const p = new URLSearchParams(pageQuery);
+    for (const k of ["ss", "from", "stay", "deleted", "view"]) p.delete(k);
+    if (view === "map") p.set("view", "map");
+    return `?${p}`;
+  };
+
   // The home page also shows what's new and what buyers rate highest here.
   const [newest, topRated] = showingListings
     ? [[], []]
@@ -462,6 +484,12 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               )}
             </p>
             <div className="flex items-center gap-2">
+              {listings.length > 0 && (
+                <span className="inline-flex overflow-hidden rounded-full text-sm ring-1 ring-stone-300" role="group" aria-label="View">
+                  <Link href={viewHref("list")} aria-current={!mapView ? "page" : undefined} className={`px-3 py-1.5 ${!mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>List</Link>
+                  <Link href={viewHref("map")} aria-current={mapView ? "page" : undefined} className={`px-3 py-1.5 ${mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>Map</Link>
+                </span>
+              )}
               <SaveSearchButton query={pageQuery} saved={searchSaved} />
               {listings.length > 1 && <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />}
             </div>
@@ -494,7 +522,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       )}
 
-      {!showingListings ? null : listings.length ? (
+      {mapView && mapPoints.length > 0 ? (
+        <ListingsMap points={mapPoints} />
+      ) : !showingListings ? null : listings.length ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l) => (
             <ListingCard key={l.id} listing={l} saved={l.vendorId === viewer?.vendor?.id ? undefined : savedIds.has(l.id)} />

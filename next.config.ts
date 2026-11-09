@@ -9,7 +9,8 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob:${photoOrigin ? ` ${photoOrigin.origin}` : ""}`,
+  // Map tiles for the listings map (src/components/ListingsMap.tsx).
+  `img-src 'self' data: blob: https://tile.openstreetmap.org${photoOrigin ? ` ${photoOrigin.origin}` : ""}`,
   "font-src 'self'",
   `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
   "frame-ancestors 'none'",
