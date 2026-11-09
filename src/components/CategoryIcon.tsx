@@ -11,11 +11,11 @@ const ILLUSTRATED = new Set<string>(CATEGORIES.map((c) => c.id));
 export function CategoryIcon({ id, sub, size, className = "" }: { id: string; sub?: string; size: number; className?: string }) {
   if (sub) {
     const ext = ILLUSTRATED_SUBCATEGORIES.has(`${id}/${sub}`) ? "png" : "svg";
-    return <Image src={`/subcategories/${id}/${sub}.${ext}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
+    return <Image src={`/subcategories/${id}/${sub}.${ext}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 object-contain ${className}`} />;
   }
   if (ILLUSTRATED.has(id)) {
     // Square tiles: the class sets the width and the height follows.
-    return <Image src={`/categories/${id}.${ILLUSTRATED_CATEGORIES.has(id) ? "png" : "svg"}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 ${className}`} />;
+    return <Image src={`/categories/${id}.${ILLUSTRATED_CATEGORIES.has(id) ? "png" : "svg"}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 object-contain ${className}`} />;
   }
   return (
     <span
