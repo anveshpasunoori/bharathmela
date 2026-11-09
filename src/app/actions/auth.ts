@@ -73,9 +73,9 @@ export async function vendorSignup(_: FormState, form: FormData): Promise<FormSt
       vendor: { create: seller },
     },
   });
-  await sendVerificationCode(user);
+  const { error: notSent } = await sendVerificationCode(user);
   await createSession(user.id);
-  redirect(`/verify?next=${encodeURIComponent(next)}`);
+  redirect(`/verify?next=${encodeURIComponent(next)}${notSent ? "&unsent=1" : ""}`);
 }
 
 // A signed-in buyer starting to sell: add seller details to the account they already have.
@@ -119,9 +119,9 @@ export async function buyerSignup(_: FormState, form: FormData): Promise<FormSta
       termsAcceptedAt: new Date(),
     },
   });
-  await sendVerificationCode(user);
+  const { error: notSent } = await sendVerificationCode(user);
   await createSession(user.id);
-  redirect(`/verify?next=${encodeURIComponent(next)}`);
+  redirect(`/verify?next=${encodeURIComponent(next)}${notSent ? "&unsent=1" : ""}`);
 }
 
 export async function verifyEmail(_: FormState, form: FormData): Promise<FormState> {
@@ -156,7 +156,10 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
   let next = safeNext(form, user.role === "VENDOR" ? "/vendor" : "/");
   // Tapped a heart while logged out: save it now, before the page (and its saved count) is drawn.
   if (next.startsWith("/saved/add?")) next = await saveAfterLogin(user.id, new URLSearchParams(next.split("?")[1]));
-  redirect(user.emailVerifiedAt ? next : `/verify?next=${encodeURIComponent(next)}`);
+  if (user.emailVerifiedAt) redirect(next);
+  // Not verified yet: send a fresh code (the old one may have expired or never arrived).
+  const sent = await sendVerificationCode(user);
+  redirect(`/verify?next=${encodeURIComponent(next)}${sent.error && !sent.waiting ? "&unsent=1" : ""}`);
 }
 
 async function saveAfterLogin(userId: string, params: URLSearchParams) {

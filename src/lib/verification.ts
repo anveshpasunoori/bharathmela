@@ -13,18 +13,23 @@ const hash = (code: string) => createHash("sha256").update(code).digest("hex");
 export async function sendVerificationCode(user: { id: string; email: string; name: string }) {
   const last = await db.emailCode.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
   if (last && Date.now() - last.createdAt.getTime() < RESEND_COOLDOWN_MS) {
-    return { error: "Please wait a minute before asking for another code." };
+    return { error: "Please wait a minute before asking for another code.", waiting: true };
   }
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   await db.emailCode.deleteMany({ where: { userId: user.id } });
   await db.emailCode.create({
     data: { userId: user.id, codeHash: hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) },
   });
-  await sendEmail(
+  const sent = await sendEmail(
     user.email,
     `Your BharathMela code: ${code}`,
     `Hi ${user.name},\n\nYour BharathMela verification code is ${code}. It expires in 15 minutes.\n\nIf you didn't sign up, ignore this email.`,
   );
+  if (!sent) {
+    // No waiting period for a retry when the email never went out.
+    await db.emailCode.deleteMany({ where: { userId: user.id } });
+    return { error: "We couldn't send your code just now. Please try again in a few minutes." };
+  }
   return {};
 }
 
@@ -47,7 +52,7 @@ export async function checkVerificationCode(userId: string, code: string): Promi
 export async function sendPhoneCode(userId: string, phone: string) {
   const last = await db.phoneCode.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
   if (last && Date.now() - last.createdAt.getTime() < RESEND_COOLDOWN_MS) {
-    return { error: "Please wait a minute before asking for another code." };
+    return { error: "Please wait a minute before asking for another code.", waiting: true };
   }
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   await db.phoneCode.deleteMany({ where: { userId } });

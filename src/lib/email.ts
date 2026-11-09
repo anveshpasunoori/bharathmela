@@ -30,13 +30,18 @@ export async function checkEmailDomain(email: string): Promise<string | null> {
 }
 
 // Sends through Resend when RESEND_API_KEY is set (plain text plus a branded HTML version); otherwise
-// prints to the server log (development).
+// prints to the server log in development. Returns whether the email went out: in production a missing key or
+// a failed send is logged as an error and returns false, so callers can say so instead of "we sent it".
 // `headers` is for extras such as List-Unsubscribe on alert emails.
-export async function sendEmail(to: string, subject: string, text: string, replyTo?: string, headers?: Record<string, string>) {
+export async function sendEmail(to: string, subject: string, text: string, replyTo?: string, headers?: Record<string, string>): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(`[email] not sent ("${subject}"): RESEND_API_KEY is not set`);
+      return false;
+    }
     console.log(`\n[email to ${to}${replyTo ? `, reply-to ${replyTo}` : ""}] ${subject}\n${text}\n`);
-    return;
+    return true;
   }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -51,5 +56,9 @@ export async function sendEmail(to: string, subject: string, text: string, reply
       ...(headers ? { headers } : {}),
     }),
   });
-  if (!res.ok) throw new Error(`Email send failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) {
+    console.error(`[email] not sent ("${subject}"): Resend answered ${res.status} ${await res.text()}`);
+    return false;
+  }
+  return true;
 }
