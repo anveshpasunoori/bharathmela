@@ -36,3 +36,9 @@ To use a photo instead of a drawing, copy it to `public/categories/` and point `
   others' cream background so they sit the same size.
 - The drawn `.svg` next to each one (from `scripts/subcategory-icons.mjs`) is the fallback for any new
   subcategory until it gets an illustration.
+- `source-sheets/dance-statues.webp`: eight bronze dancer statues, cut to `dance-statues/statue-1.png` … `-8.png`
+  (each centered on a cream tile). In use: 2 Kathak, 4 Odissi, 5 Kuchipudi. Spare for future styles: 1 (male
+  dancer), 3 (aramandi, like Bharatanatyam), 6 (wide fan skirt), 7 (saree-draped, e.g. Mohiniyattam), 8 (crowned
+  folk dancer, e.g. Kathakali or Yakshagana).
+- `source-sheets/category-dance-music.webp`: the four-dancer group, used as the Dance, Music & Sangeetham
+  category icon (`public/categories/DANCE_MUSIC.png`).

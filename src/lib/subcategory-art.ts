@@ -171,4 +171,4 @@ export const ILLUSTRATED_SUBCATEGORIES = new Set<string>([
 
 // Categories with an illustrated icon (public/categories/<CATEGORY>.png); the rest use the drawn .svg from
 // scripts/category-icons.mjs.
-export const ILLUSTRATED_CATEGORIES = new Set<string>(["DOMESTIC_HELP"]);
+export const ILLUSTRATED_CATEGORIES = new Set<string>(["DANCE_MUSIC", "DOMESTIC_HELP"]);
