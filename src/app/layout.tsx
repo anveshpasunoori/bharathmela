@@ -1,5 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import { BottomNav } from "@/components/BottomNav";
+import { t } from "@/lib/i18n";
+import { getLang } from "@/lib/lang";
 import { InstallApp } from "@/components/InstallApp";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
@@ -53,8 +55,9 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser();
   const savedCount = user ? await db.favorite.count({ where: { userId: user.id } }) : 0;
+  const lang = await getLang();
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body className={`${geistSans.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-white focus:px-3 focus:py-2">
           Skip to content
@@ -62,10 +65,23 @@ export default async function RootLayout({
         <Suspense>
           <NavProgress />
         </Suspense>
-        <SiteHeader user={user} savedCount={savedCount} />
+        <SiteHeader user={user} savedCount={savedCount} lang={lang} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
-        <BottomNav loggedIn={!!user} isSeller={!!user?.vendor} />
+        <BottomNav
+          loggedIn={!!user}
+          isSeller={!!user?.vendor}
+          labels={{
+            home: t(lang, "home"),
+            events: t(lang, "events"),
+            sell: t(lang, "sell"),
+            postNeed: t(lang, "postNeedShort"),
+            saved: t(lang, "saved"),
+            dashboard: t(lang, "dashboard"),
+            account: t(lang, "account"),
+            logIn: t(lang, "logIn"),
+          }}
+        />
         {/* Page views and referrers (Vercel Web Analytics: no cookies, nothing personal). */}
         <Analytics />
         <footer className="border-t border-stone-200 bg-white print:hidden">

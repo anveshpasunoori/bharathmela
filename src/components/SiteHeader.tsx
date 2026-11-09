@@ -5,6 +5,8 @@ import { CategoryIcon } from "./CategoryIcon";
 import { HeartIcon } from "./HeartIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
+import { LanguagePicker } from "./LanguagePicker";
+import { type Lang, t } from "@/lib/i18n";
 
 type HeaderUser = { name: string; email: string; role: string; vendor: unknown } | null;
 
@@ -13,7 +15,7 @@ const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 
 // The top bar. Desktop shows the main sections as words, with categories grouped under Browse and the
 // account behind its initial; phones get a slide-in menu with the same links.
-export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCount?: number }) {
+export function SiteHeader({ user, savedCount = 0, lang = "en" }: { user: HeaderUser; savedCount?: number; lang?: Lang }) {
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
   return (
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur print:hidden">
@@ -27,7 +29,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
         <div className="hidden items-center gap-1 md:flex">
           <details data-dropdown className="group">
             <summary className={`${navLink} flex cursor-pointer list-none items-center gap-1 group-open:bg-stone-100 group-open:text-stone-900`}>
-              Browse <span aria-hidden className="text-xs text-stone-500 transition group-open:rotate-180">▾</span>
+              {t(lang, "browse")} <span aria-hidden className="text-xs text-stone-500 transition group-open:rotate-180">▾</span>
             </summary>
             <div className="absolute inset-x-0 top-full z-30 border-y border-stone-200 bg-white shadow-lg">
               <div className="mx-auto grid max-w-5xl grid-cols-3 gap-x-6 gap-y-5 px-4 py-6 lg:grid-cols-5">
@@ -61,17 +63,17 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
               </div>
             </div>
           </details>
-          <Link href="/?category=ROOM_RENTAL" className={navLink}>Rooms</Link>
-          <Link href="/events" className={navLink}>Events</Link>
-          <Link href={user?.vendor ? "/vendor" : "/pricing"} className={navLink}>{user?.vendor ? "My business" : "Sell"}</Link>
-          <Link href="/requests/new" className="rounded-md px-3 py-2 font-semibold text-brand hover:bg-brand-soft">Post your need</Link>
+          <Link href="/?category=ROOM_RENTAL" className={navLink}>{t(lang, "rooms")}</Link>
+          <Link href="/events" className={navLink}>{t(lang, "events")}</Link>
+          <Link href={user?.vendor ? "/vendor" : "/pricing"} className={navLink}>{user?.vendor ? "My business" : t(lang, "sell")}</Link>
+          <Link href="/requests/new" className="rounded-md px-3 py-2 font-semibold text-brand hover:bg-brand-soft">{t(lang, "postNeed")}</Link>
         </div>
 
         <div className="ml-auto flex items-center gap-1">
           {user && (
             <Link href="/saved" className={`${navLink} flex items-center gap-1.5`} aria-label={`Saved listings (${savedCount})`}>
               <HeartIcon filled={savedCount > 0} className="h-5 w-5" />
-              <span className="hidden sm:inline">Saved</span>
+              <span className="hidden sm:inline">{t(lang, "saved")}</span>
               {savedCount > 0 && (
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-snow">{savedCount}</span>
               )}
@@ -110,8 +112,8 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
             </details>
           ) : (
             <>
-              <Link href="/login" className={navLink}>Log in</Link>
-              <Link href="/signup" className="btn hidden px-3 py-1.5 md:inline-flex">Sign up</Link>
+              <Link href="/login" className={navLink}>{t(lang, "logIn")}</Link>
+              <Link href="/signup" className="btn hidden px-3 py-1.5 md:inline-flex">{t(lang, "signUp")}</Link>
             </>
           )}
 
@@ -128,8 +130,8 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
             )}
             {!user && (
               <div className="mb-4 grid grid-cols-2 gap-2">
-                <Link href="/login" className="btn-outline">Log in</Link>
-                <Link href="/signup" className="btn">Sign up</Link>
+                <Link href="/login" className="btn-outline">{t(lang, "logIn")}</Link>
+                <Link href="/signup" className="btn">{t(lang, "signUp")}</Link>
               </div>
             )}
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Browse</p>
@@ -176,8 +178,9 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
         </div>
       </nav>
       {/* Location applies to the whole app, so it lives in the top bar. */}
-      <div className="mx-auto max-w-5xl px-4 pb-2">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pb-2">
         <HeaderLocation />
+        <LanguagePicker lang={lang} label={t(lang, "language")} />
       </div>
     </header>
   );

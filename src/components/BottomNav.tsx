@@ -5,22 +5,24 @@ import { usePathname } from "next/navigation";
 
 // The phone's tab bar: the five places people go most, always in reach of a thumb. Wider screens use the
 // top bar instead.
-export function BottomNav({ loggedIn, isSeller }: { loggedIn: boolean; isSeller: boolean }) {
+type Labels = { home: string; events: string; sell: string; postNeed: string; saved: string; dashboard: string; account: string; logIn: string };
+
+export function BottomNav({ loggedIn, isSeller, labels }: { loggedIn: boolean; isSeller: boolean; labels: Labels }) {
   const path = usePathname();
   const tabs = [
-    { href: "/", label: "Home", icon: "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z", match: (p: string) => p === "/" || p.startsWith("/in/") },
-    { href: "/events", label: "Events", icon: "M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z", match: (p: string) => p.startsWith("/events") },
+    { href: "/", label: labels.home, icon: "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z", match: (p: string) => p === "/" || p.startsWith("/in/") },
+    { href: "/events", label: labels.events, icon: "M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z", match: (p: string) => p.startsWith("/events") },
     {
       href: isSeller ? "/vendor/listings/new" : "/requests/new",
-      label: isSeller ? "Sell" : "Post need",
+      label: isSeller ? labels.sell : labels.postNeed,
       icon: "M12 5v14M5 12h14",
       match: (p: string) => p.startsWith("/vendor/listings/new") || p.startsWith("/requests/new"),
       primary: true,
     },
-    { href: "/saved", label: "Saved", icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z", match: (p: string) => p.startsWith("/saved") },
+    { href: "/saved", label: labels.saved, icon: "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z", match: (p: string) => p.startsWith("/saved") },
     {
       href: loggedIn ? (isSeller ? "/vendor" : "/account") : "/login",
-      label: loggedIn ? (isSeller ? "Dashboard" : "Account") : "Log in",
+      label: loggedIn ? (isSeller ? labels.dashboard : labels.account) : labels.logIn,
       icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
       match: (p: string) => p.startsWith("/account") || p.startsWith("/login") || (p.startsWith("/vendor") && !p.startsWith("/vendor/listings/new")),
     },

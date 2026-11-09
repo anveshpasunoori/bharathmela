@@ -22,21 +22,17 @@ export function HeroArt() {
   );
 }
 
-// Three short promises under the search box.
-export function TrustStrip() {
-  const items = [
-    { icon: "✓", text: "Phone-verified sellers are marked" },
-    { icon: "★", text: "Reviews from real buyers" },
-    { icon: "$", text: "Free to browse · pay sellers directly" },
-  ];
+// Three short promises under the search box (passed in, already in the visitor's language).
+export function TrustStrip({ items }: { items: [string, string, string] }) {
+  const icons = ["✓", "★", "$"];
   return (
     <ul className="relative flex flex-wrap gap-x-5 gap-y-1.5 pt-1 text-sm text-stone-600">
-      {items.map((i) => (
-        <li key={i.text} className="flex items-center gap-1.5">
+      {items.map((text, i) => (
+        <li key={text} className="flex items-center gap-1.5">
           <span aria-hidden className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-bold text-brand ring-1 ring-orange-200">
-            {i.icon}
+            {icons[i]}
           </span>
-          {i.text}
+          {text}
         </li>
       ))}
     </ul>

@@ -32,6 +32,8 @@ import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
 import { ShowAllCategories } from "@/components/ShowAllCategories";
 import { HeroArt, TrustStrip } from "@/components/HomeHero";
+import { categoryName, t } from "@/lib/i18n";
+import { getLang } from "@/lib/lang";
 import { ListingRow } from "@/components/ListingRow";
 
 // A one-line reminder under results in categories where the seller needs a license.
@@ -149,6 +151,10 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const tileOrder = [...CATEGORIES].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
   const totalListings = [...counts.values()].reduce((sum, n) => sum + n, 0);
   const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
+  // The same, in the visitor's language, for headings and buttons.
+  const lang = await getLang();
+  const whereT = nearMode ? t(lang, "withinOf", { r: radius, place: place!.city }) : t(lang, "inCity", { city: metroName(metro) });
+  const catName = (c: { id: string; label: string }) => categoryName(lang, c.id, c.label);
 
   // Links keep the current location mode: "near you" (radius) or a picked metro.
   const locationParams = (city?: string) => {
@@ -293,11 +299,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         {showingListings ? (
           <div>
             <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
-              <Link href={home} className="hover:text-brand">All categories</Link>
+              <Link href={home} className="hover:text-brand">{t(lang, "allCategories")}</Link>
               {categoryInfo && (
                 <>
                   <span aria-hidden>›</span>
-                  {picked ? <Link href={subHref()} className="hover:text-brand">{categoryInfo.label}</Link> : <span className="text-stone-700">{categoryInfo.label}</span>}
+                  {picked ? <Link href={subHref()} className="hover:text-brand">{catName(categoryInfo)}</Link> : <span className="text-stone-700">{catName(categoryInfo)}</span>}
                 </>
               )}
               {picked && (
@@ -312,8 +318,8 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <>
                   <CategoryIcon id={categoryInfo.id} sub={picked?.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
                   <span>
-                    {picked?.label ?? categoryInfo.label}{" "}
-                    <span className="font-semibold text-stone-500">{nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}</span>
+                    {picked?.label ?? catName(categoryInfo)}{" "}
+                    <span className="font-semibold text-stone-500">{nearMode ? t(lang, "nearPlace", { place: place!.city }) : t(lang, "inCity", { city: metroName(metro) })}</span>
                   </span>
                 </>
               ) : (
@@ -324,7 +330,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         ) : (
           <div>
             <h1 className="relative text-2xl font-bold sm:text-4xl sm:tracking-tight">
-              {isMetro(params.metro) ? `Local Businesses in ${metroName(metro)}` : "Local Businesses near you"}
+              {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : t(lang, "localBusinessesNear")}
             </h1>
           </div>
         )}
@@ -340,15 +346,15 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             defaultValue={q}
             maxLength={100}
             className="input flex-1"
-            placeholder={categoryInfo ? `Search ${categoryInfo.label.toLowerCase()}…` : "Try “biryani”, “pooja”, “photographer”"}
+            placeholder={categoryInfo ? (lang === "en" ? `Search ${categoryInfo.label.toLowerCase()}…` : `${t(lang, "search")}: ${catName(categoryInfo)}…`) : t(lang, "searchPlaceholder")}
             aria-label="Search listings"
           />
-          <button className="btn">Search</button>
+          <button className="btn">{t(lang, "search")}</button>
         </form>
         {subs && (
           <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
             {/* The picked one right after "All", so it's visible without scrolling the row. */}
-            {[{ id: undefined, label: "All" }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
+            {[{ id: undefined, label: t(lang, "all") }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
               const on = (picked?.id ?? undefined) === o.id;
               return (
                 <Link
@@ -369,7 +375,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Narrow to a category">
             {CATEGORIES.map((c) => (
               <Link key={c.id} href={href(c.id)} className="badge shrink-0 whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
-                {c.icon} {c.label}
+                {c.icon} {catName(c)}
               </Link>
             ))}
           </nav>
@@ -378,7 +384,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         {place && !showingListings && (
           // Distance from the visitor's location (set in the top bar).
           <nav className="scrollbar-none -mx-1 flex items-center gap-2 overflow-x-auto px-1 text-sm" aria-label="Distance">
-            <span className="shrink-0 text-stone-500">Within</span>
+            <span className="shrink-0 text-stone-500">{t(lang, "within")}</span>
             {RADII.map((r) => {
               const p = new URLSearchParams();
               p.set("radius", String(r));
@@ -394,14 +400,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
             {!far && (
               <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                All of {metroName(metro)}
+                {t(lang, "allOf", { city: metroName(metro) })}
               </Link>
             )}
           </nav>
         )}
         {!nearMode && <FarNote far={far} metro={metro} />}
         {!place && !showingListings && <NearMePrompt city={metroName(metro)} />}
-        {!showingListings && <TrustStrip />}
+        {!showingListings && <TrustStrip items={[t(lang, "trustVerified"), t(lang, "trustReviews"), t(lang, "trustFree")]} />}
       </section>
 
       {!showingListings && (
@@ -418,7 +424,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               </p>
             </div>
           )}
-          <h2 className="mb-3 text-lg font-semibold">What are you looking for?</h2>
+          <h2 className="mb-3 text-lg font-semibold">{t(lang, "lookingFor")}</h2>
           {/* Phones show the 8 busiest categories first; "See all" reveals the rest. */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {tileOrder.map((c, i) => {
@@ -431,8 +437,8 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 >
                   <CategoryIcon id={c.id} size={56} className="h-12 w-12 sm:h-14 sm:w-14" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold leading-tight sm:text-base">{c.label}</span>
-                    <span className="text-xs text-stone-500">{n ? `${n} listing${n === 1 ? "" : "s"}` : "Be the first"}</span>
+                    <span className="block text-sm font-semibold leading-tight sm:text-base">{catName(c)}</span>
+                    <span className="text-xs text-stone-500">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
                   </span>
                 </Link>
               );
@@ -450,14 +456,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </section>
       )}
 
-      {newest.length > 0 && <ListingRow title={`New ${where}`} listings={newest} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
-      {topRated.length > 0 && <ListingRow title="Top rated by buyers" listings={topRated} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
+      {newest.length > 0 && <ListingRow title={t(lang, "newIn", { where: whereT })} listings={newest} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
+      {topRated.length > 0 && <ListingRow title={t(lang, "topRated")} listings={topRated} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
 
       {events.length > 0 && (
         <section>
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold">Upcoming events</h2>
-            <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">See all →</Link>
+            <h2 className="text-lg font-semibold">{t(lang, "upcomingEvents")}</h2>
+            <Link href={`/events?metro=${metro}`} className="text-sm font-semibold text-brand">{t(lang, "seeAll")}</Link>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {events.map((e) => (
@@ -471,7 +477,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         <div className="space-y-1 text-sm text-stone-600">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <p>
-              <span className="font-semibold text-stone-900">{listings.length} result{listings.length === 1 ? "" : "s"}</span>
+              <span className="font-semibold text-stone-900">{listings.length === 1 ? t(lang, "result") : t(lang, "results", { n: listings.length })}</span>
               {q && <> for &ldquo;{q}&rdquo;</>}
               {diet.length > 0 && <> · {diet.map(tagLabel).join(", ")}</>}
               {search.maxPriceCents != null && <> · up to {formatUSD(search.maxPriceCents)}</>}
@@ -483,11 +489,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 </>
               )}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 whitespace-nowrap">
               {listings.length > 0 && (
-                <span className="inline-flex overflow-hidden rounded-full text-sm ring-1 ring-stone-300" role="group" aria-label="View">
-                  <Link href={viewHref("list")} aria-current={!mapView ? "page" : undefined} className={`px-3 py-1.5 ${!mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>List</Link>
-                  <Link href={viewHref("map")} aria-current={mapView ? "page" : undefined} className={`px-3 py-1.5 ${mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>Map</Link>
+                <span className="inline-flex shrink-0 overflow-hidden rounded-full text-sm ring-1 ring-stone-300" role="group" aria-label="View">
+                  <Link href={viewHref("list")} aria-current={!mapView ? "page" : undefined} className={`px-3 py-1.5 ${!mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>{t(lang, "list")}</Link>
+                  <Link href={viewHref("map")} aria-current={mapView ? "page" : undefined} className={`px-3 py-1.5 ${mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>{t(lang, "map")}</Link>
                 </span>
               )}
               <SaveSearchButton query={pageQuery} saved={searchSaved} />
@@ -612,10 +618,10 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       {showingListings && category !== "ROOM_RENTAL" && category !== "GARAGE_SALE" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
           <div>
-            <p className="font-semibold">Can&apos;t find the right person?</p>
-            <p className="text-sm text-stone-600">Post what you need once. Sellers near you who offer it will send you quotes.</p>
+            <p className="font-semibold">{t(lang, "cantFind")}</p>
+            <p className="text-sm text-stone-600">{t(lang, "cantFindHint")}</p>
           </div>
-          <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
+          <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">{t(lang, "postWhatYouNeed")}</Link>
         </div>
       )}
 
@@ -671,11 +677,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
 
       {category && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold text-stone-700">Other categories {where}</h2>
+          <h2 className="mb-2 text-sm font-semibold text-stone-700">{t(lang, "otherCategories", { where: whereT })}</h2>
           <nav className="flex flex-wrap gap-2 text-sm" aria-label="Other categories">
             {CATEGORIES.filter((c) => c.id !== category).map((c) => (
               <Link key={c.id} href={href(c.id)} className="badge whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
-                {c.icon} {c.label}
+                {c.icon} {catName(c)}
               </Link>
             ))}
           </nav>
