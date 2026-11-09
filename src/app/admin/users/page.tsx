@@ -1,4 +1,4 @@
-import { setBusinessVerified, setSuspended } from "../../actions/admin";
+import { markEmailVerified, setBusinessVerified, setSuspended } from "../../actions/admin";
 import { db } from "@/lib/db";
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -58,7 +58,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                   ) : u.emailVerifiedAt ? (
                     <span className="badge bg-green-100 text-green-800">Verified</span>
                   ) : (
-                    <span className="badge bg-stone-200 text-stone-700">Unverified</span>
+                    <div className="space-y-1.5">
+                      <span className="badge bg-stone-200 text-stone-700">Unverified</span>
+                      <form action={markEmailVerified.bind(null, u.id)}>
+                        <button className="text-xs font-semibold text-brand hover:underline" title="Only for people you know: they skip the emailed code">
+                          Mark email verified
+                        </button>
+                      </form>
+                    </div>
                   )}
                 </td>
                 <td className="space-y-2 px-4 py-2">

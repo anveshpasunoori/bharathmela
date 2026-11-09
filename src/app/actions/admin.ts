@@ -123,6 +123,20 @@ export async function setReviewVisibility(reviewId: string, visible: boolean) {
   revalidatePath("/admin");
 }
 
+// Lets in someone whose code email can't reach them (for example while email isn't set up yet). The admin
+// should know the person, e.g. a seller onboarded in person; it's recorded in the activity log.
+export async function markEmailVerified(userId: string) {
+  const admin = await requireAdmin();
+  const user = await db.user.findUnique({ where: { id: userId }, select: { emailVerifiedAt: true } });
+  if (!user || user.emailVerifiedAt) return;
+  await db.$transaction([
+    db.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } }),
+    db.emailCode.deleteMany({ where: { userId } }),
+  ]);
+  await audit(admin.id, "user.verify_email", "user", userId, "Marked verified by an admin");
+  revalidatePath("/admin/users");
+}
+
 // Marks a seller's business as checked (license, registration or a visit), shown as "Verified business".
 export async function setBusinessVerified(vendorId: string, verified: boolean) {
   const admin = await requireAdmin();
