@@ -1,10 +1,12 @@
 import { eventPath, sellerPath } from "@/lib/seo";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { deleteEvent, setEventVisibility } from "../actions/event";
 import { deleteListing, renewListing, setListingVisibility } from "../actions/vendor";
 import { requireVendor } from "@/lib/auth";
 import { requestsForVendor } from "@/lib/service-requests";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
+import { welcomeVerifiedSeller } from "@/lib/growth";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatEventTime } from "@/lib/events";
@@ -28,14 +30,17 @@ export default async function VendorDashboard({
     updated?: string;
     eventPublished?: string;
     phoneVerified?: string;
+    founding?: string;
     tab?: string;
   }>;
 }) {
   const { user, vendor } = await requireVendor();
   const params = await searchParams;
+  // Verified sellers who joined before the founding offer, or while their city still has spots, get it now.
+  if (user.emailVerifiedAt && !vendor.foundingSeller && (await welcomeVerifiedSeller(user.id))) redirect("/vendor?founding=1");
   await syncExpirations();
 
-  const [{ plan, subscription }, listings, payments, ratings, events] = await Promise.all([
+  const [{ plan, subscription }, listings, payments, ratings, events, proUntil] = await Promise.all([
     getVendorPlan(vendor.id),
     db.listing.findMany({ where: { vendorId: vendor.id }, include: { _count: { select: { photos: true } } }, orderBy: { createdAt: "desc" } }),
     db.payment.findMany({
@@ -46,6 +51,10 @@ export default async function VendorDashboard({
     }),
     ratingsFor([vendor.id]),
     db.event.findMany({ where: { vendorId: vendor.id }, orderBy: { startsAt: "desc" }, take: 50 }),
+    // Pro can be several periods back to back (free founding or referral months, then paid ones).
+    db.subscription
+      .findFirst({ where: { vendorId: vendor.id, plan: "PRO", status: "ACTIVE", endsAt: { gt: new Date() } }, orderBy: { endsAt: "desc" } })
+      .then((s) => s?.endsAt ?? null),
   ]);
   const tz = metroTimeZone(vendor.metro);
   const now = new Date();
@@ -74,6 +83,8 @@ export default async function VendorDashboard({
             ? ["Your changes are saved.", "ok"]
             : params.phoneVerified
               ? ["✓ Your phone is verified.", "ok"]
+              : params.founding
+                ? ["Welcome, founding seller! You're one of the first sellers in your city, so Pro is free for you for the next few months.", "ok"]
               : params.error === "limit"
                 ? ["You've reached your plan's listing limit. Hide a listing or upgrade.", "error"]
                 : params.error === "eventLimit"
@@ -110,7 +121,13 @@ export default async function VendorDashboard({
           <Link href="/vendor/profile">Edit profile</Link>
           <Link href="/vendor/reviews">Reviews</Link>
           <Link href="/requests?tab=near">Requests near you</Link>
+          <Link href="/vendor/promote">Share &amp; earn free Pro</Link>
         </p>
+        {vendor.foundingSeller && proUntil && (
+          <p className="mt-2 inline-block rounded-md bg-amber-50 px-3 py-1.5 text-sm text-amber-900 ring-1 ring-amber-200">
+            ★ Founding seller: Pro is free for you until {fmtDate(proUntil)}.
+          </p>
+        )}
       </header>
 
       {flash && <p className={`rounded-md px-4 py-3 text-sm ${flashTone[flash[1]]}`}>{flash[0]}</p>}
@@ -143,7 +160,9 @@ export default async function VendorDashboard({
           <p className="text-xl font-semibold">{plan.name}</p>
           <p className="text-sm text-stone-600">
             {usedCount} of {plan.maxListings} listings · {upcomingEventCount} of {plan.maxEvents} events
-            {subscription?.endsAt && <> · paid through {fmtDate(subscription.endsAt)}</>}
+            {subscription?.endsAt && (
+              <> · {subscription.source === "PAID" ? "paid" : "free"} through {fmtDate(plan.id === "PRO" && proUntil ? proUntil : subscription.endsAt)}</>
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

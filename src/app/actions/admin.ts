@@ -5,6 +5,7 @@ import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth";
 import { approvePayment, rejectPayment } from "@/lib/billing";
 import { db } from "@/lib/db";
+import { rewardReferrer } from "@/lib/growth";
 
 const note = (form: FormData) => String(form.get("note") ?? "").trim().slice(0, 500);
 
@@ -100,8 +101,9 @@ export async function rejectWanted(id: string, form: FormData) {
 
 export async function approveListing(listingId: string) {
   const admin = await requireAdmin();
-  await db.listing.update({ where: { id: listingId }, data: { status: "ACTIVE", moderationNote: "" } });
+  const listing = await db.listing.update({ where: { id: listingId }, data: { status: "ACTIVE", moderationNote: "" } });
   await audit(admin.id, "listing.approve", "listing", listingId);
+  await rewardReferrer(listing.vendorId);
   revalidatePath("/admin/listings");
 }
 

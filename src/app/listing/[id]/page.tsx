@@ -7,9 +7,10 @@ import { ShareButton } from "@/components/ShareButton";
 import { HeartIcon } from "@/components/HeartIcon";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
+import { ShareButtons } from "@/components/ShareButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { JsonLd } from "@/components/JsonLd";
-import { idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
+import { absoluteUrl, idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
 import { breadcrumbs, listingCrumbs, listingSchema } from "@/lib/structured-data";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { readGarageSale, saleWhen } from "@/lib/garage-sales";
@@ -63,8 +64,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ListingPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ review?: string }> }) {
   const { id } = await params;
+  // From the "how was it?" email: open the review form.
+  const { review: askedToReview } = await searchParams;
   const listing = await getListing(id);
   if (!listing) notFound();
   // One address per listing: send id-only and outdated title URLs to the current one.
@@ -187,6 +190,10 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           )}
         </div>
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
+        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+          <span>Share:</span>
+          <ShareButtons compact url={absoluteUrl(listingPath(listing))} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} campaign="listing" />
+        </div>
         {!own && (
           <details id="message" className="text-sm">
             <summary className="cursor-pointer font-semibold text-brand">✉ Message instead</summary>
@@ -224,7 +231,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
       </section>
 
-      <section className="space-y-3 border-t border-stone-200 pt-5" aria-label="Reviews">
+      <section id="reviews" className="scroll-mt-20 space-y-3 border-t border-stone-200 pt-5" aria-label="Reviews">
         <div className="flex items-baseline justify-between">
           <h2 className="font-semibold">Reviews {summary && <span className="font-normal text-stone-500">({summary.count})</span>}</h2>
           {summary && summary.count > reviews.length && (
@@ -233,7 +240,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         </div>
         <ReviewList reviews={reviews} sellerName={listing.vendor.businessName} />
         {!own && (
-          <details className="text-sm" open={!!mine}>
+          <details className="text-sm" open={!!mine || !!askedToReview}>
             <summary className="cursor-pointer font-semibold text-brand">{mine ? "Edit your review" : "Write a review"}</summary>
             <div className="mt-3">
               {!user ? (

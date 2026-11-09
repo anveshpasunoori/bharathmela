@@ -14,6 +14,8 @@ import { passwordProblem } from "@/lib/password";
 import { deleteListingFiles } from "@/lib/photos";
 import { TOO_MANY, clientIp, hit } from "@/lib/rate-limit";
 import { checkVerificationCode, sendVerificationCode } from "@/lib/verification";
+import { readAttribution, referringVendorId, welcomeVerifiedSeller } from "@/lib/growth";
+import { resolveLocation } from "@/lib/user-location";
 
 function field(form: FormData, name: string) {
   return String(form.get(name) ?? "").trim();
@@ -23,6 +25,11 @@ function field(form: FormData, name: string) {
 function safeNext(form: FormData, fallback = "/") {
   const next = field(form, "next");
   return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+}
+
+// The monthly "new in your city" email is opt-in, for the city they sign up in.
+function cityEmailChoice(form: FormData, metro: string) {
+  return form.get("cityEmails") === "on" && isMetro(metro) ? { cityEmails: true, cityEmailMetro: metro } : {};
 }
 
 // Checks shared by buyer and seller signup. Returns an error message or null.
@@ -63,6 +70,8 @@ export async function vendorSignup(_: FormState, form: FormData): Promise<FormSt
   const problem = await signupProblem(email, password, form);
   if (problem) return { error: problem };
 
+  const from = await readAttribution();
+  const referredById = await referringVendorId(from.ref);
   const user = await db.user.create({
     data: {
       name,
@@ -70,7 +79,10 @@ export async function vendorSignup(_: FormState, form: FormData): Promise<FormSt
       passwordHash: await bcrypt.hash(password, 10),
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
-      vendor: { create: seller },
+      signupSource: from.source || (referredById ? "referral" : ""),
+      signupCampaign: from.campaign,
+      ...cityEmailChoice(form, seller.metro),
+      vendor: { create: { ...seller, referredById } },
     },
   });
   const { error: notSent } = await sendVerificationCode(user);
@@ -92,9 +104,10 @@ export async function becomeSeller(_: FormState, form: FormData): Promise<FormSt
       role: user.role === "ADMIN" ? "ADMIN" : "VENDOR",
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
-      vendor: { create: seller },
+      vendor: { create: { ...seller, referredById: await referringVendorId((await readAttribution()).ref, user.id) } },
     },
   });
+  if (user.emailVerifiedAt) await welcomeVerifiedSeller(user.id);
   const next = safeNext(form, "/vendor");
   redirect(user.emailVerifiedAt ? next : `/verify?next=${encodeURIComponent(next)}`);
 }
@@ -109,6 +122,8 @@ export async function buyerSignup(_: FormState, form: FormData): Promise<FormSta
   const problem = await signupProblem(email, password, form);
   if (problem) return { error: problem };
 
+  const from = await readAttribution();
+  const { metro } = await resolveLocation();
   const user = await db.user.create({
     data: {
       name,
@@ -117,6 +132,9 @@ export async function buyerSignup(_: FormState, form: FormData): Promise<FormSta
       passwordHash: await bcrypt.hash(password, 10),
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
+      signupSource: from.source,
+      signupCampaign: from.campaign,
+      ...cityEmailChoice(form, metro),
     },
   });
   const { error: notSent } = await sendVerificationCode(user);
@@ -129,7 +147,10 @@ export async function verifyEmail(_: FormState, form: FormData): Promise<FormSta
   if (!user) redirect("/login");
   const error = await checkVerificationCode(user.id, field(form, "code"));
   if (error) return { error };
-  redirect(safeNext(form));
+  // One of the first sellers in their city gets free Pro.
+  const founding = await welcomeVerifiedSeller(user.id);
+  const next = safeNext(form);
+  redirect(founding && next.startsWith("/vendor") ? `${next}${next.includes("?") ? "&" : "?"}founding=1` : next);
 }
 
 export async function resendVerificationCode(): Promise<FormState> {

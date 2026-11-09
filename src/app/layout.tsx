@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
@@ -62,7 +63,9 @@ export default async function RootLayout({
         <SiteHeader user={user} savedCount={savedCount} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
-        <footer className="border-t border-stone-200 bg-white">
+        {/* Page views and referrers (Vercel Web Analytics: no cookies, nothing personal). */}
+        <Analytics />
+        <footer className="border-t border-stone-200 bg-white print:hidden">
           <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 text-sm sm:grid-cols-4">
             <div className="sm:col-span-2">
               <p className="font-semibold text-brand">BharathMela</p>

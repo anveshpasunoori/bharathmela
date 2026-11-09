@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import { requireUser } from "@/lib/auth";
 import { changePassword, deleteAccount } from "../actions/auth";
+import { updateCityEmails } from "../actions/city-emails";
+import { METROS, metroName } from "@/lib/metros";
 
 export const metadata = { title: "Account", robots: { index: false } };
 
@@ -24,6 +26,26 @@ export default async function AccountPage() {
           <Link href="/rooms-wanted/mine">My room requests →</Link>
         </div>
       </div>
+
+      <section className="card">
+        <h2 className="font-semibold">Monthly city email</h2>
+        <p className="mb-3 mt-1 text-sm text-stone-600">New listings and upcoming events in your city, on the 1st of each month. Nothing else.</p>
+        <ActionForm action={updateCityEmails} submitLabel="Save">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="cityEmails" defaultChecked={user.cityEmails} />
+            Send me the monthly email
+          </label>
+          <div>
+            <label className="label" htmlFor="metro">City</label>
+            <select id="metro" name="metro" className="input" defaultValue={user.cityEmailMetro ?? user.vendor?.metro ?? ""}>
+              <option value="">Choose your city</option>
+              {METROS.map((m) => (
+                <option key={m.id} value={m.id}>{metroName(m.id)}</option>
+              ))}
+            </select>
+          </div>
+        </ActionForm>
+      </section>
 
       <section className="card">
         <h2 className="mb-3 font-semibold">Change password</h2>

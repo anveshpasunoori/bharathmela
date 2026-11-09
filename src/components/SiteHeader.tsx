@@ -16,7 +16,7 @@ const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCount?: number }) {
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
   return (
-    <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur print:hidden">
       <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-2 text-sm" aria-label="Main">
         <Link href="/" className="mr-4 flex items-center gap-2 text-lg font-bold text-brand">
           <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-white">BM</span>

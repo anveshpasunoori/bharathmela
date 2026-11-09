@@ -30,6 +30,10 @@ export default async function BuyerSignupPage({ searchParams }: { searchParams: 
               sellers I&apos;ve actually dealt with.
             </span>
           </label>
+          <label className="flex gap-2 text-sm text-stone-700">
+            <input type="checkbox" name="cityEmails" className="mt-0.5" />
+            <span>Email me once a month with what&apos;s new in my city. You can stop anytime.</span>
+          </label>
         </ActionForm>
       </div>
       <p className="mt-4 text-center text-sm text-stone-600">

@@ -70,6 +70,12 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
               independent seller, responsible for my own listings, licenses, taxes and legal compliance.
             </span>
           </label>
+          {!user && (
+            <label className="flex gap-2 text-sm text-stone-700">
+              <input type="checkbox" name="cityEmails" className="mt-0.5" />
+              <span>Email me once a month with what&apos;s new in my city. You can stop anytime.</span>
+            </label>
+          )}
         </ActionForm>
         {!user && (
           <p className="mt-3 text-sm text-stone-600">

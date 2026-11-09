@@ -41,6 +41,8 @@ email and SMS APIs).
 | `EMAIL_FOOTER_ADDRESS` | yes for alerts | Your business mailing address for email footers (CAN-SPAM) |
 | `ANTHROPIC_API_KEY` | optional | Turns on the AI ad writer |
 | `GOOGLE_SITE_VERIFICATION` | optional | Search Console "HTML tag" code |
+| `FOUNDING_SELLERS_PER_CITY` | optional | How many sellers per city get free Pro as founding sellers (default 50; 0 turns it off) |
+| `FOUNDING_PRO_DAYS` | optional | How long founding sellers get Pro free (default 90) |
 
 The server logs a `[config]` line at startup for anything missing, and `/api/health` returns 503 until
 the required settings and the database are in place.
@@ -68,6 +70,20 @@ the required settings and the database are in place.
 - **Backups:** turn on point-in-time restore in your Postgres provider and enable R2 bucket versioning.
 - **Errors:** request errors are logged as one JSON line each (Vercel → Logs). Add Sentry later if you want
   alerts.
+- **Analytics:** in Vercel → your project → Analytics, click **Enable** (Web Analytics; free on Hobby, no
+  cookies). Sign-ups by source, referrals and founding sellers are under **Admin → Growth**.
+
+## Growth tools built in
+
+- **Tagged links:** add `?utm_source=<where>&utm_campaign=<what>` to any link you post (e.g.
+  `?utm_source=telugu-assoc&utm_campaign=jax-launch`); sign-ups from it show under Admin → Growth.
+  Share buttons and QR posters tag themselves.
+- **Sellers:** "Share & earn free Pro" on the seller dashboard has their page link, share buttons, a QR code
+  and a printable poster, and their referral link (a free Pro month for each referred seller who posts a
+  listing, up to 12 a year).
+- **Founding sellers:** the first `FOUNDING_SELLERS_PER_CITY` verified sellers in each city get Pro free.
+- **Emails from the daily job:** "how was it?" review requests 3 days after a buyer messages a seller, and
+  on the 1st of each month the "new in your city" email to people who opted in.
 
 ## 5. Before inviting the public (not code)
 

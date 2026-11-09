@@ -8,11 +8,15 @@ const DAY_MS = 86_400_000;
 
 type Tx = Prisma.TransactionClient;
 
+// The plan in effect now. Free Pro months (founding seller, referrals) can be queued to start later, so
+// periods that haven't started are skipped, and Pro wins when a paid Basic period overlaps a free Pro one.
 export async function getVendorPlan(vendorId: string, client: Tx = db) {
-  const subscription = await client.subscription.findFirst({
-    where: { vendorId, status: "ACTIVE", endsAt: { gt: new Date() } },
+  const now = new Date();
+  const current = await client.subscription.findMany({
+    where: { vendorId, status: "ACTIVE", endsAt: { gt: now }, OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
     orderBy: { endsAt: "desc" },
   });
+  const subscription = current.find((s) => s.plan === "PRO") ?? current[0] ?? null;
   const planId = (subscription?.plan as PlanId | undefined) ?? "FREE";
   return { plan: PLANS[planId], subscription };
 }

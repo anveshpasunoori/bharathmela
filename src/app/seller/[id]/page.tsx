@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ContactButtons } from "@/components/ContactButtons";
+import { ShareButtons } from "@/components/ShareButtons";
 import { EventCard } from "@/components/EventCard";
 import { ListingCard } from "@/components/ListingCard";
 import { ReviewList } from "@/components/ReviewList";
@@ -8,7 +9,7 @@ import { TrustBadges } from "@/components/TrustBadges";
 import { Stars } from "@/components/Stars";
 import { JsonLd } from "@/components/JsonLd";
 import { getCurrentUser } from "@/lib/auth";
-import { idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
+import { absoluteUrl, idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
 import { sellerSchema } from "@/lib/structured-data";
 import { db } from "@/lib/db";
 import { isNewListing } from "@/lib/time";
@@ -77,6 +78,10 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
         />
         {seller.about && <p className="whitespace-pre-line text-stone-700">{seller.about}</p>}
         <ContactButtons phone={seller.phone} whatsapp={seller.whatsapp} name={seller.businessName} />
+        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+          <span>Share:</span>
+          <ShareButtons compact url={absoluteUrl(sellerPath(seller))} text={`${seller.businessName} on BharathMela`} campaign="seller" />
+        </div>
       </header>
 
       <section>

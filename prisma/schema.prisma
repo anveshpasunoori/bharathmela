@@ -11,38 +11,47 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  passwordHash String
-  name         String
-  role         String         @default("VENDOR") // VENDOR | BUYER | ADMIN
+  id               String           @id @default(cuid())
+  email            String           @unique
+  passwordHash     String
+  name             String
+  role             String           @default("VENDOR") // VENDOR | BUYER | ADMIN
   // Set once the user enters the code we emailed them. Required before rating.
-  emailVerifiedAt DateTime?
-  emailCodes   EmailCode[]
-  phoneCodes   PhoneCode[]
-  reviews      Review[]
-  roomsWanted  RoomWanted[]
-  favorites    Favorite[]
-  savedSearches SavedSearch[]
-  serviceRequests ServiceRequest[]
-  sentMessages     Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
+  emailVerifiedAt  DateTime?
+  emailCodes       EmailCode[]
+  phoneCodes       PhoneCode[]
+  reviews          Review[]
+  roomsWanted      RoomWanted[]
+  favorites        Favorite[]
+  savedSearches    SavedSearch[]
+  serviceRequests  ServiceRequest[]
+  sentMessages     Message[]        @relation("SentMessages")
+  receivedMessages Message[]        @relation("ReceivedMessages")
   // Proof the seller agreed to the Terms; see TERMS_VERSION in src/lib/legal.ts.
-  termsVersion    String?
-  termsAcceptedAt DateTime?
+  termsVersion     String?
+  termsAcceptedAt  DateTime?
   // Last time the user was signed in and using the site, for "Active recently" badges.
-  lastSeenAt      DateTime?
+  lastSeenAt       DateTime?
   // Set once the user confirms a texted code; phone itself lives on VendorProfile.
-  phoneVerifiedAt DateTime?
+  phoneVerifiedAt  DateTime?
   // Suspended users can't log in and their listings and reviews are hidden.
-  suspendedAt     DateTime?
-  suspendReason   String         @default("")
+  suspendedAt      DateTime?
+  suspendReason    String           @default("")
   // Account deletion anonymizes the user but keeps payment records.
-  deletedAt       DateTime?
-  createdAt    DateTime       @default(now())
-  sessions     Session[]
-  vendor       VendorProfile?
-  reviewed     Payment[]      @relation("ReviewedBy")
+  deletedAt        DateTime?
+  // Where the person first came from (utm_source / utm_campaign on their first visit, or "referral").
+  signupSource     String           @default("")
+  signupCampaign   String           @default("")
+  // Monthly "new in your city" email: opt-in only, for the chosen metro, with one-click unsubscribe.
+  cityEmails       Boolean          @default(false)
+  cityEmailMetro   String?
+  cityEmailSentAt  DateTime?
+  cityEmailToken   String           @unique @default(cuid())
+  reviewRequests   ReviewRequest[]
+  createdAt        DateTime         @default(now())
+  sessions         Session[]
+  vendor           VendorProfile?
+  reviewed         Payment[]        @relation("ReviewedBy")
 }
 
 model Session {
@@ -53,23 +62,31 @@ model Session {
 }
 
 model VendorProfile {
-  id            String         @id @default(cuid())
-  userId        String         @unique
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessName  String
-  phone         String
-  whatsapp      Boolean        @default(false) // phone number also takes WhatsApp messages
-  metro         String // metro slug, see src/lib/metros.ts
-  zip           String
-  about         String         @default("")
-  createdAt     DateTime       @default(now())
-  listings      Listing[]
-  subscriptions Subscription[]
-  payments      Payment[]
-  aiDrafts      AiDraft[]
-  reviews       Review[]
-  events        Event[]
-  quotes        Quote[]
+  id                 String          @id @default(cuid())
+  userId             String          @unique
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName       String
+  phone              String
+  whatsapp           Boolean         @default(false) // phone number also takes WhatsApp messages
+  metro              String // metro slug, see src/lib/metros.ts
+  zip                String
+  about              String          @default("")
+  // One of the first sellers in their city, given free Pro (see src/lib/growth.ts).
+  foundingSeller     Boolean         @default(false)
+  // The seller whose referral link this seller signed up through; rewarded once this seller posts a listing.
+  referredById       String?
+  referredBy         VendorProfile?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals          VendorProfile[] @relation("Referrals")
+  referralRewardedAt DateTime?
+  createdAt          DateTime        @default(now())
+  reviewRequests     ReviewRequest[]
+  listings           Listing[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  aiDrafts           AiDraft[]
+  reviews            Review[]
+  events             Event[]
+  quotes             Quote[]
 }
 
 // One-time code texted to prove a seller owns their phone number.
@@ -97,18 +114,18 @@ model EmailCode {
 
 // A verified buyer's rating of a seller. One per buyer per seller; editing replaces it.
 model Review {
-  id        String        @id @default(cuid())
-  vendorId  String
-  vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  buyerId   String
-  buyer     User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-  rating    Int // 1-5
-  comment   String        @default("")
-  status    String        @default("VISIBLE") // VISIBLE | HIDDEN (removed by admin)
-  vendorReply     String    @default("")
+  id              String        @id @default(cuid())
+  vendorId        String
+  vendor          VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  buyerId         String
+  buyer           User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  rating          Int // 1-5
+  comment         String        @default("")
+  status          String        @default("VISIBLE") // VISIBLE | HIDDEN (removed by admin)
+  vendorReply     String        @default("")
   vendorRepliedAt DateTime?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@unique([vendorId, buyerId])
 }
@@ -124,58 +141,58 @@ model AiDraft {
 }
 
 model Listing {
-  id            String        @id @default(cuid())
-  vendorId      String
-  vendor        VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  title         String
-  description   String
-  category      String
-  priceCents    Int?
-  priceUnit     String        @default("") // e.g. "per plate", "per hour"
+  id             String         @id @default(cuid())
+  vendorId       String
+  vendor         VendorProfile  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  category       String
+  priceCents     Int?
+  priceUnit      String         @default("") // e.g. "per plate", "per hour"
   // Dietary tags for food, stored as ",VEGAN,GLUTEN_FREE," so a tag can be matched with `contains`.
-  tags          String        @default("")
+  tags           String         @default("")
   // Category-specific structured fields as JSON (room rentals: see RentalDetails in src/lib/rentals.ts).
-  details       String        @default("{}")
-  metro         String
-  zip           String
+  details        String         @default("{}")
+  metro          String
+  zip            String
   // ACTIVE | HIDDEN (by seller) | PENDING_REVIEW | REJECTED | REMOVED (by admin)
-  status        String        @default("ACTIVE")
-  moderationNote String       @default("") // why it was held, rejected or removed
-  views         Int           @default(0)
-  updatedAt     DateTime      @default(now()) @updatedAt
+  status         String         @default("ACTIVE")
+  moderationNote String         @default("") // why it was held, rejected or removed
+  views          Int            @default(0)
+  updatedAt      DateTime       @default(now()) @updatedAt
   // Listings go stale: they stop showing after this date unless the seller renews them.
   // Set on create and on renew (see LISTING_DAYS in src/lib/listings.ts).
-  expiresAt     DateTime?
+  expiresAt      DateTime?
   expiryWarnedAt DateTime?
   // Denormalized from approved ad boosts so browse can sort featured listings first.
-  featuredUntil DateTime?
-  createdAt     DateTime      @default(now())
-  boosts        AdBoost[]
-  reports       Report[]
-  favorites     Favorite[]
-  messages      Message[]
-  photos        ListingPhoto[]
+  featuredUntil  DateTime?
+  createdAt      DateTime       @default(now())
+  boosts         AdBoost[]
+  reports        Report[]
+  favorites      Favorite[]
+  messages       Message[]
+  photos         ListingPhoto[]
 
   @@index([metro, category, status])
 }
 
 // A user's complaint about a listing, event or room-wanted post (exactly one is set).
 model Report {
-  id            String    @id @default(cuid())
-  listingId     String?
-  listing       Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  eventId       String?
-  event         Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  roomWantedId  String?
-  roomWanted    RoomWanted? @relation(fields: [roomWantedId], references: [id], onDelete: Cascade)
+  id               String          @id @default(cuid())
+  listingId        String?
+  listing          Listing?        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  eventId          String?
+  event            Event?          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  roomWantedId     String?
+  roomWanted       RoomWanted?     @relation(fields: [roomWantedId], references: [id], onDelete: Cascade)
   serviceRequestId String?
   serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  reason        String // see REPORT_REASONS in src/lib/legal.ts
-  details       String    @default("")
-  reporterEmail String    @default("")
-  status        String    @default("OPEN") // OPEN | ACTIONED | DISMISSED
-  createdAt     DateTime  @default(now())
-  resolvedAt    DateTime?
+  reason           String // see REPORT_REASONS in src/lib/legal.ts
+  details          String          @default("")
+  reporterEmail    String          @default("")
+  status           String          @default("OPEN") // OPEN | ACTIONED | DISMISSED
+  createdAt        DateTime        @default(now())
+  resolvedAt       DateTime?
 
   @@index([status])
 }
@@ -187,6 +204,7 @@ model Subscription {
   vendor    VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   plan      String // BASIC | PRO
   status    String        @default("PENDING") // PENDING | ACTIVE | EXPIRED | REJECTED
+  source    String        @default("PAID") // PAID | FOUNDING | REFERRAL (free months, no payment)
   startsAt  DateTime?
   endsAt    DateTime?
   createdAt DateTime      @default(now())
@@ -351,26 +369,26 @@ model ListingPhoto {
 // results page's query string (category, keywords, filters); the location is kept here because the
 // visitor's own location lives only in a cookie on their device.
 model SavedSearch {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name          String
-  params        String    @default("")
-  metro         String
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  params           String    @default("")
+  metro            String
   // Set for "within N miles of" searches, rounded like the location cookie (~1 km).
-  nearLat       Float?
-  nearLng       Float?
-  nearCity      String    @default("")
-  radiusMiles   Int?
-  alerts        String    @default("DAILY") // DAILY | WEEKLY | OFF
+  nearLat          Float?
+  nearLng          Float?
+  nearCity         String    @default("")
+  radiusMiles      Int?
+  alerts           String    @default("DAILY") // DAILY | WEEKLY | OFF
   // Listings published after this were not in an alert yet.
-  alertedUntil  DateTime  @default(now())
-  lastAlertAt   DateTime?
+  alertedUntil     DateTime  @default(now())
+  lastAlertAt      DateTime?
   // Listings published after this count as "new" on the Saved page.
-  viewedAt      DateTime  @default(now())
+  viewedAt         DateTime  @default(now())
   // For one-click unsubscribe links in alert emails.
-  unsubscribeToken String @unique @default(cuid())
-  createdAt     DateTime  @default(now())
+  unsubscribeToken String    @unique @default(cuid())
+  createdAt        DateTime  @default(now())
 
   @@index([userId])
   @@index([alerts, lastAlertAt])
@@ -379,27 +397,27 @@ model SavedSearch {
 // "Post what you need": a buyer describes a job once, nearby sellers in that category are emailed, and
 // they answer with a quote. The buyer's email stays private until they reply to a seller.
 model ServiceRequest {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category    String
-  serviceType String   @default("") // one of the category's service types, if it has them
-  title       String
-  description String
-  neededBy    String   @default("") // YYYY-MM-DD, or "" for flexible
-  budgetCents Int?
-  zip         String
-  city        String   @default("")
-  metro       String
-  lat         Float
-  lng         Float
-  status      String   @default("OPEN") // OPEN | CLOSED (by the buyer) | PENDING_REVIEW | REMOVED
-  moderationNote String @default("")
-  notifiedCount Int    @default(0)
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  quotes      Quote[]
-  reports     Report[]
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       String
+  serviceType    String   @default("") // one of the category's service types, if it has them
+  title          String
+  description    String
+  neededBy       String   @default("") // YYYY-MM-DD, or "" for flexible
+  budgetCents    Int?
+  zip            String
+  city           String   @default("")
+  metro          String
+  lat            Float
+  lng            Float
+  status         String   @default("OPEN") // OPEN | CLOSED (by the buyer) | PENDING_REVIEW | REMOVED
+  moderationNote String   @default("")
+  notifiedCount  Int      @default(0)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  quotes         Quote[]
+  reports        Report[]
 
   @@index([status, category, metro])
   @@index([userId])
@@ -429,3 +447,14 @@ model RateLimit {
   @@index([resetAt])
 }
 
+// A "how was it?" email sent to a buyer a few days after they messaged a seller; one per buyer and seller.
+model ReviewRequest {
+  id       String        @id @default(cuid())
+  buyerId  String
+  buyer    User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  vendorId String
+  vendor   VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  sentAt   DateTime      @default(now())
+
+  @@unique([buyerId, vendorId])
+}

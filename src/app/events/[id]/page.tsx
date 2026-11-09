@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
-import { eventPath, idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
+import { absoluteUrl, eventPath, idFromSlugParam, sellerPath, snippet } from "@/lib/seo";
 import { eventSchema } from "@/lib/structured-data";
 import { ContactButtons } from "@/components/ContactButtons";
+import { ShareButtons } from "@/components/ShareButtons";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publicEventWhere } from "@/lib/event-data";
@@ -105,6 +106,10 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       <div className="card space-y-3">
         <p className="text-sm text-stone-600">Questions about this event? Contact the organizer.</p>
         <ContactButtons phone={event.vendor.phone} whatsapp={event.vendor.whatsapp} name={event.vendor.businessName} />
+        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+          <span>Share:</span>
+          <ShareButtons compact url={absoluteUrl(eventPath(event))} text={`${event.title} – on BharathMela`} campaign="event" />
+        </div>
       </div>
 
       <div className="rounded-md border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">

@@ -6,6 +6,7 @@ import type { FormState } from "@/components/ActionForm";
 import { aiConfigured, draftListing, type ListingDraft } from "@/lib/ai";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
+import { rewardReferrer } from "@/lib/growth";
 import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
 import { hasServiceTypes, serializeServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
@@ -166,6 +167,8 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
     data: { vendorId: vendor.id, ...input, ...decision, metro: vendor.metro, zip: vendor.zip, expiresAt: expiryFor(input) },
   });
   await savePhotos(created.id, photos);
+  // A seller who joined through a referral link has now posted: their referrer earns a free Pro month.
+  if (created.status === "ACTIVE") await rewardReferrer(vendor.id);
   revalidatePath("/vendor");
   redirect(`/vendor?${decision.status === "PENDING_REVIEW" ? "review=1" : "published=1"}`);
 }

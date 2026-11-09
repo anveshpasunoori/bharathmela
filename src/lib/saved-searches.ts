@@ -90,7 +90,7 @@ export async function runSearchAlerts(now = new Date()) {
         `Stop these emails: ${base}/alerts/unsubscribe/${s.unsubscribeToken}\n\n– BharathMela`,
       undefined,
       { "List-Unsubscribe": `<${base}/api/alerts/unsubscribe?token=${s.unsubscribeToken}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
-    ).then(() => sent++, (e) => console.error("search alert failed", e));
+    ).then((ok) => ok && sent++);
   }
   return { checked: due.length, sent };
 }
