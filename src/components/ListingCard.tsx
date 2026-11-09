@@ -49,7 +49,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
   const subLabel = sub ? subcategoryLabel(listing.category, sub) : undefined;
   return (
     <div className="group relative">
-      <Link href={listingPath(listing)} className="block overflow-hidden rounded-xl bg-white ring-1 ring-stone-200 transition hover:shadow-md">
+      <Link href={listingPath(listing)} className="block overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-stone-200/80 transition hover:-translate-y-0.5 hover:shadow-md">
         <div className="relative aspect-[16/10] bg-brand-soft">
           {listing.photos[0] ? (
             <Image

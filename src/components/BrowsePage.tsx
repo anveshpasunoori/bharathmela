@@ -432,20 +432,20 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             </div>
           )}
           <h2 className="mb-3 text-lg font-semibold">{t(lang, "lookingFor")}</h2>
-          {/* Phones show the 8 busiest categories first; "See all" reveals the rest. */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {/* Phones show the 9 busiest categories first, three across; "See all" reveals the rest. */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-4">
             {tileOrder.map((c, i) => {
               const n = counts.get(c.id) ?? 0;
               return (
                 <Link
                   key={c.id}
                   href={href(c.id)}
-                  className={`card items-center gap-3 p-3 transition hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:flex sm:p-4 ${i < 8 ? "flex" : "hidden group-data-[all=true]:flex"}`}
+                  className={`card group/tile flex-col items-center gap-2 p-2.5 text-center transition hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:flex sm:flex-row sm:gap-3 sm:p-4 sm:text-left ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
                 >
-                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 sm:h-14 sm:w-14" />
+                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 transition duration-200 group-hover/tile:-rotate-3 group-hover/tile:scale-110 sm:h-14 sm:w-14" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold leading-tight sm:text-base">{catName(c)}</span>
-                    <span className="text-xs text-stone-500">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
+                    <span className="block text-xs font-semibold leading-snug sm:text-base sm:leading-tight">{catName(c)}</span>
+                    <span className="hidden text-xs text-stone-500 sm:inline">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
                   </span>
                 </Link>
               );

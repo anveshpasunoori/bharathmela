@@ -4,7 +4,7 @@ import { t } from "@/lib/i18n";
 import { getLang } from "@/lib/lang";
 import { InstallApp } from "@/components/InstallApp";
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Fraunces, Geist } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 import { NavProgress } from "@/components/NavProgress";
@@ -17,6 +17,9 @@ import { PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { METROS } from "@/lib/metros";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl, cityPath, siteUrl } from "@/lib/seo";
 import "./globals.css";
+
+// Display serif for headings (see globals.css); a warm, crafted feel next to the clean body sans.
+const display = Fraunces({ variable: "--font-display", subsets: ["latin"], display: "swap" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +61,7 @@ export default async function RootLayout({
   const lang = await getLang();
   return (
     <html lang={lang}>
-      <body className={`${geistSans.variable} flex min-h-screen flex-col font-sans antialiased`}>
+      <body className={`${geistSans.variable} ${display.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-white focus:px-3 focus:py-2">
           Skip to content
         </a>
