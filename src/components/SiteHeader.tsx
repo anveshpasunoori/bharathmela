@@ -15,7 +15,7 @@ const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 
 // The top bar. Desktop shows the main sections as words, with categories grouped under Browse and the
 // account behind its initial; phones get a slide-in menu with the same links.
-export function SiteHeader({ user, savedCount = 0, lang = "en" }: { user: HeaderUser; savedCount?: number; lang?: Lang }) {
+export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { user: HeaderUser; savedCount?: number; unread?: number; lang?: Lang }) {
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
   return (
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur print:hidden">
@@ -76,6 +76,16 @@ export function SiteHeader({ user, savedCount = 0, lang = "en" }: { user: Header
         </div>
 
         <div className="ml-auto flex items-center gap-1">
+          {user && (
+            <Link href="/messages" className={`${navLink} relative flex items-center`} aria-label={unread ? `Messages (${unread} unread)` : "Messages"}>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z" />
+              </svg>
+              {unread > 0 && (
+                <span className="absolute -right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-semibold text-snow">{unread}</span>
+              )}
+            </Link>
+          )}
           {user && (
             <Link href="/saved" className={`${navLink} flex items-center gap-1.5`} aria-label={`Saved listings (${savedCount})`}>
               <HeartIcon filled={savedCount > 0} className="h-5 w-5" />

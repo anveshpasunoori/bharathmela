@@ -45,7 +45,7 @@ export default async function WantedPage({ params, searchParams }: { params: Pro
       <Link href={`/rooms-wanted?metro=${post.metro}`} className="text-sm text-stone-500 hover:text-brand">← People looking in {metroName(post.metro)}</Link>
       {posted && (
         <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
-          Your request is live. Owners can message you; replies arrive by email. Manage it from <Link href="/rooms-wanted/mine" className="underline">My requests</Link>.
+          Your request is live. Owners can message you; conversations are in <Link href="/messages" className="underline">Messages</Link>, and we email you when one arrives. Manage it from <Link href="/rooms-wanted/mine" className="underline">My requests</Link>.
         </p>
       )}
       <article className="card space-y-4">
@@ -91,8 +91,8 @@ export default async function WantedPage({ params, searchParams }: { params: Pro
               <textarea className="input min-h-28" name="message" required minLength={20} maxLength={2000} aria-label="Message"
                 placeholder="Describe your place: type, rent, area, when it's available, and how to reach you." />
               <p className="text-xs text-stone-500">
-                We email your message to {firstName(post.user.name)} with your email as the reply address. Don&apos;t ask for deposits before they&apos;ve
-                seen the place.
+                This starts a conversation with {firstName(post.user.name)} in Messages; your email address isn&apos;t shared. Don&apos;t ask for deposits
+                before they&apos;ve seen the place.
               </p>
             </ActionForm>
           )}

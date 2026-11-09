@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { FormState } from "@/components/ActionForm";
 import { getCurrentUser, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { findOrStartConversation, postMessage } from "@/lib/conversations";
 import { REPORT_REASONS } from "@/lib/legal";
 import { isMetro } from "@/lib/metros";
 import { screenListing } from "@/lib/moderation";
@@ -131,21 +131,9 @@ export async function contactRenter(_: FormState, form: FormData): Promise<FormS
     return { error: "Messages asking for wire transfers, gift cards, crypto or payment before viewing aren't allowed." };
   }
   if (!(await hit("message", user.id))) return { error: TOO_MANY };
-  if (await db.message.findFirst({ where: { fromUserId: user.id, roomWantedId: post.id, createdAt: { gt: new Date(Date.now() - DAY_MS) } } })) {
-    return { error: "You've already messaged this person today. Wait for their reply." };
-  }
-
-  await db.message.create({ data: { fromUserId: user.id, toUserId: post.userId, roomWantedId: post.id, body } });
-  await sendEmail(
-    post.user.email,
-    `${user.name} has a place for you – "${post.title}"`,
-    `${user.name} saw your BharathMela post "${post.title}" and wrote:\n\n${body}\n\n` +
-      `Reply to this email to answer ${user.name} directly.\n\n` +
-      `Stay safe: see the place in person before paying anything, and never wire money or pay with gift cards.\n` +
-      `If this message is a scam or abusive, report it from your post on BharathMela.`,
-    user.email,
-  );
-  return { message: "Message sent. They'll reply to your email if they're interested." };
+  const conversation = await findOrStartConversation(user.id, post.userId, { roomWantedId: post.id });
+  await postMessage(conversation, user, body, post.title);
+  redirect(`/messages/${conversation.id}?sent=1`);
 }
 
 export async function reportWanted(_: FormState, form: FormData): Promise<FormState> {

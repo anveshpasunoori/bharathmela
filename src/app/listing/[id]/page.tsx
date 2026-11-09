@@ -206,7 +206,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                   <input type="hidden" name="listingId" value={listing.id} />
                   <textarea className="input min-h-24" name="message" required minLength={10} maxLength={2000} aria-label="Message"
                     placeholder="Hi! Is this available on Saturday the 14th?" />
-                  <p className="text-xs text-stone-500">The seller replies to your email. Your email isn&apos;t shown on the site.</p>
+                  <p className="text-xs text-stone-500">You&apos;ll chat with the seller in Messages, and we email you when they reply. Your email address isn&apos;t shared.</p>
                 </ActionForm>
               )}
             </div>

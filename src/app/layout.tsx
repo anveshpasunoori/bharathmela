@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { BottomNav } from "@/components/BottomNav";
 import { t } from "@/lib/i18n";
 import { getLang } from "@/lib/lang";
+import { unreadCount } from "@/lib/conversations";
 import { InstallApp } from "@/components/InstallApp";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist } from "next/font/google";
@@ -59,6 +60,7 @@ export default async function RootLayout({
   const user = await getCurrentUser();
   const savedCount = user ? await db.favorite.count({ where: { userId: user.id } }) : 0;
   const lang = await getLang();
+  const unread = user ? await unreadCount(user.id) : 0;
   return (
     <html lang={lang}>
       <body className={`${geistSans.variable} ${display.variable} flex min-h-screen flex-col font-sans antialiased`}>
@@ -68,7 +70,7 @@ export default async function RootLayout({
         <Suspense>
           <NavProgress />
         </Suspense>
-        <SiteHeader user={user} savedCount={savedCount} lang={lang} />
+        <SiteHeader user={user} savedCount={savedCount} unread={unread} lang={lang} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
         <BottomNav
