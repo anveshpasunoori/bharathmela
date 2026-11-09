@@ -16,7 +16,17 @@ const fine = [
   "Yes, it's available.",
 ];
 let failed = 0;
-for (const m of risky) if (!RISKY_PAYMENT.test(m)) (failed++, console.log("FAIL should warn:", m));
-for (const m of fine) if (RISKY_PAYMENT.test(m)) (failed++, console.log("FAIL should not warn:", m));
+for (const m of risky) {
+  if (!RISKY_PAYMENT.test(m)) {
+    failed++;
+    console.log("FAIL should warn:", m);
+  }
+}
+for (const m of fine) {
+  if (RISKY_PAYMENT.test(m)) {
+    failed++;
+    console.log("FAIL should not warn:", m);
+  }
+}
 console.log(failed ? `${failed} failed` : "all passed");
 if (failed) process.exit(1);
