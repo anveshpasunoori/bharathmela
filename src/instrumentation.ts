@@ -7,8 +7,13 @@ export function register() {
   for (const w of warnings) console.warn(`[config] ${w}`);
 }
 
-// Every failed request ends up in the host's logs with where it happened, as one line of JSON.
+// Every failed request ends up in the host's logs with where it happened, as one line of JSON, and emails
+// an alert (see src/lib/error-alerts.ts).
 export function onRequestError(err: unknown, request: { path: string; method: string }, context: { routeType: string }) {
   const e = err as Error & { digest?: string };
   console.error(JSON.stringify({ level: "error", message: e.message, digest: e.digest, path: request.path, method: request.method, routeType: context.routeType, stack: e.stack?.split("\n").slice(0, 6).join(" | ") }));
+  // And an email to the team (Node.js runtime only; at most once an hour per error).
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    import("./lib/error-alerts").then(({ alertOnError }) => alertOnError(e, request)).catch((alertError) => console.error("[alert] failed", alertError));
+  }
 }

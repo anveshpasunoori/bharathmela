@@ -18,6 +18,7 @@ export const LIMITS = {
   passwordResetEmail: { limit: 3, windowMs: 60 * 60_000 },
   emailChange: { limit: 5, windowMs: 24 * 60 * 60_000 },
   contact: { limit: 5, windowMs: 60 * 60_000 },
+  errorAlert: { limit: 1, windowMs: 60 * 60_000 },
 } as const;
 
 export async function clientIp() {

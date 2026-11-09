@@ -38,6 +38,7 @@ email and SMS APIs).
 | `S3_PUBLIC_URL` | with S3 | `https://photos.yourdomain.com` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | recommended | From Twilio |
 | `PAY_ZELLE`, `PAY_VENMO` | yes | Where sellers send plan payments |
+| `ALERT_EMAIL` | optional | Where error alerts go (at most one email an hour per error); defaults to `SUPPORT_EMAIL` |
 | `SUPPORT_EMAIL` | yes | Where Contact page messages go, and the address shown on Contact, Terms and Privacy (e.g. `support@yourdomain.com`) |
 | `EMAIL_FOOTER_ADDRESS` | yes for alerts | Your business mailing address for email footers (CAN-SPAM) |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | optional | "Continue with Google" (see below) |
@@ -92,8 +93,9 @@ account with that email is signed into it. Add Google and Apple to the processor
 - **Daily job:** confirm it ran in Vercel → Cron Jobs; it expires listings, sends reminders and saved-search
   alerts, and cleans up old sessions and counters.
 - **Backups:** turn on point-in-time restore in your Postgres provider and enable R2 bucket versioning.
-- **Errors:** request errors are logged as one JSON line each (Vercel → Logs). Add Sentry later if you want
-  alerts.
+- **Errors:** request errors are logged as one JSON line each (Vercel → Logs) and emailed to `ALERT_EMAIL`
+  (or `SUPPORT_EMAIL`), at most once an hour for each distinct error. Add Sentry later for dashboards and
+  browser-side errors if you need them.
 - **Analytics:** in Vercel → your project → Analytics, click **Enable** (Web Analytics; free on Hobby, no
   cookies). Sign-ups by source, referrals and founding sellers are under **Admin → Growth**.
 
