@@ -7,10 +7,9 @@ import { ShareButton } from "@/components/ShareButton";
 import { HeartIcon } from "@/components/HeartIcon";
 import { TrustBadges } from "@/components/TrustBadges";
 import { ContactButtons } from "@/components/ContactButtons";
-import { ShareButtons } from "@/components/ShareButtons";
 import { DietBadges } from "@/components/DietBadges";
 import { JsonLd } from "@/components/JsonLd";
-import { absoluteUrl, idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
+import { idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
 import { breadcrumbs, listingCrumbs, listingSchema } from "@/lib/structured-data";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { readGarageSale, saleWhen } from "@/lib/garage-sales";
@@ -190,10 +189,6 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
           )}
         </div>
         <ContactButtons phone={listing.vendor.phone} whatsapp={listing.vendor.whatsapp} name={listing.vendor.businessName} />
-        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
-          <span>Share:</span>
-          <ShareButtons compact url={absoluteUrl(listingPath(listing))} text={`${listing.title} – ${listing.vendor.businessName} on BharathMela`} campaign="listing" />
-        </div>
         {!own && (
           <details id="message" className="text-sm">
             <summary className="cursor-pointer font-semibold text-brand">✉ Message instead</summary>

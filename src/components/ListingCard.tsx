@@ -68,7 +68,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
           )}
           <div className="absolute left-2 top-2 flex gap-1">
             {/* Paid placement is labeled as such (FTC guidance on search ads). */}
-            {listing.isFeatured && <span className="badge bg-stone-900/80 text-white" title="This seller paid to show this listing first">Sponsored</span>}
+            {listing.isFeatured && <span className="badge bg-stone-900/80 text-stone-50" title="This seller paid to show this listing first">Sponsored</span>}
             {listing.isPro && <span className="badge bg-white/90 text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
             {listing.isNew && !listing.isFeatured && <span className="badge bg-white/90 text-green-800">New</span>}
           </div>

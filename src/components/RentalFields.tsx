@@ -71,7 +71,7 @@ export function RentalFields({ initial }: { initial?: RentalDetails | null }) {
         <legend className="label">Type of space</legend>
         <div className="flex flex-wrap gap-2">
           {SPACE_TYPES.map((t) => (
-            <label key={t.id} className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${spaceType === t.id ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}>
+            <label key={t.id} className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${spaceType === t.id ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}>
               <input type="radio" name="r_spaceType" value={t.id} checked={spaceType === t.id} onChange={() => setSpaceType(t.id)} className="sr-only" required />
               {t.label}
             </label>

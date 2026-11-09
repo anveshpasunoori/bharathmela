@@ -1,4 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
+import { BottomNav } from "@/components/BottomNav";
+import { InstallApp } from "@/components/InstallApp";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
@@ -63,6 +65,7 @@ export default async function RootLayout({
         <SiteHeader user={user} savedCount={savedCount} />
         <DropdownCloser />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
+        <BottomNav loggedIn={!!user} isSeller={!!user?.vendor} />
         {/* Page views and referrers (Vercel Web Analytics: no cookies, nothing personal). */}
         <Analytics />
         <footer className="border-t border-stone-200 bg-white print:hidden">
@@ -70,6 +73,7 @@ export default async function RootLayout({
             <div className="sm:col-span-2">
               <p className="font-semibold text-brand">BharathMela</p>
               <p className="mt-1 text-stone-600">Home businesses from the Indian community, in your US city.</p>
+              <InstallApp className="mt-3 block" />
             </div>
             <div className="space-y-1">
               <p className="font-semibold">Buyers</p>
@@ -97,7 +101,8 @@ export default async function RootLayout({
               ))}
             </ul>
           </nav>
-          <p className="mx-auto max-w-5xl px-4 pb-6 text-xs text-stone-500">{PLATFORM_DISCLAIMER}</p>
+          {/* Room for the phone tab bar under the last line. */}
+          <p className="mx-auto max-w-5xl px-4 pb-24 text-xs text-stone-500 md:pb-6">{PLATFORM_DISCLAIMER}</p>
           <JsonLd data={SITE_JSON_LD} />
         </footer>
       </body>

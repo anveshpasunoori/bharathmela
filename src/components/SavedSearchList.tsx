@@ -43,7 +43,7 @@ export function SavedSearchList({ searches, newCounts }: { searches: SavedSearch
                 <span className="block font-semibold leading-snug text-stone-900 hover:text-brand">{s.name}</span>
                 <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone-500">
                   {fresh > 0 ? (
-                    <span className="rounded-full bg-brand px-2 py-0.5 font-semibold text-white">{fresh} new</span>
+                    <span className="rounded-full bg-brand px-2 py-0.5 font-semibold text-snow">{fresh} new</span>
                   ) : (
                     <span>No new listings</span>
                   )}

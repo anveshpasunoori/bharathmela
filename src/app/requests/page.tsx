@@ -45,7 +45,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
           </Link>
           <Link href="/requests?tab=near" className={tabLink(tab === "near")} aria-current={tab === "near" ? "page" : undefined}>
             Near you <span className="font-normal text-stone-500">{near.length}</span>
-            {unanswered > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-white">{unanswered} to answer</span>}
+            {unanswered > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-snow">{unanswered} to answer</span>}
           </Link>
         </nav>
       )}
@@ -66,7 +66,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                       {firstName(r.user.name)} · {r.city}{Number.isFinite(miles) ? ` · ${Math.round(miles)} mi` : ""} · {r.neededBy ? `by ${r.neededBy}` : "flexible date"} · {timeAgo(r.createdAt)}
                     </span>
                   </span>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${quoted ? "bg-stone-100 text-stone-600" : "bg-brand text-white"}`}>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${quoted ? "bg-stone-100 text-stone-600" : "bg-brand text-snow"}`}>
                     {quoted ? "Quoted" : `Quote · ${r._count.quotes} sent`}
                   </span>
                 </Link>
@@ -92,7 +92,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     {requestServiceLabel(r)} · {r.city} · {isOpen(r) ? `open, ${r.notifiedCount} seller${r.notifiedCount === 1 ? "" : "s"} notified` : r.status === "CLOSED" ? "closed" : "expired"}
                   </span>
                 </span>
-                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${r._count.quotes ? "bg-brand text-white" : "bg-stone-100 text-stone-600"}`}>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${r._count.quotes ? "bg-brand text-snow" : "bg-stone-100 text-stone-600"}`}>
                   {r._count.quotes} quote{r._count.quotes === 1 ? "" : "s"}
                 </span>
               </Link>

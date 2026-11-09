@@ -6,7 +6,8 @@ import { useState } from "react";
 export function ShareButton({ title, text, className = "btn-outline" }: { title: string; text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   async function share() {
-    const url = window.location.href.split("?")[0];
+    // Tagged so visits from shared links show up under Admin → Growth.
+    const url = `${window.location.href.split("?")[0]}?utm_source=share&utm_medium=share&utm_campaign=listing`;
     if (navigator.share) {
       try {
         await navigator.share({ title, text, url });

@@ -25,7 +25,7 @@ export function AdminNav({ counts }: { counts: { queue: number; listings: number
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${active ? "border-brand text-brand" : "border-transparent text-stone-600 hover:text-stone-900"}`}
           >
             {t.label}
-            {n > 0 && <span className="badge ml-1.5 bg-red-600 text-white">{n}</span>}
+            {n > 0 && <span className="badge ml-1.5 bg-red-600 text-snow">{n}</span>}
           </Link>
         );
       })}

@@ -4,7 +4,7 @@
 export function HeroArt() {
   const petals = Array.from({ length: 12 }, (_, i) => i * 30);
   return (
-    <svg aria-hidden viewBox="0 0 200 200" className="pointer-events-none absolute -right-16 -top-16 -z-10 h-64 w-64 opacity-35 sm:-right-10 sm:-top-20 sm:h-80 sm:w-80 sm:opacity-60">
+    <svg aria-hidden viewBox="0 0 200 200" className="pointer-events-none absolute -right-16 -top-16 -z-10 h-64 w-64 opacity-35 sm:-right-10 sm:-top-20 sm:h-80 sm:w-80 sm:opacity-60 dark:opacity-25">
       <g transform="translate(100 100)">
         {petals.map((a) => (
           <ellipse key={`o${a}`} cx="0" cy="-62" rx="14" ry="30" transform={`rotate(${a})`} fill="#fed7aa" />

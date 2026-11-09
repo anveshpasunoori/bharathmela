@@ -117,7 +117,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
           <Link href="/saved?tab=searches" className={tabLink(tab === "searches")} aria-current={tab === "searches" ? "page" : undefined}>
             <BellIcon filled={tab === "searches"} />
             Searches <span className="font-normal text-stone-500">{searches.length}</span>
-            {totalNew > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-white">{totalNew} new</span>}
+            {totalNew > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[11px] leading-none text-snow">{totalNew} new</span>}
           </Link>
         </nav>
       </div>

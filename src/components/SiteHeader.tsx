@@ -19,7 +19,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur print:hidden">
       <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-2 text-sm" aria-label="Main">
         <Link href="/" className="mr-4 flex items-center gap-2 text-lg font-bold text-brand">
-          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-white">BM</span>
+          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-snow">BM</span>
           BharathMela
         </Link>
 
@@ -73,7 +73,7 @@ export function SiteHeader({ user, savedCount = 0 }: { user: HeaderUser; savedCo
               <HeartIcon filled={savedCount > 0} className="h-5 w-5" />
               <span className="hidden sm:inline">Saved</span>
               {savedCount > 0 && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">{savedCount}</span>
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-snow">{savedCount}</span>
               )}
             </Link>
           )}

@@ -333,7 +333,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                   key={o.id ?? "all"}
                   href={subHref(o.id)}
                   aria-current={on ? "page" : undefined}
-                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-white ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-stone-50 ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
                 >
                   <CategoryIcon id={category!} sub={o.id} size={24} className="h-6 w-6" />
                   {o.label}
@@ -364,14 +364,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               if (q) p.set("q", q);
               const on = nearMode && radius === r;
               return (
-                <Link key={r} href={`/?${p}`} className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                <Link key={r} href={`/?${p}`} className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
                   {r} mi
                 </Link>
               );
             })}
             {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
             {!far && (
-              <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+              <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
                 All of {metroName(metro)}
               </Link>
             )}

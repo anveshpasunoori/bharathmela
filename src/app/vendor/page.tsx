@@ -207,7 +207,7 @@ export default async function VendorDashboard({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{l.title}</span>
                     <ListingStatus status={l.status} />
-                    {featured && <span className="badge bg-brand text-white">Featured until {fmtDate(l.featuredUntil!)}</span>}
+                    {featured && <span className="badge bg-brand text-snow">Featured until {fmtDate(l.featuredUntil!)}</span>}
                   </div>
                   <p className="text-sm text-stone-500">
                     {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}

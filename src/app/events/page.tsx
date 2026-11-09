@@ -42,7 +42,7 @@ export default async function EventsPage({
     return `/events?${params}`;
   };
   const chip = (on: boolean) =>
-    `shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-white ring-brand" : "bg-white text-stone-700 ring-stone-200"}`;
+    `shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`;
   const filtered = !!(type || festival || q || freeOnly || when !== "all");
 
   return (

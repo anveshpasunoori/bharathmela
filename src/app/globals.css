@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-brand: #c2410c;
-  --color-brand-dark: #9a3412;
-  --color-brand-soft: #fff7ed;
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-soft: var(--brand-soft);
+  /* Text on colored buttons and badges: stays white in dark mode (unlike "white", which flips). */
+  --color-snow: #ffffff;
   --font-sans: var(--font-geist-sans);
 }
 
@@ -32,14 +34,89 @@
 
 /* A visible outline for keyboard users on every link, button and control (mouse clicks don't show it). */
 :focus-visible {
-  outline: 2px solid #c2410c;
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
+:root {
+  color-scheme: light;
+  --brand: #c2410c;
+  --brand-dark: #9a3412;
+  --brand-soft: #fff7ed;
+  --page: #fafaf9;
+  --ink: #1c1917;
+}
+
 body {
-  background: #fafaf9;
-  color: #1c1917;
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* Dark mode, following the phone or computer's setting. Every Tailwind color the app uses comes from
+   these variables, so swapping them flips the whole site: light surfaces become dark, dark text becomes
+   light, and the soft tints behind notices become deep ones. Text on colored buttons uses "snow". */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --brand: #ea580c;
+    --brand-dark: #f97316;
+    --brand-soft: #2a1a0f;
+    --page: #0f0d0c;
+    --ink: #f5f5f4;
+    --color-white: #1c1917;
+    --color-black: #ffffff;
+    --color-stone-50: #221e1b;
+    --color-stone-100: #2b2623;
+    --color-stone-200: #3a3431;
+    --color-stone-300: #57534e;
+    --color-stone-400: #8a837d;
+    --color-stone-500: #a8a29e;
+    --color-stone-600: #c9c4bf;
+    --color-stone-700: #dedad6;
+    --color-stone-800: #eeebe8;
+    --color-stone-900: #f7f5f3;
+    --color-stone-950: #ffffff;
+    --color-orange-50: #2a1a0f;
+    --color-orange-100: #3a2212;
+    --color-orange-200: #5a3316;
+    --color-orange-700: #fb923c;
+    --color-orange-800: #fdba74;
+    --color-orange-900: #fed7aa;
+    --color-amber-50: #2b210b;
+    --color-amber-100: #3a2c0d;
+    --color-amber-200: #5c4510;
+    --color-amber-700: #fbbf24;
+    --color-amber-800: #fcd34d;
+    --color-amber-900: #fde68a;
+    --color-green-50: #0f2617;
+    --color-green-100: #14341f;
+    --color-green-200: #1d4d2c;
+    --color-green-700: #4ade80;
+    --color-green-800: #86efac;
+    --color-green-900: #bbf7d0;
+    --color-sky-50: #0b2230;
+    --color-sky-100: #0f2c3f;
+    --color-sky-200: #164560;
+    --color-sky-700: #7dd3fc;
+    --color-sky-800: #bae6fd;
+    --color-sky-900: #e0f2fe;
+    --color-red-50: #2c1111;
+    --color-red-100: #3b1515;
+    --color-red-200: #5b1d1d;
+    --color-red-700: #f87171;
+    --color-red-800: #fca5a5;
+    --color-red-900: #fecaca;
+    --color-rose-50: #2c1117;
+    --color-blue-50: #0c1a33;
+    --color-blue-700: #93c5fd;
+  }
+  /* The warm panel behind photo-less listings. */
+  .card-pattern {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgb(251 146 60 / 0.16) 1px, transparent 0),
+      linear-gradient(160deg, #2a1a0f 0%, #3a2212 100%);
+  }
 }
 
 @layer components {
@@ -50,7 +127,7 @@ body {
     @apply mb-1 block text-sm font-medium text-stone-700;
   }
   .btn {
-    @apply inline-flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-snow hover:bg-brand-dark disabled:opacity-60;
   }
   .btn-outline {
     @apply inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-50;
