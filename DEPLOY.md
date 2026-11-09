@@ -38,6 +38,7 @@ email and SMS APIs).
 | `S3_PUBLIC_URL` | with S3 | `https://photos.yourdomain.com` |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | recommended | From Twilio |
 | `PAY_ZELLE`, `PAY_VENMO` | yes | Where sellers send plan payments |
+| `SUPPORT_EMAIL` | yes | Where Contact page messages go, and the address shown on Contact, Terms and Privacy (e.g. `support@yourdomain.com`) |
 | `EMAIL_FOOTER_ADDRESS` | yes for alerts | Your business mailing address for email footers (CAN-SPAM) |
 | `ANTHROPIC_API_KEY` | optional | Turns on the AI ad writer |
 | `GOOGLE_SITE_VERIFICATION` | optional | Search Console "HTML tag" code |
@@ -91,6 +92,7 @@ the required settings and the database are in place.
       Act), domestic help, legal, tax and food listings, and the platform-only disclaimer.
 - [ ] Update the Privacy Policy to name your processors: hosting, database, Resend, Twilio, Cloudflare, and
       Anthropic if the AI writer is on.
-- [ ] Set up a support email address and put it on the Terms, Privacy and Safety pages.
+- [ ] Set up a support inbox and put it in `SUPPORT_EMAIL` (it then shows on Contact, Terms and Privacy).
+- [ ] Fill in the legal entity name and address placeholders on the Terms and Privacy pages.
 - [ ] Decide who reviews the admin queue (held listings, reports, payments) and how often.
 - [ ] Payments are confirmed by hand (Zelle/Venmo) until Stripe is added.

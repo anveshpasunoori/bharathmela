@@ -31,6 +31,7 @@ export default async function VendorDashboard({
     eventPublished?: string;
     phoneVerified?: string;
     founding?: string;
+    reset?: string;
     tab?: string;
   }>;
 }) {
@@ -83,6 +84,8 @@ export default async function VendorDashboard({
             ? ["Your changes are saved.", "ok"]
             : params.phoneVerified
               ? ["✓ Your phone is verified.", "ok"]
+              : params.reset
+                ? ["Your password is changed, and you're logged in.", "ok"]
               : params.founding
                 ? ["Welcome, founding seller! You're one of the first sellers in your city, so Pro is free for you for the next few months.", "ok"]
               : params.error === "limit"

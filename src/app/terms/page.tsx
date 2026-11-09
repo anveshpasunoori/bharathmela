@@ -87,7 +87,8 @@ export default function TermsPage() {
       <p>We may update these Terms. If the changes are material, we will ask sellers to accept the new version.</p>
 
       <p>
-        Contact: [LEGAL EMAIL]. See also our <Link href="/privacy" className="text-brand underline">Privacy Policy</Link>.
+        Contact: {process.env.SUPPORT_EMAIL ? <a href={`mailto:${process.env.SUPPORT_EMAIL}`} className="text-brand underline">{process.env.SUPPORT_EMAIL}</a> : "[LEGAL EMAIL]"} or our{" "}
+        <Link href="/contact" className="text-brand underline">Contact page</Link>. See also our <Link href="/privacy" className="text-brand underline">Privacy Policy</Link>.
       </p>
     </article>
   );

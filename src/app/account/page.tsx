@@ -3,12 +3,14 @@ import { ActionForm } from "@/components/ActionForm";
 import { requireUser } from "@/lib/auth";
 import { changePassword, deleteAccount } from "../actions/auth";
 import { updateCityEmails } from "../actions/city-emails";
+import { cancelEmailChange, changeEmail, confirmEmailChange } from "../actions/account";
 import { METROS, metroName } from "@/lib/metros";
 
 export const metadata = { title: "Account", robots: { index: false } };
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
   const user = await requireUser("/account");
+  const { reset } = await searchParams;
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <div>
@@ -26,6 +28,39 @@ export default async function AccountPage() {
           <Link href="/rooms-wanted/mine">My room requests →</Link>
         </div>
       </div>
+
+      {reset && <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">Your password is changed, and you&apos;re logged in.</p>}
+
+      <section className="card">
+        <h2 className="font-semibold">Email address</h2>
+        <p className="mb-3 mt-1 text-sm text-stone-600">
+          You sign in with <b>{user.email}</b>. To change it, we&apos;ll send a code to the new address.
+        </p>
+        {user.pendingEmail ? (
+          <div className="space-y-3">
+            <ActionForm action={confirmEmailChange} submitLabel="Confirm new email">
+              <div>
+                <label className="label" htmlFor="code">Code sent to {user.pendingEmail}</label>
+                <input className="input font-mono tracking-widest" id="code" name="code" required inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="one-time-code" />
+              </div>
+            </ActionForm>
+            <form action={cancelEmailChange}>
+              <button className="text-sm font-medium text-stone-500 hover:text-brand">Cancel the change</button>
+            </form>
+          </div>
+        ) : (
+          <ActionForm action={changeEmail} submitLabel="Send code">
+            <div>
+              <label className="label" htmlFor="new-email">New email</label>
+              <input className="input" id="new-email" name="email" type="email" required autoComplete="email" />
+            </div>
+            <div>
+              <label className="label" htmlFor="email-password">Your password</label>
+              <input className="input" id="email-password" name="password" type="password" required autoComplete="current-password" />
+            </div>
+          </ActionForm>
+        )}
+      </section>
 
       <section className="card">
         <h2 className="font-semibold">Monthly city email</h2>

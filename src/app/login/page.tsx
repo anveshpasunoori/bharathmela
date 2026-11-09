@@ -17,6 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div>
             <label className="label" htmlFor="password">Password</label>
             <input className="input" id="password" name="password" type="password" required autoComplete="current-password" />
+            <Link href="/login/forgot" className="mt-1 inline-block text-sm font-medium text-brand">Forgot password?</Link>
           </div>
         </ActionForm>
       </div>

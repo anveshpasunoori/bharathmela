@@ -33,6 +33,27 @@ export async function sendVerificationCode(user: { id: string; email: string; na
   return {};
 }
 
+// A code sent to a new address the user wants to switch to (see changeEmail in actions/account.ts).
+export async function sendEmailChangeCode(user: { id: string; name: string }, newEmail: string) {
+  const last = await db.emailCode.findFirst({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
+  if (last && Date.now() - last.createdAt.getTime() < RESEND_COOLDOWN_MS) {
+    return { error: "Please wait a minute before asking for another code." };
+  }
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  await db.emailCode.deleteMany({ where: { userId: user.id } });
+  await db.emailCode.create({ data: { userId: user.id, codeHash: hash(code), expiresAt: new Date(Date.now() + CODE_TTL_MS) } });
+  const sent = await sendEmail(
+    newEmail,
+    `Your BharathMela code: ${code}`,
+    `Hi ${user.name},\n\nTo use this address for your BharathMela account, enter the code ${code}. It expires in 15 minutes.\n\nIf you didn't ask for this, ignore this email; nothing changes.`,
+  );
+  if (!sent) {
+    await db.emailCode.deleteMany({ where: { userId: user.id } });
+    return { error: "We couldn't send the code just now. Please try again in a few minutes." };
+  }
+  return {};
+}
+
 export async function checkVerificationCode(userId: string, code: string): Promise<string | null> {
   const record = await db.emailCode.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
   if (!record || record.expiresAt < new Date()) return "That code has expired. Send a new one.";

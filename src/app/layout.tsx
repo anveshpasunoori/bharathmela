@@ -99,6 +99,7 @@ export default async function RootLayout({
               <Link href="/" className="block text-stone-600 hover:text-brand">Browse</Link>
               <Link href="/events" className="block text-stone-600 hover:text-brand">Events</Link>
               <Link href="/safety" className="block text-stone-600 hover:text-brand">Safety tips</Link>
+              <Link href="/contact" className="block text-stone-600 hover:text-brand">Contact us</Link>
               <Link href="/signup" className="block text-stone-600 hover:text-brand">Create account</Link>
             </div>
             <div className="space-y-1">

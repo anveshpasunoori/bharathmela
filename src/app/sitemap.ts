@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/events"), changeFrequency: "daily", priority: 0.8 },
     { url: absoluteUrl("/rooms-wanted"), changeFrequency: "daily", priority: 0.5 },
-    ...["/pricing", "/safety", "/terms", "/privacy"].map((p) => ({ url: absoluteUrl(p), changeFrequency: "monthly" as const, priority: 0.3 })),
+    ...["/pricing", "/safety", "/contact", "/terms", "/privacy"].map((p) => ({ url: absoluteUrl(p), changeFrequency: "monthly" as const, priority: 0.3 })),
     ...METROS.map((m) => ({ url: absoluteUrl(cityPath(m.id)), changeFrequency: "daily" as const, priority: 0.8 })),
     ...ALL_CITY_CATEGORY_PAGES().map(({ metro, category }) => {
       const updated = live.get(`${metro}|${category}`);

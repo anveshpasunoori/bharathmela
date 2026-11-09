@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SITE_NAME } from "@/lib/legal";
 
 export const metadata = { title: `Privacy Policy – ${SITE_NAME}` };
@@ -27,7 +28,11 @@ export default function PrivacyPage() {
       <p>You can ask to see, correct or delete your data by emailing [PRIVACY EMAIL]. Deleting your account removes your listings.</p>
 
       <h2>Contact</h2>
-      <p>[LEGAL ENTITY NAME], [ADDRESS], [PRIVACY EMAIL]</p>
+      <p>
+        [LEGAL ENTITY NAME], [ADDRESS],{" "}
+        {process.env.SUPPORT_EMAIL ? <a href={`mailto:${process.env.SUPPORT_EMAIL}`} className="text-brand underline">{process.env.SUPPORT_EMAIL}</a> : "[PRIVACY EMAIL]"}, or our{" "}
+        <Link href="/contact" className="text-brand underline">Contact page</Link>.
+      </p>
     </article>
   );
 }

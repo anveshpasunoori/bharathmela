@@ -5,6 +5,7 @@ const RECOMMENDED: Record<string, string> = {
   S3_PUBLIC_URL: "photos can't be served from object storage",
   TWILIO_ACCOUNT_SID: "sellers can't verify their phone numbers",
   ANTHROPIC_API_KEY: "the AI ad writer is off",
+  SUPPORT_EMAIL: "the Contact page has nowhere to send messages",
 };
 
 export function configProblems() {
