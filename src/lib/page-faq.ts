@@ -23,7 +23,7 @@ export function priceRange(listings: Priced[]) {
   return { unit, low: sorted[0], high: sorted[sorted.length - 1], typical: sorted[Math.floor(sorted.length / 2)], count: sorted.length };
 }
 
-export function pageFaq({ what, city, listings, tip, buying = false }: { what: string; city: string; listings: Priced[]; tip?: string; buying?: boolean }): Faq[] {
+export function pageFaq({ what, city, listings, tip }: { what: string; city: string; listings: Priced[]; tip?: string }): Faq[] {
   const faq: Faq[] = [];
   const sellers = new Set(listings.map((l) => l.vendor.businessName)).size;
   faq.push({
@@ -48,7 +48,7 @@ export function pageFaq({ what, city, listings, tip, buying = false }: { what: s
       a: `${top.vendor.businessName}, rated ${top.rating.average.toFixed(1)} out of 5 from ${plural(top.rating.count, "review")}, for "${top.title}".`,
     });
   }
-  if (tip) faq.push({ q: `What should I check before ${buying ? "buying" : "hiring"}?`, a: tip });
+  if (tip) faq.push({ q: `What should I check first?`, a: tip });
   faq.push({
     q: `How do I contact a seller?`,
     a: `Open a listing to message the seller on BharathMela, or call or text them if they share a phone number. It's free for buyers, and you pay the seller directly.`,

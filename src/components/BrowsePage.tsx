@@ -36,8 +36,15 @@ import { categoryName, t } from "@/lib/i18n";
 import { getLang } from "@/lib/lang";
 import { ListingRow } from "@/components/ListingRow";
 
-// A one-line reminder under results in categories where the seller needs a license.
-const LICENSE_TIPS: Record<string, string> = {
+// A one-line safety reminder above the results: what to check in categories where trust matters most.
+const SAFETY_TIPS: Record<string, string> = {
+  FOOD: "Home kitchens aren't inspected like restaurants. Ask about ingredients and allergens, and start with a small order.",
+  DOMESTIC_HELP: "Meet first, check references, and consider a background check before someone cares for your children or parents.",
+  TUTORING: "Check references, and keep the first sessions at home or in a public place while you get to know the tutor.",
+  DANCE_MUSIC: "Visit a class first, and check references before booking private lessons for your children.",
+  ROOM_RENTAL: "See the room in person or on a live video call, and never pay a deposit before you've seen it and signed a lease.",
+  BEAUTY: "Ask about hygiene and patch-test henna or products first, especially before a wedding.",
+  EVENT_SERVICES: "Get a written contract with dates, what's included and the cancellation terms before paying a deposit.",
   LEGAL: "Always check a lawyer's license with the state bar before hiring.",
   REALTOR: "Always check a realtor's license with your state's real estate department before hiring.",
   HOME_SERVICES: "Check a contractor's license with your state's licensing board and ask for proof of insurance before work starts.",
@@ -220,7 +227,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const pageWhat = picked?.label ?? categoryInfo?.label ?? "";
   const pageCity = nearMode ? place!.city : metroName(metro).split(",")[0];
   const faq = seoPage
-    ? pageFaq({ what: pageWhat, city: pageCity, listings, tip: LICENSE_TIPS[category!], buying: category === "GARAGE_SALE" })
+    ? pageFaq({ what: pageWhat, city: pageCity, listings, tip: SAFETY_TIPS[category!] })
     : [];
   const pageSchema = seoPage
     ? [
@@ -473,6 +480,34 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </section>
       )}
 
+      {!showingListings && !viewer?.vendor && (
+        <section className="rounded-2xl bg-white p-5 ring-1 ring-stone-200 sm:p-6">
+          <h2 className="text-lg font-semibold">{t(lang, "sellHeading")}</h2>
+          <ol className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {([["📝", "step1Title", "step1Text"], ["📸", "step2Title", "step2Text"], ["📞", "step3Title", "step3Text"]] as const).map(([icon, title, text], i) => (
+              <li key={title} className="flex gap-3">
+                <span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-soft text-lg ring-1 ring-orange-200">{icon}</span>
+                <span>
+                  <span className="block font-semibold">{i + 1}. {t(lang, title)}</span>
+                  <span className="block text-sm text-stone-600">{t(lang, text)}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <Link href="/vendor/signup" className="btn mt-5">{t(lang, "startSelling")}</Link>
+        </section>
+      )}
+
+      {category && SAFETY_TIPS[category] && (
+        <p className="flex items-start gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-900 ring-1 ring-sky-100">
+          <span aria-hidden>🛡</span>
+          <span>
+            {SAFETY_TIPS[category]}{" "}
+            <Link href="/safety" className="font-semibold underline">Safety tips</Link>
+          </span>
+        </p>
+      )}
+
       {(q || category) && (
         <div className="space-y-1 text-sm text-stone-600">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -538,7 +573,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       ) : (
         <div className="card text-center text-stone-600">
-          <p>{q || diet.length ? `Nothing matches ${where} yet.` : `No listings ${where} yet.`}</p>
+          <p className="font-semibold text-stone-800">{q || diet.length ? `Nothing matches ${where} yet.` : `No listings ${where} yet.`}</p>
+          <p className="mt-1 text-sm">
+            BharathMela is new here and growing. Be the first to list your business free, or post what you need and sellers will come to you.
+          </p>
+          <p className="mt-3 flex flex-wrap justify-center gap-2">
+            <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
+            <Link href="/vendor/signup" className="btn-outline">List your business free</Link>
+          </p>
           {nearMode && (
             <p className="mt-2 text-sm">
               {radius < 100 && (
@@ -573,15 +615,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               <Link href={href(undefined, [], q)} className="font-semibold text-brand">Search all categories</Link>
             </p>
           )}
-          <Link href="/vendor/signup" className="mt-3 inline-block font-semibold text-brand">
-            Run a home business {nearMode ? `near ${place!.city}` : `in ${metroName(metro)}`}? List it free →
-          </Link>
         </div>
       )}
 
       {showingListings && (
         <div className="space-y-1 text-xs text-stone-500">
-          {category && LICENSE_TIPS[category] && <p>Tip: {LICENSE_TIPS[category]}</p>}
           {listings.length > 1 && (
             <p title="Sponsored listings paid to appear first. Pro sellers pay for a higher spot in Recommended.">
               The Recommended order includes paid placement · <Link href="/pricing" className="underline">how it works</Link>
@@ -615,7 +653,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       )}
 
-      {showingListings && category !== "ROOM_RENTAL" && category !== "GARAGE_SALE" && (
+      {showingListings && listings.length > 0 && category !== "ROOM_RENTAL" && category !== "GARAGE_SALE" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
           <div>
             <p className="font-semibold">{t(lang, "cantFind")}</p>

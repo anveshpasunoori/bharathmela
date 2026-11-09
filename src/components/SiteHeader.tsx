@@ -65,7 +65,13 @@ export function SiteHeader({ user, savedCount = 0, lang = "en" }: { user: Header
           </details>
           <Link href="/?category=ROOM_RENTAL" className={navLink}>{t(lang, "rooms")}</Link>
           <Link href="/events" className={navLink}>{t(lang, "events")}</Link>
-          <Link href={user?.vendor ? "/vendor" : "/pricing"} className={navLink}>{user?.vendor ? "My business" : t(lang, "sell")}</Link>
+          {user?.vendor ? (
+            <Link href="/vendor" className={navLink}>My business</Link>
+          ) : (
+            <Link href="/vendor/signup" className="ml-1 rounded-full px-3.5 py-1.5 font-semibold text-brand ring-1 ring-brand hover:bg-brand-soft">
+              {t(lang, "listBusiness")}
+            </Link>
+          )}
           <Link href="/requests/new" className="rounded-md px-3 py-2 font-semibold text-brand hover:bg-brand-soft">{t(lang, "postNeed")}</Link>
         </div>
 

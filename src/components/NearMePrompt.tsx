@@ -28,8 +28,13 @@ export function NearMePrompt({ city }: { city: string }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600">
       <span>Showing {city}.</span>
-      <button type="button" onClick={locate} disabled={pending} className="font-semibold text-brand hover:underline disabled:opacity-60">
-        📍 Show what&apos;s near me
+      <button
+        type="button"
+        onClick={locate}
+        disabled={pending}
+        className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 font-semibold text-brand shadow-sm ring-1 ring-orange-200 hover:ring-brand disabled:opacity-60"
+      >
+        📍 Use my location
       </button>
       {status && <span className="text-stone-500">{status}</span>}
     </div>

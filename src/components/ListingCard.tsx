@@ -44,6 +44,7 @@ function keyFacts(listing: BrowseListing) {
 export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?: boolean }) {
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
   const miles = listing.distanceMiles;
+  const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const sub = listingSubcategories(listing)[0];
   const subLabel = sub ? subcategoryLabel(listing.category, sub) : undefined;
   return (
@@ -71,6 +72,12 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
             {listing.isFeatured && <span className="badge bg-stone-900/80 text-stone-50" title="This seller paid to show this listing first">Sponsored</span>}
             {listing.isPro && <span className="badge bg-white/90 text-amber-800" title="Seller is on the paid Pro plan">Pro</span>}
             {listing.isNew && !listing.isFeatured && <span className="badge bg-white/90 text-green-800">New</span>}
+            {/* The seller gave a license number; the listing page links to the state's lookup to check it. */}
+            {professional?.licenseNumber && (
+              <span className="badge bg-white/90 text-sky-800" title="License number provided by the seller. Check it with the state on the listing page.">
+                License listed
+              </span>
+            )}
           </div>
         </div>
         <div className="space-y-1 p-3">
