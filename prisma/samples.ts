@@ -386,6 +386,32 @@ export const SAMPLE_VENDORS: SampleVendor[] = [
     ],
   },
   {
+    email: "desi.eats.bay@bharathmela.test", name: "Sravya Kolli", businessName: "Sravya Eats the Bay", phone: "(408) 555-0171",
+    metro: "bay-area", zip: "95054", plan: "FREE",
+    listings: [
+      { title: "Telugu food reels and restaurant reviews", category: "CREATORS", priceCents: 4000, priceUnit: "per story", tags: ["NATIONWIDE", "BARTER"],
+        details: {
+          platforms: [{ platform: "INSTAGRAM", handle: "sravya.eats.bay", followers: 24500 }, { platform: "YOUTUBE", handle: "SravyaEats", followers: 6100 }],
+          niches: ["FOOD", "LIFESTYLE"], languages: ["Telugu", "English"], nationwide: true, barter: true,
+          rates: { STORY: 40, REEL: 175, VIDEO: 400 }, samples: [],
+        },
+        description: "Food reels and honest reviews of home kitchens, tiffin services and Indian restaurants. Telugu and English. Happy to do a tasting in exchange for a reel." },
+    ],
+  },
+  {
+    email: "jax.family.vlogs@bharathmela.test", name: "Pooja Menon", businessName: "Jax Desi Family Vlogs", phone: "(904) 555-0172",
+    metro: "jacksonville", zip: "32259", plan: "FREE",
+    listings: [
+      { title: "Family and festival vlogs around Jacksonville", category: "CREATORS", priceCents: 10000, priceUnit: "per reel", tags: ["BARTER"],
+        details: {
+          platforms: [{ platform: "INSTAGRAM", handle: "jaxdesifamily", followers: 7800 }, { platform: "FACEBOOK", handle: "jaxdesifamily", followers: 3200 }],
+          niches: ["FAMILY_KIDS", "DEVOTIONAL", "FOOD"], languages: ["Malayalam", "English"], nationwide: false, barter: true,
+          rates: { REEL: 100, STORY: 30, APPEARANCE: 150 }, samples: [],
+        },
+        description: "Weekend family outings, temple festivals and kid-friendly places around Jacksonville. Great for tutoring centers, dance classes and home food." },
+    ],
+  },
+  {
     email: "jax.events@bharathmela.test", name: "Nikhil Rao", businessName: "First Coast Shaadi Events", phone: "(904) 555-0149",
     metro: "jacksonville", zip: "32246", plan: "PRO", phoneVerified: true,
     listings: [

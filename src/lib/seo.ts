@@ -31,6 +31,7 @@ export const CATEGORY_SLUGS: Record<string, string> = {
   ART: "art-crafts",
   CLOTHING: "clothing-jewelry",
   GARAGE_SALE: "garage-sales",
+  CREATORS: "creators-influencers",
   GOODS: "goods-services",
 };
 
@@ -53,6 +54,7 @@ export const CATEGORY_PITCH: Record<string, string> = {
   ART: "Madhubani, Tanjore and Kerala mural paintings, rangoli and handmade crafts",
   CLOTHING: "Sarees, lehengas, kurtas, kids' festival wear and jewelry",
   GARAGE_SALE: "Garage, yard and moving sales from families moving or moving back to India",
+  CREATORS: "Food bloggers, beauty and dance creators and local influencers who promote businesses, for cash or barter",
   GOODS: "Pickles, podis, plants, pooja items and other homemade goods",
 };
 
@@ -76,6 +78,7 @@ export const CATEGORY_SEO_TITLE: Record<string, string> = {
   ART: "Indian Art, Paintings & Crafts",
   CLOTHING: "Indian Clothing, Sarees & Jewelry",
   GARAGE_SALE: "Garage & Moving Sales",
+  CREATORS: "Indian Influencers & Content Creators",
   GOODS: "Indian Pickles, Pooja Items & Homemade Goods",
 };
 

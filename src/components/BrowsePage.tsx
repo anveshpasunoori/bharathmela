@@ -16,6 +16,7 @@ import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, 
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD, priceLabel } from "@/lib/plans";
 import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
+import { FOLLOWER_STEPS, PLATFORMS, formatFollowers } from "@/lib/creators";
 import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
@@ -50,6 +51,7 @@ const SAFETY_TIPS: Record<string, string> = {
   HOME_SERVICES: "Check a contractor's license with your state's licensing board and ask for proof of insurance before work starts.",
   TAX_FINANCE: "Ask for the preparer's IRS PTIN, and never let a refund go to the preparer's account.",
   AUTO: "Get a written estimate before any repair. Driving instructors should show a state license.",
+  CREATORS: "Agree on what you get, the dates and the price (or barter) in writing, check the creator's real profile, and pay only after the post is live or in parts.",
   GARAGE_SALE: "Check baby gear and electronics for recalls at cpsc.gov, and pay in cash or by app when you pick up.",
 };
 
@@ -73,6 +75,12 @@ export type BrowseParams = {
   item?: string;
   occ?: string;
   ins?: string;
+  niche?: string;
+  plat?: string;
+  clang?: string;
+  minf?: string;
+  barter?: string;
+  nw?: string;
   radius?: string;
   sort?: string;
   from?: string;
@@ -89,7 +97,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const nearMode = !!place && !isMetro(params.metro);
   const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
   const placeMetro = place ? metroFor(place) : null;
-  const { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters } = parseFilters(params);
+  const { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters, creatorFilters } = parseFilters(params);
   await syncExpirations();
   const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
@@ -112,7 +120,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const showingListings = !!(category || q);
   const [{ listings, search }, events, counts] = await Promise.all([
     showingListings
-      ? browseListings({ metro, category, query: q, diet, serviceType, rentalFilters, proFilters, eventFilters, near, sort })
+      ? browseListings({ metro, category, query: q, diet, serviceType, rentalFilters, proFilters, eventFilters, creatorFilters, near, sort })
       : Promise.resolve({ listings: [], search: { active: false, suggestion: null, otherMetros: [], hintedCategory: undefined, maxPriceCents: undefined, minPriceCents: undefined } }),
     showingListings ? Promise.resolve([]) : upcomingEvents({ metro, take: 4 }),
     showingListings ? Promise.resolve(new Map<string, number>()) : categoryCounts(metro, near),
@@ -289,6 +297,15 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       pick("item", "Rental item", "Any rental item", "item", RENTAL_ITEMS, eventFilters.item),
       pick("occ", "Occasion", "Any occasion", "occ", OCCASIONS, eventFilters.occasion),
       { kind: "toggle", key: "ins", param: "ins", label: "Insured", on: !!eventFilters.insured },
+    );
+  }
+  if (category === "CREATORS") {
+    filterBar.push(
+      pick("plat", "Platform", "Any platform", "plat", PLATFORMS, creatorFilters.platform),
+      pick("clang", "Language", "Any language", "clang", LANGUAGES.map((l) => ({ id: l, label: `Content in ${l}` })), creatorFilters.language),
+      pick("minf", "Followers", "Any audience", "minf", FOLLOWER_STEPS.map((n) => ({ id: String(n), label: `${formatFollowers(n)}+ followers` })), creatorFilters.minFollowers ? String(creatorFilters.minFollowers) : undefined),
+      { kind: "toggle", key: "barter", param: "barter", label: "Open to barter", on: !!creatorFilters.barter },
+      { kind: "toggle", key: "nw", param: "nw", label: "Nationwide", on: !!creatorFilters.nationwide },
     );
   }
 
@@ -635,6 +652,21 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             <p className="text-sm text-stone-600">Post what you need and let owners come to you.</p>
           </div>
           <Link href={`/rooms-wanted/new?metro=${metro}`} className="btn">I need a place to live</Link>
+        </div>
+      )}
+
+      {category === "CREATORS" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
+          <div>
+            <p className="font-semibold">Are you a creator or influencer?</p>
+            <p className="text-sm text-stone-600">List yourself free, and local businesses can reach you for paid or barter collabs, here or nationwide.</p>
+          </div>
+          <Link
+            href={viewer?.vendor ? "/vendor/listings/new?category=CREATORS" : `/vendor/signup?kind=individual&next=${encodeURIComponent("/vendor/listings/new?category=CREATORS")}`}
+            className="btn"
+          >
+            List yourself as a creator
+          </Link>
         </div>
       )}
 

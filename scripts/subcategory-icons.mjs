@@ -329,6 +329,23 @@ const I = {
     TOOLS: at(80, 80, 1, wrench(), 20) + at(80, 80, 0.8, R(-30, -36, 40, 18, 4, C.dark) + L("M-10 -18 L-10 40", "#a16207", 8), -30),
     CAR: at(80, 88, 1, O(-30, 14, 18, "none") + O(30, 14, 18, "none") + L("M-30 14 L-6 -14 L18 -14 M-6 -14 L6 14 L30 14 L18 -14 L14 -28 L24 -28 M-14 -22 L0 -22", C.brand, 5)),
   },
+  // Creators: what their content is about, each with a small "play" badge.
+  CREATORS: Object.fromEntries(
+    Object.entries({
+      FOOD: at(76, 90, 1, plate() + L("M-12 -8 Q-18 -18 -12 -28 M2 -8 Q-4 -18 2 -28 M16 -8 Q10 -18 16 -28", C.mid, 4)),
+      BEAUTY_FASHION: at(76, 86, 0.95, saree(C.main, C.gold)),
+      DANCE_MUSIC: at(74, 86, 1.1, note()),
+      COMEDY: at(76, 84, 1, O(0, 0, 36, C.goldLight) + `<circle cx="-12" cy="-8" r="4" fill="${C.line}"/><circle cx="12" cy="-8" r="4" fill="${C.line}"/>` + P("M-20 8 Q0 32 20 8 Z", C.brand)),
+      FAMILY_KIDS: at(58, 90, 0.85, person(C.main)) + at(92, 98, 0.62, person(C.mid)) + at(76, 114, 0.4, heart(C.brand)),
+      LIFESTYLE: at(76, 88, 0.95, camera()),
+      WEDDINGS: at(76, 86, 1, O(-14, 6, 22, "none") + O(14, 6, 22, "none") + L("M-14 6 m-22 0 a22 22 0 1 0 44 0 a22 22 0 1 0 -44 0", C.gold, 6) + L("M14 6 m-22 0 a22 22 0 1 0 44 0 a22 22 0 1 0 -44 0", C.gold, 6) + P("M14 -22 L20 -30 L26 -22 L20 -16 Z", C.sky)),
+      DEVOTIONAL: at(76, 92, 1.1, diya()),
+      TECH_CAREERS: at(76, 88, 0.95, laptop()),
+      REAL_ESTATE_FINANCE: at(68, 96, 0.8, house(C.brand)) + at(104, 70, 0.6, coin()),
+      FITNESS: at(76, 86, 1, R(-46, -18, 14, 36, 4, C.dark) + R(32, -18, 14, 36, 4, C.dark) + R(-34, -10, 10, 20, 3, C.stone) + R(24, -10, 10, 20, 3, C.stone) + L("M-24 0 L24 0", C.stone, 8)),
+      TRAVEL: at(76, 86, 0.95, plane(), -25),
+    }).map(([id, body]) => [id, body + at(124, 40, 0.5, O(0, 0, 24, C.brand) + `<path d="M-7 -11 L11 0 L-7 11 Z" fill="${C.white}"/>`)]),
+  ),
   GOODS: {
     PICKLES: at(80, 84, 1, jar(C.main) + L("M-10 4 L10 4", C.brand, 4)),
     PLANTS: at(80, 82, 1, pot() + at(-10, -18, 0.6, leaf(), -20) + at(12, -20, 0.6, leaf(C.leafLight), 20)),

@@ -11,6 +11,7 @@ import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib
 import { hasServiceTypes, serializeServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
+import { creatorTags, parseCreatorForm } from "@/lib/creators";
 import { parseEventServiceForm } from "@/lib/event-services";
 import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
@@ -108,6 +109,11 @@ function parseListing(form: FormData): ListingInput | { error: string } {
     const services = parseEventServiceForm(form, LANGUAGES);
     if ("error" in services) return services;
     return { title, description, category, priceCents, priceUnit, tags, details: JSON.stringify(services) };
+  }
+  if (category === "CREATORS") {
+    const creator = parseCreatorForm(form);
+    if ("error" in creator) return creator;
+    return { title, description, category, priceCents, priceUnit, tags: creatorTags(creator), details: JSON.stringify(creator) };
   }
   if (category === "GARAGE_SALE") {
     const sale = parseGarageSaleForm(form);

@@ -150,6 +150,7 @@ const CATEGORY_HINTS: Record<string, string[]> = {
   BEAUTY: ["threading", "waxing", "salon", "haircut", "beauty", "bridal makeup", "makeup", "mehndi", "saree draping", "yoga", "fitness", "trainer"],
   TAX_FINANCE: ["accountant", "itin", "fbar", "bookkeeping", "insurance", "payroll"],
   GARAGE_SALE: ["garage sale", "secondhand", "used furniture"],
+  CREATORS: ["influencer", "influencers", "creator", "blogger", "food blogger", "youtuber", "instagrammer", "vlogger", "promotion", "collab", "ugc"],
   TRAVEL: ["flight", "travel", "travel agent", "tour", "tours", "notary", "travel companion"],
   ART: ["painting", "rangoli", "mehndi", "craft", "crafts", "decor", "art", "madhubani", "tanjore", "warli"],
   CLOTHING: ["saree", "lehenga", "kurta", "jewelry", "blouse", "tailor", "clothes", "dress", "dresses"],

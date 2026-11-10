@@ -45,6 +45,10 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
       ["GOODS", "Pickles, plants, pooja items"],
     ],
   },
+  {
+    title: "Promote your business",
+    items: [["CREATORS", "Food bloggers, reels, local influencers"]],
+  },
 ];
 
 export const NAV_GROUPS = GROUPS.map((g) => ({

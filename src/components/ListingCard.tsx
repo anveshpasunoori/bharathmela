@@ -5,6 +5,7 @@ import { CategoryIcon } from "./CategoryIcon";
 import { listingSubcategories, subcategoryLabel } from "@/lib/subcategories";
 import { SaveHeart } from "./SaveHeart";
 import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
+import { audienceSummary, readCreator } from "@/lib/creators";
 import { readEventService, serviceLabels } from "@/lib/event-services";
 import type { BrowseListing } from "@/lib/listings";
 import { priceLabel } from "@/lib/plans";
@@ -22,6 +23,10 @@ function keyFacts(listing: BrowseListing) {
   if (listing.category === "EVENT_SERVICES") {
     const e = readEventService(listing.details);
     if (e) return serviceLabels(e).join(" · ");
+  }
+  if (listing.category === "CREATORS") {
+    const c = readCreator(listing.details);
+    if (c) return [audienceSummary(c), c.nationwide && "Nationwide", c.barter && "Barter OK"].filter(Boolean).join(" · ");
   }
   if (isProfessional(listing.category)) {
     const p = readProfessional(listing.details);
@@ -43,7 +48,8 @@ function keyFacts(listing: BrowseListing) {
 // `saved` puts a save heart on the photo (true when already saved); leave it out on the seller's own listings.
 export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?: boolean }) {
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
-  const miles = listing.distanceMiles;
+  // Distance means nothing for a creator who works nationwide.
+  const miles = listing.category === "CREATORS" && listing.tags.includes(",NATIONWIDE,") ? null : listing.distanceMiles;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const sub = listingSubcategories(listing)[0];
   const subLabel = sub ? subcategoryLabel(listing.category, sub) : undefined;

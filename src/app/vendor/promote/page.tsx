@@ -6,7 +6,7 @@ import { requireVendor } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { FOUNDING_PRO_DAYS, FOUNDING_SELLERS_PER_CITY, REFERRAL_PRO_DAYS, REFERRAL_REWARDS_PER_YEAR } from "@/lib/growth";
 import { metroName } from "@/lib/metros";
-import { absoluteUrl, sellerPath, siteUrl } from "@/lib/seo";
+import { absoluteUrl, sellerPath, siteUrl, cityCategoryPath } from "@/lib/seo";
 
 export const metadata = { title: "Share your business", robots: { index: false } };
 
@@ -44,6 +44,14 @@ export default async function PromotePage() {
         </p>
         <p className="break-all rounded-md bg-stone-50 px-3 py-2 font-mono text-sm text-stone-700 ring-1 ring-stone-200">{pageUrl}</p>
         <ShareButtons url={pageUrl} text={`Find ${vendor.businessName} on BharathMela:`} campaign="seller-page" />
+      </section>
+
+      <section className="card flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <div>
+          <h2 className="font-semibold">Get promoted by a local creator</h2>
+          <p className="text-sm text-stone-600">Food bloggers and influencers in {city}, and nationwide. Many take barter: a free meal or product for a post.</p>
+        </div>
+        <Link href={cityCategoryPath(vendor.metro, "CREATORS")} className="btn-outline whitespace-nowrap">Find a creator</Link>
       </section>
 
       <section className="card space-y-3 print:hidden">

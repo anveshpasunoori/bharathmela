@@ -13,6 +13,7 @@ import { idFromSlugParam, listingPath, sellerPath, snippet } from "@/lib/seo";
 import { breadcrumbs, listingCrumbs, listingSchema } from "@/lib/structured-data";
 import { parseServiceTypes, serviceTypeLabel } from "@/lib/service-types";
 import { readGarageSale, saleWhen } from "@/lib/garage-sales";
+import { CreatorDetailsView } from "@/components/CreatorDetailsView";
 import { EventServiceDetailsView } from "@/components/EventServiceDetailsView";
 import { ProfessionalDetailsView } from "@/components/ProfessionalDetailsView";
 import { RentalDetailsView } from "@/components/RentalDetailsView";
@@ -29,6 +30,7 @@ import { CATEGORY_RULES } from "@/lib/legal";
 import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
 import { formatUSD, priceLabel } from "@/lib/plans";
+import { readCreator } from "@/lib/creators";
 import { readEventService } from "@/lib/event-services";
 import { isProfessional, readProfessional } from "@/lib/professionals";
 import { readRental, spaceTypeLabel } from "@/lib/rentals";
@@ -76,6 +78,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const rental = listing.category === "ROOM_RENTAL" ? readRental(listing.details) : null;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const eventService = listing.category === "EVENT_SERVICES" ? readEventService(listing.details) : null;
+  const creator = listing.category === "CREATORS" ? readCreator(listing.details) : null;
 
   const [user, reviews, ratings, sellerSince, place] = await Promise.all([
     getCurrentUser(),
@@ -226,6 +229,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
         )}
         {professional && <ProfessionalDetailsView category={listing.category} details={professional} />}
         {eventService && <EventServiceDetailsView details={eventService} />}
+        {creator && <CreatorDetailsView details={creator} />}
         <p className="whitespace-pre-line text-stone-700">{listing.description}</p>
       </section>
 

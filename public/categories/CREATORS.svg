@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7ed"/><stop offset="1" stop-color="#ffedd5"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="#fcd34d" stop-opacity=".9"/><stop offset="1" stop-color="#fcd34d" stop-opacity="0"/></radialGradient>
+</defs>
+<rect x="2" y="2" width="156" height="156" rx="24" fill="url(#bg)" stroke="#fed7aa" stroke-width="1.5"/>
+
+<rect x="40" y="26" width="62" height="112" rx="12" fill="#7c2d12" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="46" y="38" width="50" height="86" rx="5" fill="#ffedd5"/>
+<rect x="62" y="30" width="18" height="4" rx="2" fill="#a8a29e"/>
+<circle cx="71" cy="72" r="17" fill="#c2410c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M66 63 L80 72 L66 81 Z" fill="#fffbf5"/>
+<path d="M52 104 L90 104 M52 114 L78 114" stroke="#fed7aa" stroke-width="4" stroke-linecap="round"/>
+<path d="M98 40 Q98 28 110 28 L136 28 Q148 28 148 40 L148 56 Q148 68 136 68 L118 68 L106 78 L108 68 Q98 66 98 56 Z" fill="#fffbf5" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M123 60 Q108 50 112 42 Q116 36 123 42 Q130 36 134 42 Q138 50 123 60 Z" fill="#f97316" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M108 98 L132 86 L132 124 L108 112 Z" fill="#f59e0b" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="100" y="98" width="10" height="14" rx="3" fill="#fb923c" stroke="#7c2d12" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M138 96 Q144 105 138 114" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
+<path d="M30 39 Q30 46 37 46 Q30 46 30 53 Q30 46 23 46 Q30 46 30 39Z" fill="#f59e0b"/><path d="M28 113 Q28 118 33 118 Q28 118 28 123 Q28 118 23 118 Q28 118 28 113Z" fill="#fb923c"/><path d="M146 131 Q146 136 151 136 Q146 136 146 141 Q146 136 141 136 Q146 136 146 131Z" fill="#c2410c"/><circle cx="118" cy="140" r="2.4" fill="#f59e0b"/>
+</svg>

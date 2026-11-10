@@ -8,7 +8,7 @@ import { absoluteUrl, cityCategoryPath, cityPath, eventPath, listingPath, seller
 // Categories where the seller offers a service rather than selling an item.
 const SERVICE_CATEGORIES = new Set([
   "TUTORING", "DANCE_MUSIC", "PUJARI", "EVENT_SERVICES", "DOMESTIC_HELP", "HOME_SERVICES", "AUTO", "BEAUTY", "REALTOR", "LEGAL",
-  "TAX_FINANCE", "TRAVEL",
+  "TAX_FINANCE", "TRAVEL", "CREATORS",
 ]);
 
 type ListingForSchema = {

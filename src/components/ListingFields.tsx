@@ -5,11 +5,13 @@ import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { DIET_TAGS, normalizeTags } from "@/lib/constants";
 import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
+import type { CreatorDetails } from "@/lib/creators";
 import type { EventServiceDetails } from "@/lib/event-services";
 import type { GarageSaleDetails } from "@/lib/garage-sales";
 import type { ProfessionalDetails } from "@/lib/professionals";
 import type { RentalDetails } from "@/lib/rentals";
 import { CategorySelect } from "./CategorySelect";
+import { CreatorFields } from "./CreatorFields";
 import { EventServiceFields } from "./EventServiceFields";
 import { ProfessionalFields } from "./ProfessionalFields";
 import { RentalFields } from "./RentalFields";
@@ -25,6 +27,7 @@ export function ListingFields({
   initialProfessional,
   initialEventService,
   initialGarageSale,
+  initialCreator,
 }: {
   canUseAI: boolean;
   initial?: ListingValues;
@@ -32,6 +35,7 @@ export function ListingFields({
   initialProfessional?: ProfessionalDetails | null;
   initialEventService?: EventServiceDetails | null;
   initialGarageSale?: GarageSaleDetails | null;
+  initialCreator?: CreatorDetails | null;
 }) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -188,6 +192,8 @@ export function ListingFields({
       )}
 
       {category === "EVENT_SERVICES" && <EventServiceFields initial={initialEventService} />}
+
+      {category === "CREATORS" && <CreatorFields initial={initialCreator} />}
 
       {(category === "REALTOR" || category === "LEGAL") && (
         <ProfessionalFields key={category} category={category} initial={initialProfessional} />

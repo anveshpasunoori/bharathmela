@@ -1,6 +1,7 @@
 // Reads the results page's query string into search filters. Shared by the results page and saved-search
 // alerts, so an alert finds exactly what the saved page showed.
 import { CATEGORIES, categoryLabel, isDietTag, tagLabel } from "./constants";
+import { type CreatorFilters, FOLLOWER_STEPS, NICHES, PLATFORMS, formatFollowers } from "./creators";
 import { EVENT_SERVICES, type EventServiceFilters, OCCASIONS, RENTAL_ITEMS } from "./event-services";
 import { LANGUAGES, type ProfessionalFilters, SPECIALTIES, isProfessional } from "./professionals";
 import { type RentalFilters, SPACE_TYPES } from "./rentals";
@@ -14,6 +15,7 @@ export const RADII = [5, 10, 25, 50, 100];
 // The query-string keys that make up a search (location and sort are kept separately).
 export const SEARCH_PARAMS = [
   "category", "q", "diet", "type", "space", "maxRent", "by", "pbath", "furn", "pets", "spec", "lang", "free", "svc", "item", "occ", "ins",
+  "niche", "plat", "clang", "minf", "barter", "nw",
 ] as const;
 
 export function parseFilters(params: Params) {
@@ -54,7 +56,19 @@ export function parseFilters(params: Params) {
           insured: params.ins === "1",
         }
       : {};
-  return { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters };
+  // Niche, platform, content language, audience size, barter and reach filters for creators.
+  const creatorFilters: CreatorFilters =
+    category === "CREATORS"
+      ? {
+          niche: NICHES.some((n) => n.id === params.niche) ? params.niche : undefined,
+          platform: PLATFORMS.some((p) => p.id === params.plat) ? params.plat : undefined,
+          language: (LANGUAGES as readonly string[]).includes(params.clang ?? "") ? params.clang : undefined,
+          minFollowers: FOLLOWER_STEPS.includes(Number(params.minf)) ? Number(params.minf) : undefined,
+          barter: params.barter === "1",
+          nationwide: params.nw === "1",
+        }
+      : {};
+  return { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters, creatorFilters };
 }
 
 export type Filters = ReturnType<typeof parseFilters>;
@@ -94,6 +108,13 @@ export function describeSearch(f: Filters, where: string) {
   if (e.item) parts.push(label(RENTAL_ITEMS, e.item)!);
   if (e.occasion) parts.push(label(OCCASIONS, e.occasion)!);
   if (e.insured) parts.push("insured");
+  const c = f.creatorFilters;
+  if (c.niche) parts.push(label(NICHES, c.niche)!);
+  if (c.platform) parts.push(label(PLATFORMS, c.platform)!);
+  if (c.language) parts.push(`in ${c.language}`);
+  if (c.minFollowers) parts.push(`${formatFollowers(c.minFollowers)}+ followers`);
+  if (c.barter) parts.push("open to barter");
+  if (c.nationwide) parts.push("nationwide");
   parts.push(where);
   return parts.filter(Boolean).join(" · ").slice(0, 200);
 }

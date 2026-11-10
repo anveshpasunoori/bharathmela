@@ -208,6 +208,20 @@ ${spark(26, 34, 6, C.gold)}${spark(104, 34, 4)}${dot(26, 120)}`,
 <rect x="116.5" y="110.5" width="9" height="22" rx="4.5" fill="${C.goldLight}"/>
 ${spark(132, 36, 7, C.gold)}${spark(118, 18, 4)}${dot(24, 120, 2.4, C.gold)}`,
 
+  CREATORS: `
+<rect x="40" y="26" width="62" height="112" rx="12" fill="${C.line}" ${S}/>
+<rect x="46" y="38" width="50" height="86" rx="5" fill="${C.pale}"/>
+<rect x="62" y="30" width="18" height="4" rx="2" fill="${C.stone}"/>
+<circle cx="71" cy="72" r="17" fill="${C.brand}" ${S}/>
+<path d="M66 63 L80 72 L66 81 Z" fill="${C.white}"/>
+<path d="M52 104 L90 104 M52 114 L78 114" stroke="${C.light}" stroke-width="4" stroke-linecap="round"/>
+<path d="M98 40 Q98 28 110 28 L136 28 Q148 28 148 40 L148 56 Q148 68 136 68 L118 68 L106 78 L108 68 Q98 66 98 56 Z" fill="${C.white}" ${S}/>
+<path d="M123 60 Q108 50 112 42 Q116 36 123 42 Q130 36 134 42 Q138 50 123 60 Z" fill="${C.main}" ${S}/>
+<path d="M108 98 L132 86 L132 124 L108 112 Z" fill="${C.gold}" ${S}/>
+<rect x="100" y="98" width="10" height="14" rx="3" fill="${C.mid}" ${S}/>
+<path d="M138 96 Q144 105 138 114" fill="none" stroke="${C.brand}" stroke-width="3" stroke-linecap="round"/>
+${spark(30, 46, 7, C.gold)}${spark(28, 118, 5)}${spark(146, 136, 5, C.brand)}${dot(118, 140, 2.4, C.gold)}`,
+
   TRAVEL: `
 <path d="M30 66 Q36 40 84 42" fill="none" stroke="${C.mid}" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 7"/>
 <g transform="translate(94 42) rotate(-28)">

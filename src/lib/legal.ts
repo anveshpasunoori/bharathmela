@@ -111,6 +111,16 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
     buyer:
       "Ask for the preparer's PTIN and credentials, get a written fee quote, and never sign a blank return or let a refund go to the preparer's account. Check insurance agents' licenses with your state insurance department.",
   },
+  CREATORS: {
+    seller: [
+      "You must be 18 or older, and the accounts you list must be yours. Follower counts must be real: no bought followers, likes or views.",
+      "Mark every paid or gifted post clearly as an ad (#ad, #sponsored or the platform's paid-partnership label). The FTC requires it, for barter deals too.",
+      "Only promote what's allowed on BharathMela: no alcohol, tobacco, gambling, adult content, weapons, drugs or health cures.",
+      "Agree on deliverables, dates and price or barter in writing, and deliver what you agreed. Don't post fake reviews of a business.",
+    ],
+    buyer:
+      "Check the creator's actual profile and recent posts, agree on deliverables and dates in writing, and pay after the post goes live or in parts. Barter deals are deals too: write down what each side gets.",
+  },
   GARAGE_SALE: {
     seller: [
       "Many cities and HOAs require a garage-sale permit or limit how many sales you can hold a year. Check before you post.",

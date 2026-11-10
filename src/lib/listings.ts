@@ -4,6 +4,7 @@ import { db } from "./db";
 import { isNewListing } from "./time";
 import { milesBetween, zipCoords } from "./geo";
 import { ratingsFor } from "./reviews";
+import { type CreatorFilters, creatorSearchText, matchesCreatorFilters, readCreator } from "./creators";
 import { type EventServiceFilters, eventServiceSearchText, matchesEventServiceFilters, readEventService } from "./event-services";
 import { type ProfessionalFilters, isProfessional, matchesProfessionalFilters, professionalSearchText, readProfessional } from "./professionals";
 import { type RentalFilters, matchesRentalFilters, readRental, rentalSearchText } from "./rentals";
@@ -47,6 +48,7 @@ export type BrowseOptions = {
   rentalFilters?: RentalFilters;
   proFilters?: ProfessionalFilters;
   eventFilters?: EventServiceFilters;
+  creatorFilters?: CreatorFilters;
   // The visitor's location. With radiusMiles, listings within that distance are shown from any metro;
   // without it, the metro is browsed and listings just get a distance.
   near?: { lat: number; lng: number; radiusMiles: number | null };
@@ -75,6 +77,7 @@ export async function browseListings({
   rentalFilters = {},
   proFilters = {},
   eventFilters = {},
+  creatorFilters = {},
   near,
   sort = "best",
 }: BrowseOptions) {
@@ -90,11 +93,14 @@ export async function browseListings({
   const searching = parsed.terms.length > 0 || parsed.maxPriceCents != null || parsed.minPriceCents != null;
 
   const filteringRentals = category === "ROOM_RENTAL" && Object.values(rentalFilters).some((v) => v != null && v !== false);
+  // Creators who work nationwide (online audience anywhere) show in every city and every radius.
+  const nationwide = category === "CREATORS" ? { tags: { contains: ",NATIONWIDE," } } : null;
+  const place: Prisma.ListingWhereInput = byRadius ? {} : nationwide ? { OR: [{ metro }, nationwide] } : { metro };
   const fetched = await db.listing.findMany({
-    where: { ...filters, ...(byRadius ? {} : { metro }) },
+    where: { ...filters, ...place },
     include: withPlans(now),
     orderBy: { createdAt: "desc" },
-    take: byRadius || searching || filteringRentals || Object.values(proFilters).some(Boolean) || Object.values(eventFilters).some(Boolean) ? 5000 : 200,
+    take: byRadius || searching || filteringRentals || Object.values(proFilters).some(Boolean) || Object.values(eventFilters).some(Boolean) || Object.values(creatorFilters).some(Boolean) ? 5000 : 200,
   });
   const distanceTo = (zip: string) => {
     const c = near && zipCoords(zip);
@@ -102,10 +108,13 @@ export async function browseListings({
   };
   const filteringPros = !!category && isProfessional(category) && Object.values(proFilters).some(Boolean);
   const filteringEvents = category === "EVENT_SERVICES" && Object.values(eventFilters).some(Boolean);
+  const filteringCreators = category === "CREATORS" && Object.values(creatorFilters).some(Boolean);
+  const isNationwide = (l: { category: string; tags: string }) => l.category === "CREATORS" && l.tags.includes(",NATIONWIDE,");
   const candidates = fetched.filter(
     (l) =>
       // Rounded the same way the "N mi away" label is, so a listing labelled 10 mi shows under "10 mi".
-      (!byRadius || Math.round(distanceTo(l.zip) ?? Infinity) <= near!.radiusMiles!) &&
+      (!byRadius || isNationwide(l) || Math.round(distanceTo(l.zip) ?? Infinity) <= near!.radiusMiles!) &&
+      (!filteringCreators || matchesCreatorFilters(readCreator(l.details), creatorFilters)) &&
       (!filteringRentals || matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters)) &&
       (!filteringPros || matchesProfessionalFilters(readProfessional(l.details), proFilters)) &&
       (!filteringEvents || matchesEventServiceFilters(readEventService(l.details), eventFilters)),
@@ -118,7 +127,8 @@ export async function browseListings({
           const rental = l.category === "ROOM_RENTAL" ? readRental(l.details) : null;
           const pro = isProfessional(l.category) ? readProfessional(l.details) : null;
           const ev = l.category === "EVENT_SERVICES" ? readEventService(l.details) : null;
-          const extra = rental ? rentalSearchText(rental) : pro ? professionalSearchText(l.category, pro) : ev ? eventServiceSearchText(ev) : "";
+          const creator = l.category === "CREATORS" ? readCreator(l.details) : null;
+          const extra = rental ? rentalSearchText(rental) : pro ? professionalSearchText(l.category, pro) : ev ? eventServiceSearchText(ev) : creator ? creatorSearchText(creator) : "";
           return { ...l, description: `${l.description} ${extra}`, original: l };
         }),
       ).map(({ item, score }) => ({ item: item.original, score }))
