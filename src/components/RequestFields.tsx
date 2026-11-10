@@ -1,7 +1,60 @@
 "use client";
 
 import { useState } from "react";
+import { COLLAB_PAY, NICHES, PLATFORMS } from "@/lib/creators";
+import { LANGUAGES } from "@/lib/professionals";
 import { SERVICE_TYPES } from "@/lib/service-types";
+
+// Extra questions when a business asks creators for a collab: how they'll pay and who they want.
+function CollabFields() {
+  const [pay, setPay] = useState("EITHER");
+  return (
+    <div className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4">
+      <fieldset>
+        <legend className="label">How will you pay the creator?</legend>
+        <div className="flex flex-wrap gap-2">
+          {COLLAB_PAY.map((p) => (
+            <label key={p.id} className={`cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${pay === p.id ? "bg-brand-soft text-brand ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}>
+              <input type="radio" name="k_pay" value={p.id} checked={pay === p.id} onChange={() => setPay(p.id)} className="sr-only" />
+              {p.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      {pay !== "CASH" && (
+        <div>
+          <label className="label" htmlFor="k_barter">What you offer instead of cash</label>
+          <input id="k_barter" name="k_barter" required minLength={5} maxLength={150} className="input" placeholder="e.g. Dinner for 4, or a free month of dance classes" />
+        </div>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="k_language">Content language</label>
+          <select id="k_language" name="k_language" className="input" defaultValue="">
+            <option value="">Any language</option>
+            {LANGUAGES.map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label" htmlFor="k_platform">Platform</label>
+          <select id="k_platform" name="k_platform" className="input" defaultValue="">
+            <option value="">Any platform</option>
+            {PLATFORMS.map((p) => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <label className="flex gap-2 text-sm">
+        <input type="checkbox" name="k_anywhere" defaultChecked className="mt-0.5" />
+        <span>Creators from anywhere in the US are welcome (their audience may be online, not only local)</span>
+      </label>
+      <p className="text-xs text-stone-500">Creators must mark paid or gifted posts as ads (#ad). Barter deals count too.</p>
+    </div>
+  );
+}
 
 // The "post what you need" form fields; the service list follows the chosen category.
 export function RequestFields({
@@ -14,7 +67,8 @@ export function RequestFields({
   initialZip: string;
 }) {
   const [category, setCategory] = useState(initialCategory);
-  const types = SERVICE_TYPES[category] ?? [];
+  const creators = category === "CREATORS";
+  const types = creators ? NICHES : (SERVICE_TYPES[category] ?? []);
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -29,7 +83,7 @@ export function RequestFields({
         </div>
         {types.length > 0 && (
           <div>
-            <label className="label" htmlFor="serviceType">Service</label>
+            <label className="label" htmlFor="serviceType">{creators ? "Kind of creator" : "Service"}</label>
             <select id="serviceType" name="serviceType" className="input" defaultValue="">
               <option value="">Any / not sure</option>
               {types.map((t) => (
@@ -39,15 +93,18 @@ export function RequestFields({
           </div>
         )}
       </div>
+      {creators && <CollabFields />}
       <div>
         <label className="label" htmlFor="title">In one line</label>
         <input id="title" name="title" required minLength={8} maxLength={100} className="input"
-          placeholder="e.g. Pujari for griha pravesh on Dec 12, or AC not cooling" />
+          placeholder={creators ? "e.g. Food reel for our new biryani pop-up" : "e.g. Pujari for griha pravesh on Dec 12, or AC not cooling"} />
       </div>
       <div>
         <label className="label" htmlFor="description">Details</label>
         <textarea id="description" name="description" required minLength={20} maxLength={1500} className="input min-h-32"
-          placeholder="What you need, size of the job, languages, anything a seller should know to give you a price." />
+          placeholder={creators
+            ? "Your business, what you'd like (reels, stories, a YouTube video, an event visit), dates, and anything the creator should try or mention."
+            : "What you need, size of the job, languages, anything a seller should know to give you a price."} />
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <div>

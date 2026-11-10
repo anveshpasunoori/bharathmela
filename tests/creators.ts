@@ -2,7 +2,7 @@
 // only social links are accepted as samples, and the filters and nationwide tag work.
 import {
   type CreatorDetails, anyVerified, carryVerification, cleanHandle, creatorTags, formatFollowers, isVerified, matchesCreatorFilters, newCheckCode,
-  parseCreatorForm, parseFollowers, withVerification,
+  parseCreatorForm, parseFollowers, withVerification, parseCollabForm, creatorFitsCollab, type CollabDetails,
 } from "../src/lib/creators";
 
 let failed = 0;
@@ -62,4 +62,19 @@ const renamed = carryVerification(parseCreatorForm(form({ ...base, c_handle_INST
 check(!isVerified(renamed.platforms[0]), "a new handle needs a new check");
 const forged = parseCreatorForm(form({ ...base, verifiedAt: "2026-01-01" })) as CreatorDetails;
 check(!anyVerified(forged), "the form can't mark itself verified");
+// Collab requests.
+const collab = (fields: Record<string, string>) => parseCollabForm(form(fields));
+check("error" in collab({ k_pay: "BARTER" }), "barter needs an offer");
+check("error" in collab({}), "needs a payment choice");
+const barterOnly = collab({ k_pay: "BARTER", k_barter: "Dinner for 4", k_language: "Telugu" }) as CollabDetails;
+check(barterOnly.barterOffer === "Dinner for 4" && barterOnly.language === "Telugu" && !barterOnly.anywhere, "barter collab saved");
+const cashOnly = collab({ k_pay: "CASH", k_barter: "ignored", k_anywhere: "on" }) as CollabDetails;
+check(cashOnly.barterOffer === "" && cashOnly.anywhere, "paid collab drops the barter offer");
+const noBarter = { ...parsed, barter: false };
+const barterCreator = { ...parsed, barter: true };
+check(creatorFitsCollab(barterCreator, barterOnly, "FOOD"), "barter creator fits a barter food collab in Telugu");
+check(!creatorFitsCollab(noBarter, barterOnly, "FOOD"), "barter-only collab skips creators who want cash");
+check(creatorFitsCollab(noBarter, cashOnly, ""), "paid collab fits any creator");
+check(!creatorFitsCollab(barterCreator, barterOnly, "COMEDY"), "niche must match");
+check(!creatorFitsCollab(parsed, { ...cashOnly, platform: "TIKTOK" }, ""), "platform must match");
 console.log(failed ? `${failed} failed` : "all passed");

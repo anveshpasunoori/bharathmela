@@ -224,3 +224,57 @@ export function matchesCreatorFilters(d: CreatorDetails | null, f: CreatorFilter
   if (f.verified && !anyVerified(d)) return false;
   return true;
 }
+
+// ---------- Collab requests: a business asking creators for a promotion (a service request in CREATORS) ----------
+
+export const COLLAB_PAY = opts(
+  ["CASH", "Paid"],
+  ["BARTER", "Barter only"],
+  ["EITHER", "Paid or barter"],
+);
+
+export type CollabDetails = {
+  pay: "CASH" | "BARTER" | "EITHER";
+  barterOffer: string; // what the business offers instead of cash, e.g. "Dinner for 4 and a gift card"
+  anywhere: boolean; // nationwide creators welcome, not only local ones
+  language: string; // content language wanted, or ""
+  platform: string; // platform wanted, or ""
+};
+
+export function readCollab(json: string): CollabDetails | null {
+  try {
+    const d = JSON.parse(json);
+    return d && typeof d.pay === "string" ? { barterOffer: "", anywhere: true, language: "", platform: "", ...d } : null;
+  } catch {
+    return null;
+  }
+}
+
+export function parseCollabForm(form: FormData): CollabDetails | { error: string } {
+  const pay = String(form.get("k_pay") ?? "");
+  if (!COLLAB_PAY.some((p) => p.id === pay)) return { error: "Choose how you'll pay the creator: paid, barter, or either." };
+  const barterOffer = String(form.get("k_barter") ?? "").trim().replace(/\s+/g, " ").slice(0, 150);
+  if (pay !== "CASH" && barterOffer.length < 5) return { error: "Say what you offer instead of cash, e.g. “Dinner for 4” or “A free month of classes”." };
+  const language = String(form.get("k_language") ?? "");
+  const platform = String(form.get("k_platform") ?? "");
+  return {
+    pay: pay as CollabDetails["pay"],
+    barterOffer: pay === "CASH" ? "" : barterOffer,
+    anywhere: form.get("k_anywhere") === "on",
+    language: (LANGUAGES as readonly string[]).includes(language) ? language : "",
+    platform: PLATFORMS.some((p) => p.id === platform) ? platform : "",
+  };
+}
+
+// Whether a creator suits a collab request: niche, language and platform if asked for, and barter-only
+// requests go only to creators open to barter. Location is checked separately.
+export function creatorFitsCollab(c: CreatorDetails, k: CollabDetails, niche: string) {
+  if (niche && !c.niches.includes(niche)) return false;
+  if (k.language && !c.languages.includes(k.language)) return false;
+  if (k.platform && !c.platforms.some((p) => p.platform === k.platform)) return false;
+  if (k.pay === "BARTER" && !c.barter) return false;
+  return true;
+}
+
+export const collabPayLabel = (k: CollabDetails) =>
+  k.pay === "CASH" ? "Paid" : k.pay === "BARTER" ? `Barter: ${k.barterOffer}` : `Paid or barter (${k.barterOffer})`;

@@ -13,6 +13,7 @@ import { publicListing } from "@/lib/listings";
 import { ratingsFor } from "@/lib/reviews";
 import { firstName } from "@/lib/rooms-wanted";
 import { requestServiceLabel } from "@/lib/service-requests";
+import { collabPayLabel, platformLabel, readCollab } from "@/lib/creators";
 import { timeAgo } from "@/lib/time";
 import { closeRequest, deleteRequest, reportRequest, sendQuote } from "../../actions/service-request";
 
@@ -34,6 +35,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
   const own = request.userId === user.id;
   const admin = user.role === "ADMIN";
   const now = new Date();
+  const collab = request.category === "CREATORS" ? readCollab(request.details) : null;
   const open = request.status === "OPEN" && request.expiresAt > now;
   if (!own && !user.vendor && !admin) {
     return (
@@ -68,8 +70,12 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
       {own && posted != null && (
         <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-900 ring-1 ring-green-200">
           {Number(posted) > 0
-            ? `Posted. We emailed ${posted} seller${posted === "1" ? "" : "s"} near you; quotes will show up here and in your inbox.`
-            : "Posted. No sellers near you offer this yet; new sellers in this category will see your request while it's open."}
+            ? request.category === "CREATORS"
+              ? `Posted. We emailed ${posted} matching creator${posted === "1" ? "" : "s"}; their ideas and prices will show up here and in your inbox.`
+              : `Posted. We emailed ${posted} seller${posted === "1" ? "" : "s"} near you; quotes will show up here and in your inbox.`
+            : request.category === "CREATORS"
+              ? "Posted. No matching creators yet; new creators who fit will see your request while it's open."
+              : "Posted. No sellers near you offer this yet; new sellers in this category will see your request while it's open."}
         </p>
       )}
 
@@ -88,6 +94,14 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
         <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
           <div><dt className="inline text-stone-500">Needed by: </dt><dd className="inline font-medium">{request.neededBy || "Flexible"}</dd></div>
           {request.budgetCents != null && <div><dt className="inline text-stone-500">Budget: </dt><dd className="inline font-medium">about {money(request.budgetCents)}</dd></div>}
+          {collab && (
+            <>
+              <div><dt className="inline text-stone-500">Pays: </dt><dd className="inline font-medium">{collabPayLabel(collab)}</dd></div>
+              {collab.language && <div><dt className="inline text-stone-500">Content in: </dt><dd className="inline font-medium">{collab.language}</dd></div>}
+              {collab.platform && <div><dt className="inline text-stone-500">On: </dt><dd className="inline font-medium">{platformLabel(collab.platform)}</dd></div>}
+              <div><dt className="inline text-stone-500">Creators: </dt><dd className="inline font-medium">{collab.anywhere ? "Local or nationwide" : "Local only"}</dd></div>
+            </>
+          )}
           <div><dt className="inline text-stone-500">Status: </dt><dd className="inline font-medium">{open ? `Open until ${request.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : request.status === "CLOSED" ? "Closed" : "Expired"}</dd></div>
         </dl>
         {own && (

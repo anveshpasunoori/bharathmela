@@ -7,6 +7,7 @@ import { metroFor, milesBetween, placeFromZip, zipCoords } from "./geo";
 import { publicListing } from "./listings";
 import { appUrl } from "./saved-searches";
 import { SERVICE_TYPES, serviceTypeLabel } from "./service-types";
+import { NICHES, anyVerified, collabPayLabel, creatorFitsCollab, parseCollabForm, readCollab, readCreator } from "./creators";
 
 export const REQUEST_DAYS = 30;
 export const MAX_OPEN_REQUESTS = 5;
@@ -31,13 +32,18 @@ export type RequestInput = {
   metro: string;
   lat: number;
   lng: number;
+  details: string;
 };
 
 export function parseRequestForm(form: FormData): RequestInput | { error: string } {
   const category = String(form.get("category") ?? "");
   if (!REQUEST_CATEGORIES.some((c) => c.id === category)) return { error: "Choose what kind of help you need." };
   const serviceType = String(form.get("serviceType") ?? "");
-  if (serviceType && !SERVICE_TYPES[category]?.some((t) => t.id === serviceType)) return { error: "Choose a service from the list." };
+  const subtypes = category === "CREATORS" ? NICHES : SERVICE_TYPES[category];
+  if (serviceType && !subtypes?.some((t) => t.id === serviceType)) return { error: "Choose a service from the list." };
+  // A collab request: how the business pays, and which creators it wants.
+  const collab = category === "CREATORS" ? parseCollabForm(form) : null;
+  if (collab && "error" in collab) return collab;
   const title = String(form.get("title") ?? "").trim().replace(/\s+/g, " ");
   if (title.length < 8 || title.length > 100) return { error: "Sum up what you need in 8 to 100 characters, like “Pujari for griha pravesh on Dec 12”." };
   if (title === title.toUpperCase() && /[A-Z]{6}/.test(title)) return { error: "Please don't write the title in all capital letters." };
@@ -58,11 +64,33 @@ export function parseRequestForm(form: FormData): RequestInput | { error: string
     zip, city: `${place.city}, ${place.state}`, metro: metroFor(place).metro,
     // Rounded like the location cookie (~1 km), so a request never pins down a home.
     lat: Math.round(place.lat * 100) / 100, lng: Math.round(place.lng * 100) / 100,
+    details: collab ? JSON.stringify(collab) : "{}",
   };
 }
 
 export const requestServiceLabel = (r: Pick<ServiceRequest, "category" | "serviceType">) =>
-  r.serviceType ? serviceTypeLabel(r.category, r.serviceType) : categoryLabel(r.category);
+  r.category === "CREATORS"
+    ? `a ${r.serviceType ? `${NICHES.find((n) => n.id === r.serviceType)?.label.toLowerCase() ?? ""} ` : ""}creator collab`
+    : r.serviceType
+      ? serviceTypeLabel(r.category, r.serviceType)
+      : categoryLabel(r.category);
+
+// How far a listing is from a request, and whether it can take it: nearby or in the same city, or for
+// creators, a nationwide creator when the business welcomes creators from anywhere. Null when it can't.
+function reachFor(r: Pick<ServiceRequest, "category" | "serviceType" | "details" | "metro" | "lat" | "lng">, l: { zip: string; metro: string; tags: string; details: string }) {
+  const c = zipCoords(l.zip);
+  const miles = c ? milesBetween(r, c) : l.metro === r.metro ? NOTIFY_MILES : Infinity;
+  const near = miles <= NOTIFY_MILES || l.metro === r.metro;
+  if (r.category !== "CREATORS") {
+    if (r.serviceType && !l.tags.includes(`,${r.serviceType},`)) return null;
+    return near ? { miles, verified: false } : null;
+  }
+  const creator = readCreator(l.details);
+  const collab = readCollab(r.details);
+  if (!creator || !collab || !creatorFitsCollab(creator, collab, r.serviceType)) return null;
+  if (!near && !(collab.anywhere && creator.nationwide)) return null;
+  return { miles, verified: anyVerified(creator) };
+}
 
 // Sellers with a live listing in the request's category (and service, if one was picked) within
 // NOTIFY_MILES or in the same city, nearest first. Never the person who asked.
@@ -71,21 +99,21 @@ export async function matchingVendors(r: ServiceRequest) {
     where: {
       ...publicListing(),
       category: r.category,
-      ...(r.serviceType ? { tags: { contains: `,${r.serviceType},` } } : {}),
+      ...(r.serviceType && r.category !== "CREATORS" ? { tags: { contains: `,${r.serviceType},` } } : {}),
       vendor: { userId: { not: r.userId }, user: { emailVerifiedAt: { not: null } } },
     },
-    select: { zip: true, metro: true, vendorId: true, vendor: { select: { id: true, businessName: true, user: { select: { email: true, name: true } } } } },
+    select: { zip: true, metro: true, tags: true, details: true, vendorId: true, vendor: { select: { id: true, businessName: true, user: { select: { email: true, name: true } } } } },
     take: 2000,
   });
-  const best = new Map<string, { vendor: (typeof listings)[number]["vendor"]; miles: number }>();
+  const best = new Map<string, { vendor: (typeof listings)[number]["vendor"]; miles: number; verified: boolean }>();
   for (const l of listings) {
-    const c = zipCoords(l.zip);
-    const miles = c ? milesBetween(r, c) : l.metro === r.metro ? NOTIFY_MILES : Infinity;
-    if (miles > NOTIFY_MILES && l.metro !== r.metro) continue;
+    const reach = reachFor(r, l);
+    if (!reach) continue;
     const seen = best.get(l.vendorId);
-    if (!seen || miles < seen.miles) best.set(l.vendorId, { vendor: l.vendor, miles });
+    if (!seen || reach.miles < seen.miles) best.set(l.vendorId, { vendor: l.vendor, ...reach });
   }
-  return [...best.values()].sort((a, b) => a.miles - b.miles);
+  // Verified creators first, then nearest.
+  return [...best.values()].sort((a, b) => Number(b.verified) - Number(a.verified) || a.miles - b.miles);
 }
 
 // Emails the nearest matching sellers about a new request, once.
@@ -94,11 +122,14 @@ export async function notifyVendors(r: ServiceRequest) {
   const link = `${appUrl()}/requests/${r.id}`;
   const when = r.neededBy ? ` · needed by ${r.neededBy}` : "";
   const budget = r.budgetCents != null ? ` · budget about $${(r.budgetCents / 100).toLocaleString("en-US")}` : "";
+  const collab = r.category === "CREATORS" ? readCollab(r.details) : null;
   for (const { vendor } of vendors) {
     await sendEmail(
       vendor.user.email,
-      `New request near you: ${r.title}`,
-      `Hi ${vendor.user.name},\n\nSomeone in ${r.city} needs help with ${requestServiceLabel(r)}${when}${budget}:\n\n` +
+      collab ? `New collab request: ${r.title}` : `New request near you: ${r.title}`,
+      (collab
+        ? `Hi ${vendor.user.name},\n\nA business in ${r.city} wants ${requestServiceLabel(r)}${when}${budget}. ${collabPayLabel(collab)}.\n\n`
+        : `Hi ${vendor.user.name},\n\nSomeone in ${r.city} needs help with ${requestServiceLabel(r)}${when}${budget}:\n\n`) +
         `"${r.title}"\n${r.description.slice(0, 400)}${r.description.length > 400 ? "…" : ""}\n\n` +
         `Send them a quote: ${link}\n\n` +
         `You're getting this because you have a listing in ${categoryLabel(r.category)} nearby. Quotes are free. ` +
@@ -113,7 +144,7 @@ export async function notifyVendors(r: ServiceRequest) {
 export async function requestsForVendor(vendorId: string, userId: string) {
   const listings = await db.listing.findMany({
     where: { vendorId, ...publicListing() },
-    select: { category: true, zip: true, metro: true, tags: true },
+    select: { category: true, zip: true, metro: true, tags: true, details: true },
   });
   if (!listings.length) return [];
   const requests = await db.serviceRequest.findMany({
@@ -124,15 +155,9 @@ export async function requestsForVendor(vendorId: string, userId: string) {
   });
   return requests
     .map((r) => {
-      const fits = listings.filter((l) => l.category === r.category && (!r.serviceType || l.tags.includes(`,${r.serviceType},`)));
-      const miles = Math.min(
-        ...fits.map((l) => {
-          const c = zipCoords(l.zip);
-          return c ? milesBetween(r, c) : l.metro === r.metro ? NOTIFY_MILES : Infinity;
-        }),
-      );
-      const near = fits.some((l) => l.metro === r.metro) || miles <= NOTIFY_MILES;
-      return { request: r, miles, near, quoted: r.quotes.length > 0 };
+      const reaches = listings.filter((l) => l.category === r.category).map((l) => reachFor(r, l)).filter((x) => x != null);
+      const miles = Math.min(...reaches.map((x) => x.miles));
+      return { request: r, miles, near: reaches.length > 0, quoted: r.quotes.length > 0 };
     })
     .filter((x) => x.near);
 }

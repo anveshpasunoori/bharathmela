@@ -63,7 +63,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     <span className="block text-xs font-medium uppercase tracking-wide text-stone-500">{requestServiceLabel(r)}</span>
                     <span className="block font-semibold leading-snug">{r.title}</span>
                     <span className="block text-xs text-stone-500">
-                      {firstName(r.user.name)} · {r.city}{Number.isFinite(miles) ? ` · ${Math.round(miles)} mi` : ""} · {r.neededBy ? `by ${r.neededBy}` : "flexible date"} · {timeAgo(r.createdAt)}
+                      {firstName(r.user.name)} · {r.city}{Number.isFinite(miles) ? (r.category === "CREATORS" && miles > 100 ? " · online collab" : ` · ${Math.round(miles)} mi`) : ""} · {r.neededBy ? `by ${r.neededBy}` : "flexible date"} · {timeAgo(r.createdAt)}
                     </span>
                   </span>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${quoted ? "bg-stone-100 text-stone-600" : "bg-brand text-snow"}`}>

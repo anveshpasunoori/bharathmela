@@ -51,7 +51,10 @@ export default async function PromotePage() {
           <h2 className="font-semibold">Get promoted by a local creator</h2>
           <p className="text-sm text-stone-600">Food bloggers and influencers in {city}, and nationwide. Many take barter: a free meal or product for a post.</p>
         </div>
-        <Link href={cityCategoryPath(vendor.metro, "CREATORS")} className="btn-outline whitespace-nowrap">Find a creator</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={cityCategoryPath(vendor.metro, "CREATORS")} className="btn-outline whitespace-nowrap">Find a creator</Link>
+          <Link href="/requests/new?category=CREATORS" className="btn whitespace-nowrap">Post a collab request</Link>
+        </div>
       </section>
 
       <section className="card space-y-3 print:hidden">

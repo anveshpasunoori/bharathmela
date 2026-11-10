@@ -443,7 +443,9 @@ model ServiceRequest {
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category       String
-  serviceType    String   @default("") // one of the category's service types, if it has them
+  serviceType    String   @default("") // one of the category's service types (for creators: a niche), if any
+  // Category-specific extras as JSON (creator collabs: see CollabDetails in src/lib/creators.ts).
+  details        String   @default("{}")
   title          String
   description    String
   neededBy       String   @default("") // YYYY-MM-DD, or "" for flexible

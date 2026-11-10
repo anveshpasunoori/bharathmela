@@ -18,11 +18,18 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
   return (
     <div className="mx-auto max-w-2xl">
       <Link href="/requests" className="text-sm text-stone-500 hover:text-brand">← My requests</Link>
-      <h1 className="mb-1 mt-2 text-2xl font-bold">Post what you need</h1>
-      <p className="mb-4 text-stone-600">
-        Free. We&apos;ll email up to {MAX_NOTIFIED} sellers near you who offer this, and they&apos;ll send you quotes. Your request stays open
-        for {REQUEST_DAYS} days. Looking for a room? <Link href="/rooms-wanted/new" className="font-semibold text-brand">Post that here</Link>.
-      </p>
+      <h1 className="mb-1 mt-2 text-2xl font-bold">{category === "CREATORS" ? "Post a collab request" : "Post what you need"}</h1>
+      {category === "CREATORS" ? (
+        <p className="mb-4 text-stone-600">
+          Free. We&apos;ll email up to {MAX_NOTIFIED} matching creators (verified ones first), and they&apos;ll send you their ideas and prices.
+          Your request stays open for {REQUEST_DAYS} days.
+        </p>
+      ) : (
+        <p className="mb-4 text-stone-600">
+          Free. We&apos;ll email up to {MAX_NOTIFIED} sellers near you who offer this, and they&apos;ll send you quotes. Your request stays open
+          for {REQUEST_DAYS} days. Looking for a room? <Link href="/rooms-wanted/new" className="font-semibold text-brand">Post that here</Link>.
+        </p>
+      )}
       <div className="card">
         <ActionForm action={createRequest} submitLabel="Get quotes">
           <RequestFields

@@ -658,6 +658,16 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       )}
 
       {category === "CREATORS" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
+          <div>
+            <p className="font-semibold">Want creators to come to you?</p>
+            <p className="text-sm text-stone-600">Post a collab request: paid or barter. Matching creators get an email and send you their ideas and prices.</p>
+          </div>
+          <Link href="/requests/new?category=CREATORS" className="btn">Post a collab request</Link>
+        </div>
+      )}
+
+      {category === "CREATORS" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
           <div>
             <p className="font-semibold">Are you a creator or influencer?</p>
