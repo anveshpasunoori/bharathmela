@@ -46,6 +46,8 @@ email and SMS APIs).
 | `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` | optional | "Continue with Apple" (see below) |
 | `ANTHROPIC_API_KEY` | optional | Turns on the AI ad writer |
 | `GOOGLE_SITE_VERIFICATION` | optional | Search Console "HTML tag" code |
+| `BING_SITE_VERIFICATION` | optional | Bing Webmaster Tools "HTML meta tag" code (msvalidate.01) |
+| `SOCIAL_LINKS` | optional | Comma-separated https URLs of BharathMela's Instagram, Facebook, YouTube, X or LinkedIn pages; tells Google they belong to the brand |
 | `FOUNDING_SELLERS_PER_CITY` | optional | How many sellers per city get free Pro as founding sellers (default 50; 0 turns it off) |
 | `FOUNDING_PRO_DAYS` | optional | How long founding sellers get Pro free (default 90) |
 

@@ -8,6 +8,11 @@ export const SITE_TAGLINE = "Indian home businesses near you";
 export const SITE_DESCRIPTION =
   "Find home food, tutors, pujaris, dance and music teachers, wedding vendors, home services, rooms and more from the Indian community in your US city.";
 
+// Other ways people type the name, for search engines' site-name and brand matching.
+export const SITE_ALT_NAMES = ["Bharath Mela", "BharatMela", "Bharat Mela", "Bharathmela.com"];
+// The site's social profiles (comma-separated URLs in SOCIAL_LINKS), so search engines tie them to the brand.
+export const socialLinks = () => (process.env.SOCIAL_LINKS ?? "").split(",").map((s) => s.trim()).filter((s) => /^https:\/\//.test(s));
+
 export const siteUrl = () => (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 // Full URL for a path; URLs that are already absolute (photos on a CDN) are left as they are.
 export const absoluteUrl = (path: string) => (/^https?:\/\//.test(path) ? path : `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`);

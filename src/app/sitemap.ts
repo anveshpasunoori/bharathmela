@@ -5,6 +5,7 @@ import { publicListing } from "@/lib/listings";
 import { METROS } from "@/lib/metros";
 import { ALL_CITY_CATEGORY_PAGES, absoluteUrl, cityCategoryPath, cityPath, eventPath, listingPath, sellerPath } from "@/lib/seo";
 import { citySubcategoryPath, listingSubcategories } from "@/lib/subcategories";
+import { COMPARISONS, comparePath } from "@/lib/compare";
 import { CREATORS_PATH, LANGUAGE_PAGES, NICHE_PAGES, creatorPageCounts, creatorPagePath } from "@/lib/creator-pages";
 
 // Built on request from the live database (not at deploy time, so builds don't need a database).
@@ -45,6 +46,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/events"), changeFrequency: "daily", priority: 0.8 },
     { url: absoluteUrl("/rooms-wanted"), changeFrequency: "daily", priority: 0.5 },
     ...["/pricing", "/safety", "/contact", "/terms", "/privacy"].map((p) => ({ url: absoluteUrl(p), changeFrequency: "monthly" as const, priority: 0.3 })),
+    { url: absoluteUrl("/indian-classifieds"), changeFrequency: "daily", priority: 0.8 },
+    { url: absoluteUrl("/about"), changeFrequency: "monthly", priority: 0.5 },
+    { url: absoluteUrl("/compare"), changeFrequency: "monthly", priority: 0.5 },
+    ...COMPARISONS.map((c) => ({ url: absoluteUrl(comparePath(c)), changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: absoluteUrl(CREATORS_PATH), changeFrequency: "daily", priority: 0.8 },
     ...creatorPages.map((p) => ({ url: absoluteUrl(creatorPagePath(p)), changeFrequency: "daily" as const, priority: 0.7 })),
     ...METROS.map((m) => ({ url: absoluteUrl(cityPath(m.id)), changeFrequency: "daily" as const, priority: 0.8 })),

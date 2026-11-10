@@ -16,7 +16,7 @@ import { db } from "@/lib/db";
 import { JsonLd } from "@/components/JsonLd";
 import { PLATFORM_DISCLAIMER } from "@/lib/legal";
 import { METROS } from "@/lib/metros";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl, cityPath, siteUrl } from "@/lib/seo";
+import { SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl, cityPath, siteUrl, socialLinks } from "@/lib/seo";
 import "./globals.css";
 
 // Display serif for headings (see globals.css); a warm, crafted feel next to the clean body sans.
@@ -34,18 +34,35 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   openGraph: { type: "website", siteName: SITE_NAME, locale: "en_US", title: `${SITE_NAME} – ${SITE_TAGLINE}`, description: SITE_DESCRIPTION, url: "/" },
   twitter: { card: "summary_large_image", title: `${SITE_NAME} – ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
-  // Google Search Console's "HTML tag" verification code, when set.
-  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
+  // Google Search Console and Bing Webmaster Tools "HTML tag" verification codes, when set.
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : {}),
+    ...(process.env.BING_SITE_VERIFICATION ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } } : {}),
+  },
 };
 
-// Who we are and how to search the site, for search engines (enables the sitelinks search box).
-const SITE_JSON_LD = [
-  { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: siteUrl(), logo: absoluteUrl("/icon.svg") },
+// Who we are, the other spellings of the name, and how to search the site, for search engines. The
+// WebSite name and alternateName decide the site name Google shows above results.
+const SITE_JSON_LD = () => [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl()}/#organization`,
+    name: SITE_NAME,
+    alternateName: SITE_ALT_NAMES,
+    url: siteUrl(),
+    logo: absoluteUrl("/apple-icon.png"),
+    description: SITE_DESCRIPTION,
+    areaServed: "US",
+    ...(socialLinks().length ? { sameAs: socialLinks() } : {}),
+  },
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    url: siteUrl(),
+    alternateName: SITE_ALT_NAMES,
+    url: `${siteUrl()}/`,
+    publisher: { "@id": `${siteUrl()}/#organization` },
     potentialAction: { "@type": "SearchAction", target: `${siteUrl()}/?q={search_term_string}`, "query-input": "required name=search_term_string" },
   },
 ];
@@ -94,6 +111,11 @@ export default async function RootLayout({
             <div className="sm:col-span-2">
               <p className="font-semibold text-brand">BharathMela</p>
               <p className="mt-1 text-stone-600">Home businesses from the Indian community, in your US city.</p>
+              <p className="mt-1 text-stone-500">
+                <Link href="/about" className="hover:text-brand">About BharathMela</Link> ·{" "}
+                <Link href="/indian-classifieds" className="hover:text-brand">Indian classifieds in the US</Link> ·{" "}
+                <Link href="/compare" className="hover:text-brand">Compare</Link>
+              </p>
               <InstallApp className="mt-3 block" />
             </div>
             <div className="space-y-1">
@@ -125,7 +147,7 @@ export default async function RootLayout({
           </nav>
           {/* Room for the phone tab bar under the last line. */}
           <p className="mx-auto max-w-5xl px-4 pb-24 text-xs text-stone-500 md:pb-6">{PLATFORM_DISCLAIMER}</p>
-          <JsonLd data={SITE_JSON_LD} />
+          <JsonLd data={SITE_JSON_LD()} />
         </footer>
       </body>
     </html>
