@@ -34,6 +34,8 @@ model User {
   termsAcceptedAt       DateTime?
   // Last time the user was signed in and using the site, for "Active recently" badges.
   lastSeenAt            DateTime?
+  // Hashed network address at the last sign-in, to spot sellers rating themselves from a buyer account.
+  lastIpHash            String           @default("")
   // Set once the user confirms a texted code; phone itself lives on VendorProfile.
   phoneVerifiedAt       DateTime?
   // Suspended users can't log in and their listings and reviews are hidden.
@@ -136,13 +138,20 @@ model Review {
   buyer           User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
   rating          Int // 1-5
   comment         String        @default("")
-  status          String        @default("VISIBLE") // VISIBLE | HIDDEN (removed by admin)
+  status          String        @default("VISIBLE") // VISIBLE | PENDING (held for a check) | HIDDEN (removed by admin)
+  // Why it was held (src/lib/review-guard.ts), for the admin who checks it.
+  holdReason      String        @default("")
+  // The buyer messaged the seller on BharathMela, or the seller asked them to rate: shown as a badge.
+  verifiedContact Boolean       @default(false)
+  // Hashed network address of the reviewer, to spot one person rating from several accounts.
+  ipHash          String        @default("")
   vendorReply     String        @default("")
   vendorRepliedAt DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   @@unique([vendorId, buyerId])
+  @@index([vendorId, createdAt])
 }
 
 // One row per AI ad-writer use, for the daily limit.

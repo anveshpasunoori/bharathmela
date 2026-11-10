@@ -253,6 +253,10 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                   <Link href={`/verify?next=${here}`} className="font-semibold text-brand">Verify your email</Link> to review this seller.
                 </p>
               ) : (
+                <>
+                {mine?.status === "PENDING" && (
+                  <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-amber-900">Your rating is waiting for a quick check before it appears.</p>
+                )}
                 <ActionForm action={submitReview} submitLabel={mine ? "Update review" : "Post review"} className="space-y-3">
                   <input type="hidden" name="listingId" value={listing.id} />
                   <fieldset>
@@ -273,6 +277,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                     <span>This is my honest experience. I&apos;m not related to the seller and wasn&apos;t paid for it.</span>
                   </label>
                 </ActionForm>
+                </>
               )}
             </div>
           </details>

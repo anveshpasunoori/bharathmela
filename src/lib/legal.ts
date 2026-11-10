@@ -1,7 +1,7 @@
 // Platform-liability text shown across the app. Have a lawyer review before launch.
 
 // Bump when the Terms change materially; sellers who accepted an older version can be re-prompted.
-export const TERMS_VERSION = "2026-11-02";
+export const TERMS_VERSION = "2026-11-10";
 
 export const SITE_NAME = "BharathMela";
 

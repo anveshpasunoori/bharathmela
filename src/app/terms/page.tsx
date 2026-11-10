@@ -32,10 +32,29 @@ export default function TermsPage() {
         <li>You own or have permission to use all text, photos and trademarks in your listing.</li>
       </ul>
 
-      <h2>3. Prohibited listings</h2>
+      <h2 id="prohibited">3. Prohibited listings</h2>
+      <p>You may not list, offer or ask for:</p>
+      <ul>
+        <li>Weapons, ammunition, explosives or fireworks.</li>
+        <li>Drugs, including marijuana and THC products, kratom, bhang, ganja and poppy husk; prescription medicines; or steroids.</li>
+        <li>Alcohol, including homemade liquor; tobacco and nicotine products, including gutka, paan masala, zarda, beedis and vapes.</li>
+        <li>Adult content or services of any kind, including escort, &ldquo;body rub&rdquo; or sensual massage offers.</li>
+        <li>Counterfeit, &ldquo;first copy&rdquo; or replica goods; stolen goods; hacked or shared streaming accounts; phone unlocking or IMEI changes.</li>
+        <li>Fake or forged documents, degrees, certificates, experience letters or pay stubs; visa, H-1B or green card sales.</li>
+        <li>Gambling or betting, including satta and matka; hawala or other unlicensed money transfer; any scheme to double money.</li>
+        <li>Fake reviews, ratings or followers, or offers to buy or sell them.</li>
+        <li>Human organs or body products; protected wildlife products such as ivory, tiger parts or shahtoosh.</li>
+        <li>Discriminatory housing or job ads, multi-level marketing, guaranteed cures or results, or anything misleading, fraudulent or illegal.</li>
+      </ul>
       <p>
-        No illegal goods or services, weapons, drugs, alcohol or tobacco sales, counterfeit goods, adult services, discriminatory housing or job ads,
-        multi-level marketing, or anything misleading or fraudulent. We may remove any listing or account at any time, for any reason or none.
+        Listings are screened automatically and may be held for review. We may remove any listing or account at any time, for any reason or none.
+      </p>
+
+      <h3>Ratings and reviews</h3>
+      <p>
+        Ratings must come from a real customer&apos;s own experience. Sellers may not rate themselves, use other accounts or ask friends and family to
+        rate them, or offer discounts, refunds, gifts or anything else in return for a rating (good or bad). Ratings that look suspicious are held
+        until we check them, and we remove fake ones. Sellers who break these rules may lose their ratings or their account.
       </p>
 
       <h2>4. Fees</h2>

@@ -6,6 +6,7 @@ type Review = {
   comment: string;
   updatedAt: Date;
   vendorReply: string;
+  verifiedContact?: boolean;
   buyer: { name: string };
 };
 
@@ -17,7 +18,12 @@ export function ReviewList({ reviews, sellerName }: { reviews: Review[]; sellerN
         <li key={r.id} className="py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm font-medium">
-              {r.buyer.name} <span className="text-xs text-green-700">✓ verified email</span>
+              {r.buyer.name}{" "}
+              {r.verifiedContact ? (
+                <span className="text-xs text-green-700" title="This buyer contacted the seller through BharathMela">✓ Contacted on BharathMela</span>
+              ) : (
+                <span className="text-xs text-green-700">✓ verified email</span>
+              )}
             </span>
             <span className="flex items-center gap-2">
               <Stars rating={r.rating} />

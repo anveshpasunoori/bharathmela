@@ -7,6 +7,7 @@ import { getCurrentUser, requireVendor } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { screenShortText } from "@/lib/moderation";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
+import { checkReview, ipHash } from "@/lib/review-guard";
 
 // New accounts wait a little before rating, which slows down throwaway-account review bombing.
 const MIN_ACCOUNT_AGE_MS = 10 * 60_000;
@@ -30,17 +31,24 @@ export async function submitReview(_: FormState, form: FormData): Promise<FormSt
   if (textProblem) return { error: textProblem };
   if (form.get("honest") !== "on") return { error: "Please confirm this rating is based on your own experience." };
 
-  const listing = await db.listing.findUnique({ where: { id: listingId }, select: { vendorId: true } });
+  const listing = await db.listing.findUnique({ where: { id: listingId }, select: { vendorId: true, vendor: { select: { userId: true } } } });
   if (!listing) return { error: "This listing no longer exists." };
+  if (listing.vendor.userId === user.id) return { error: "You can't rate your own business." };
 
   const existing = await db.review.findUnique({ where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } } });
+  const ip = await ipHash();
+  const { verifiedContact, holdReason } = await checkReview({ vendorId: listing.vendorId, vendorUserId: listing.vendor.userId, buyer: user, comment, ip });
+  // Risky ratings wait for an admin. One an admin hid stays hidden, and one waiting keeps waiting.
+  const status = existing?.status === "HIDDEN" ? "HIDDEN" : holdReason || existing?.status === "PENDING" ? "PENDING" : "VISIBLE";
+  const guard = { status, holdReason: holdReason || (status === "PENDING" ? existing?.holdReason ?? "" : ""), verifiedContact, ipHash: ip };
   await db.review.upsert({
     where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } },
-    create: { vendorId: listing.vendorId, buyerId: user.id, rating, comment },
+    create: { vendorId: listing.vendorId, buyerId: user.id, rating, comment, ...guard },
     // Editing a review clears the seller's reply, since it may no longer fit.
-    update: { rating, comment, ...(existing && existing.comment !== comment ? { vendorReply: "", vendorRepliedAt: null } : {}) },
+    update: { rating, comment, ...guard, ...(existing && existing.comment !== comment ? { vendorReply: "", vendorRepliedAt: null } : {}) },
   });
   revalidatePath(`/listing/${listingId}`);
+  if (status === "PENDING") return { message: "Thanks! Your rating will appear after a quick check." };
   return { message: existing ? "Your rating is updated." : "Thanks! Your rating is posted." };
 }
 

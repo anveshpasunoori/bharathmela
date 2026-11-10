@@ -15,8 +15,15 @@ export default async function AdminPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [latestReviews, reports, pending, recent, revenue, vendorCount, activeSubs] = await Promise.all([
+  const [heldReviews, latestReviews, reports, pending, recent, revenue, vendorCount, activeSubs] = await Promise.all([
     db.review.findMany({
+      where: { status: "PENDING" },
+      include: { buyer: { select: { name: true, email: true, createdAt: true } }, vendor: { select: { businessName: true } } },
+      orderBy: { updatedAt: "asc" },
+      take: 50,
+    }),
+    db.review.findMany({
+      where: { status: { not: "PENDING" } },
       include: { buyer: { select: { name: true, email: true } }, vendor: { select: { businessName: true } } },
       orderBy: { updatedAt: "desc" },
       take: 15,
@@ -158,6 +165,37 @@ export default async function AdminPage() {
           ))}
         </ul>
       </section>
+
+      {heldReviews.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">Ratings waiting for a check ({heldReviews.length})</h2>
+          <p className="mb-3 text-sm text-stone-600">
+            These looked risky, so they aren&apos;t public yet. Approve genuine ones, even if negative. Hide fakes: the seller rating themselves, one
+            person using several accounts, or ratings given for a reward.
+          </p>
+          <ul className="space-y-2">
+            {heldReviews.map((r) => (
+              <li key={r.id} className="card space-y-2 py-3 text-sm">
+                <p>
+                  <b>{"★".repeat(r.rating)}</b> for {r.vendor.businessName} by {r.buyer.name} ({r.buyer.email}), account made{" "}
+                  {fmtDate(r.buyer.createdAt)}
+                  {r.verifiedContact && <span className="badge ml-2 bg-green-50 text-green-800">Contacted the seller</span>}
+                </p>
+                {r.comment && <p className="text-stone-600">{r.comment}</p>}
+                <p className="text-xs font-medium text-amber-800">Held: {r.holdReason || "edited while waiting"}</p>
+                <div className="flex gap-2">
+                  <form action={setReviewVisibility.bind(null, r.id, true)}>
+                    <button className="btn py-1.5 text-sm">Approve</button>
+                  </form>
+                  <form action={setReviewVisibility.bind(null, r.id, false)}>
+                    <button className="btn-outline py-1.5 text-sm">Hide</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {latestReviews.length > 0 && (
         <section>

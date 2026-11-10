@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "./db";
+import { ipHash } from "./review-guard";
 
 const COOKIE = "session";
 const SESSION_DAYS = 30;
@@ -17,6 +18,8 @@ export async function createSession(userId: string) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86_400_000);
   await db.session.create({ data: { id: hashToken(token), userId, expiresAt } });
+  // Remembered (hashed) so a seller rating themselves from a second account can be spotted.
+  await db.user.update({ where: { id: userId }, data: { lastIpHash: await ipHash() } });
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

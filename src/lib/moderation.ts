@@ -41,17 +41,58 @@ const DISCRIMINATION = discriminationPatterns(PROTECTED, false);
 const DISCRIMINATION_STRICT = discriminationPatterns([...PROTECTED, ...DIET], true);
 
 const PROHIBITED: { pattern: RegExp; reason: string }[] = [
-  { pattern: /(?<!(glue|toy|nerf|water|heat|spray|massage|squirt|nail|staple|caulk) )\b(guns?|firearms?|pistols?|rifles?|ammo|ammunition|silencers?)\b/i, reason: "weapons" },
-  { pattern: /\b(weed|marijuana|cannabis|thc|edibles|psilocybin|mushrooms? (gummies|edibles)|kratom|cocaine|mdma|xanax|adderall|oxycodone|percocet)\b/i, reason: "drugs" },
-  { pattern: /\b(prescription|rx)\s+(drugs?|medicines?|pills|tablets)\b/i, reason: "prescription drugs" },
-  { pattern: /\b(liquor|alcohol|whisk(e)?y|vodka|rum|beer|wine|toddy|daru)\b.{0,30}\b(for sale|selling|sell|delivery|available)\b/i, reason: "alcohol sales" },
-  { pattern: /\b(cigarettes?|vapes?|e-?cigs?|gutka|gutkha|paan masala|khaini|hookah tobacco)\b/i, reason: "tobacco or nicotine products" },
-  { pattern: /\b(first copy|replica|duplicate brand|fake (brand|designer)|counterfeit|master copy|aaa quality)\b/i, reason: "counterfeit goods" },
-  { pattern: /\b(escorts?|sugar (daddy|baby)|adult services|happy ending|nuru)\b/i, reason: "adult services" },
+  { pattern: /(?<!(glue|toy|nerf|water|heat|spray|massage|squirt|nail|staple|caulk) )\b(guns?|firearms?|pistols?|rifles?|ammo|ammunition|silencers?|ghost guns?|80% lowers?|bump stocks?)\b/i, reason: "weapons" },
+  { pattern: /\b(explosives?|grenades?|switchblades?|brass knuckles)\b/i, reason: "weapons" },
+  {
+    pattern:
+      /\b(weed|marijuana|cannabis|thc|edibles|psilocybin|mushrooms? (gummies|edibles)|kratom|cocaine|mdma|ecstasy|xanax|adderall|oxycodone|percocet|fentanyl|heroin|meth|ketamine|lsd|codeine|tramadol|ganja|charas|bhang|afeem|opium|poppy (husk|straw|pods?)|doda post|steroids?|hgh|sarms)\b/i,
+    reason: "drugs",
+  },
+  { pattern: /\b(prescription|rx)\s+(drugs?|medicines?|pills|tablets)\b|\b(medicines?|tablets|pills|antibiotics|injections?)\b.{0,30}\b(no|without) (a )?prescription\b|\b(ozempic|wegovy|semaglutide|tirzepatide|mounjaro|viagra|cialis)\b/i, reason: "prescription drugs" },
+  { pattern: /\b(liquor|alcohol|whisk(e)?y|vodka|rum|beer|wine|toddy|daru|arrack|feni|mahua)\b.{0,30}\b(for sale|selling|sell|delivery|available)\b/i, reason: "alcohol sales" },
+  { pattern: /\b(home ?made|home-made|home ?brewed|desi)\s+(liquor|alcohol|wine|beer|daru|arrack|feni|sharab)\b/i, reason: "alcohol sales" },
+  { pattern: /\b(cigarettes?|cigars?|vapes?|vaping|e-?cigs?|gutka|gutkha|paan masala|khaini|zarda|beedis?|bidis?|hookah tobacco|chewing tobacco|nicotine pouches?|zyn|snus)\b/i, reason: "tobacco or nicotine products" },
+  { pattern: /\b(first copy|replica|duplicate brand|fake (brand|designer)|counterfeit|master copy|aaa quality|7a quality|copy watch(es)?)\b/i, reason: "counterfeit goods" },
+  {
+    pattern:
+      /\b(escorts?|sugar (daddy|baby|mommy)|adult services|happy ending|nuru|body ?rubs?|sensual massage|erotic|porn|xxx|nudes|nude (photos|pics|videos|massage)|onlyfans|strippers?|striptease|sex toys?|adult (toys|videos?|content|entertainment)|cam ?girls?|gfe)\b/i,
+    reason: "adult content or services",
+  },
   { pattern: /\b(fireworks?|firecrackers?|sparklers? for sale)\b/i, reason: "fireworks" },
-  { pattern: /\b(fake|novelty)\s+(ids?|licen[cs]es?|passports?|documents?|ssn|green cards?)\b/i, reason: "fake documents" },
+  {
+    pattern:
+      /\b(fake|forged|novelty|duplicate)\s+(ids?|licen[cs]es?|passports?|documents?|ssn|green cards?|degrees?|diplomas?|certificates?|marksheets?|experience letters?|pay ?stubs?|bank statements?|i-?20s?|visas?)\b|\b(degrees?|diplomas?|experience (letters?|certificates?))\s+(for sale|without (exams?|study|attending))\b/i,
+    reason: "fake documents",
+  },
   { pattern: /\b(h1b|h-1b|green card|visa)\s+(sponsorship )?for sale\b|\bsell(ing)? (h1b|visa|green card)/i, reason: "immigration fraud" },
+  { pattern: /\b(satta|matka|betting tips|cricket (betting|bets?|satta)|bookies?|online casino|teen patti (real|cash)|lottery tickets? for sale)\b/i, reason: "gambling" },
+  { pattern: /\b(hawala|money (doubling|multiplier)|launder(ing)?|bank logs|fullz|cvv (dumps?|for sale)|carding|cash ?app flips?|ssn (for sale|numbers))\b/i, reason: "financial fraud" },
+  {
+    pattern:
+      /\b(hacked accounts?|(netflix|spotify|prime video|hotstar|disney\+?|youtube premium|chatgpt) (accounts?|subscriptions?) (for sale|cheap|lifetime)|imei (change|changing|repair|unlock)|icloud (bypass|unlock)|stolen (goods|phones?|items|cars?)|cable descramblers?|(buy|sell(ing)?) (google |yelp |instagram |facebook |5[- ]star )?(followers|likes|reviews|ratings)|fake (reviews|ratings|followers))\b/i,
+    reason: "stolen or hacked goods and services",
+  },
+  { pattern: /\b(kidneys?|livers?|organs?)\s+(for sale|available)\b|\bsell(ing)? (my |a )?(kidney|liver|organs?)\b|\b(breast milk|sperm)\b.{0,20}\b(for sale|selling)\b/i, reason: "human organs or body products" },
+  { pattern: /\b(ivory|rhino horn|tiger (skin|claws?|teeth|bones?)|leopard skin|elephant tusks?|shahtoosh|star tortoises?|turtle shells?|pangolin|bear bile|deer musk)\b/i, reason: "protected wildlife products" },
 ];
+
+// People dodge keyword checks with "w33d", "e s c 0 r t" or invisible characters. This undoes the common
+// tricks so the banned-items check also sees the plain word. Only used for that check.
+export function deobfuscate(text: string) {
+  return (
+    text
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f\u200b-\u200d\u2060\ufeff]/g, "")
+      // Single letters split by spaces, dots or dashes: "e s c o r t" -> "escort".
+      .replace(/\b(?:[a-z0-9@$](?:[\s._*-]|\s*[.*_-]\s*)){3,}[a-z0-9@$]\b/gi, (m) => m.replace(/[\s._*-]/g, ""))
+      // Digits and symbols standing in for letters, only inside words that also have letters (so "$12" stays).
+      .replace(/[a-z0-9@$]*[a-z][a-z0-9@$]*/gi, (w) =>
+        /[a-z]/i.test(w) && /[0134578@$]/.test(w)
+          ? w.replace(/[0134578@$]/g, (c) => ({ "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "8": "b", "@": "a", $: "s" })[c] ?? c)
+          : w,
+      )
+  );
+}
 
 const SUSPICIOUS: { pattern: RegExp; reason: string }[] = [
   { pattern: /\b(western union|moneygram|wire transfer|wire the|bank transfer only)\b/i, reason: "asks for wire transfers" },
@@ -64,6 +105,7 @@ const SUSPICIOUS: { pattern: RegExp; reason: string }[] = [
   { pattern: /\b(cures?|treats?|heals?)\s+(cancer|diabetes|covid|hiv|autism|infertility)\b/i, reason: "medical cure claim" },
   { pattern: /\b(vashikaran|black magic|love spell|get your (ex|love) back|astrolog(y|er) .*guarantee)\b/i, reason: "spell or guaranteed-astrology pitch" },
   { pattern: /\b(massage)\b/i, reason: "massage services" },
+  { pattern: /\b(puppies|puppy|kittens?|dogs?|cats?|parrots?|birds?|exotic pets?)\b.{0,25}\b(for sale|selling|sale price)\b/i, reason: "selling animals (check local rules)" },
   { pattern: /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|io|ly|me|xyz|in)\b/i, reason: "contains a link" },
 ];
 
@@ -137,9 +179,10 @@ export function screenListing(text: string, category: string): Screening {
   for (const { pattern, message } of PROFESSIONAL_BLOCKS[category] ?? []) {
     if (pattern.test(normalized)) return { block: message, flags: [] };
   }
+  const plain = deobfuscate(normalized);
   for (const { pattern, reason } of PROHIBITED) {
-    const m = normalized.match(pattern);
-    if (m) return { block: `Listings for ${reason} aren't allowed on BharathMela (found "${m[0]}").`, flags: [] };
+    const m = normalized.match(pattern) ?? plain.match(pattern);
+    if (m) return { block: `Listings for ${reason} aren't allowed on BharathMela (found "${m[0]}"). Our Terms list what can't be sold here.`, flags: [] };
   }
   const flags = [...SUSPICIOUS, ...(PROFESSIONAL_FLAGS[category] ?? [])]
     .filter(({ pattern }) => pattern.test(normalized))

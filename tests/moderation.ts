@@ -29,6 +29,31 @@ const cases: [string, string, string][] = [
   ["LEGAL", "Notario services for H-1B and green card paperwork", "block"],
   ["LEGAL", "H-1B, green card and citizenship cases. 15 years of experience. Free 30-minute consultation.", "ok"],
   ["LEGAL", "Certified specialist in family law", "flag"],
+  // Banned items, including disguised spellings.
+  ["GOODS", "Selling w33d edibles, DM me", "block"],
+  ["BEAUTY", "Relaxing e s c o r t service, discreet", "block"],
+  ["GOODS", "Pure g@nja from home, fast delivery", "block"],
+  ["GOODS", "Gutka and zarda packets available", "block"],
+  ["GOODS", "Homemade daru for parties", "block"],
+  ["SERVICES", "Daily satta matka tips, 100% sure numbers", "block"],
+  ["SERVICES", "Hawala transfer to India, best rates", "block"],
+  ["SERVICES", "Netflix accounts lifetime for $10", "block"],
+  ["SERVICES", "Experience certificates for sale, any company", "block"],
+  ["SERVICES", "Fake degree from US university, no exams", "block"],
+  ["GOODS", "Ivory bangles from grandmother's collection", "block"],
+  ["GOODS", "Ozempic pens, no prescription needed", "block"],
+  ["SERVICES", "Erotic photos and videos", "block"],
+  ["GOODS", "Buy Google reviews and followers for your shop", "block"],
+  ["GOODS", "Golden retriever puppies for sale", "flag"],
+  // Ordinary listings that share words with banned ones.
+  ["BEAUTY", "Bridal makeup with nude lipstick shades and HD foundation", "ok"],
+  ["FOOD", "Methi paratha and poppy seed (khus khus) halwa, $8", "ok"],
+  ["ROOM_RENTAL", "Room with washer hookup, 1BHK, $1200 per month", "ok"],
+  ["EVENT_SERVICES", "Full service catering for weddings, 50 to 500 guests", "ok"],
+  ["FOOD", "Farm fresh eggs for sale, $6 a dozen", "ok"],
+  ["FOOD", "Lean chicken curry meal plan, 5 days $60", "ok"],
+  ["GOODS", "Strip mall shop closing sale: sarees and kurtas 50% off", "ok"],
+  ["CLOTHING", "Kanjivaram silk sarees with pure zari, $250", "ok"],
 ];
 let bad = 0;
 for (const [cat, text, want] of cases) {
