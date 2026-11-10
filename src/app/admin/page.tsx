@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { approve, reject, resolveReport, setReviewVisibility } from "../actions/admin";
 import { reportReasonLabel } from "@/lib/legal";
+import { sellerPath } from "@/lib/seo";
 import { syncExpirations } from "@/lib/billing";
 import { db } from "@/lib/db";
 import { metroName } from "@/lib/metros";
@@ -35,6 +36,14 @@ export default async function AdminPage() {
         event: { include: { vendor: { select: { businessName: true } } } },
         roomWanted: { include: { user: { select: { name: true, email: true } } } },
         serviceRequest: { include: { user: { select: { name: true, email: true } } } },
+        vendor: { include: { user: { select: { id: true, email: true, suspendedAt: true } }, _count: { select: { reports: { where: { status: "OPEN" } } } } } },
+        conversation: {
+          include: {
+            startedBy: { select: { id: true, name: true, email: true } },
+            other: { select: { id: true, name: true, email: true } },
+            messages: { orderBy: { createdAt: "desc" }, take: 8, select: { id: true, body: true, fromUserId: true, createdAt: true } },
+          },
+        },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -81,14 +90,82 @@ export default async function AdminPage() {
       </div>
 
       <section>
-        <h2 className="mb-1 text-lg font-semibold">Reported listings</h2>
+        <h2 className="mb-1 text-lg font-semibold">Reports</h2>
         <p className="mb-3 text-sm text-stone-600">
-          Review reports promptly. Remove anything illegal, discriminatory or unsafe. Removing closes all open reports on that listing, and the
-          seller can&apos;t bring it back.
+          Review reports promptly. Remove anything illegal, discriminatory or unsafe. Removing closes all open reports on that item, and the
+          seller can&apos;t bring it back. Suspending a reported seller or user signs them out and hides everything they posted. Items are taken
+          down automatically once 3 different people report them; dismissing the reports puts a seller&apos;s listings back.
         </p>
         {reports.length === 0 && <p className="card text-stone-600">No open reports.</p>}
         <ul className="space-y-3">
           {reports.map((r) => {
+            if (r.vendor) {
+              const v = r.vendor;
+              return (
+                <li key={r.id} className="card space-y-2 ring-2 ring-red-200">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-semibold">
+                      <span className="badge mr-2 bg-red-100 text-red-800">{reportReasonLabel(r.reason)}</span>
+                      <span className="badge mr-2 bg-stone-100 text-stone-600">business</span>
+                      <Link href={sellerPath(v)} className="hover:text-brand" target="_blank">{v.businessName}</Link>
+                    </p>
+                    <p className="text-sm text-stone-500">{fmtDate(r.createdAt)}</p>
+                  </div>
+                  <p className="text-sm text-stone-600">
+                    {v.user.email} · {v.phone} · {v._count.reports} open report{v._count.reports === 1 ? "" : "s"} on this business
+                    {v.user.suspendedAt && " · suspended"}
+                    {r.reporterEmail && <> · Reporter: {r.reporterEmail}</>}
+                  </p>
+                  {r.details && <p className="rounded-md bg-stone-50 px-3 py-2 text-sm">{r.details}</p>}
+                  <div className="flex flex-wrap gap-2">
+                    <form action={resolveReport.bind(null, r.id, true)} className="flex flex-1 gap-2">
+                      <input name="note" className="input" placeholder="Reason for suspending" />
+                      <button className="btn whitespace-nowrap">Suspend seller</button>
+                    </form>
+                    <form action={resolveReport.bind(null, r.id, false)}>
+                      <button className="btn-outline">Dismiss</button>
+                    </form>
+                  </div>
+                </li>
+              );
+            }
+            if (r.conversation) {
+              const c = r.conversation;
+              const reporterId = r.reporterKey.replace(/^u:/, "");
+              const reporter = c.startedBy.id === reporterId ? c.startedBy : c.other;
+              const reported = c.startedBy.id === reporterId ? c.other : c.startedBy;
+              return (
+                <li key={r.id} className="card space-y-2 ring-2 ring-red-200">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-semibold">
+                      <span className="badge mr-2 bg-red-100 text-red-800">{reportReasonLabel(r.reason)}</span>
+                      <span className="badge mr-2 bg-stone-100 text-stone-600">conversation</span>
+                      {reported.name} ({reported.email})
+                    </p>
+                    <p className="text-sm text-stone-500">{fmtDate(r.createdAt)}</p>
+                  </div>
+                  <p className="text-sm text-stone-600">Reported by {reporter.name} ({reporter.email})</p>
+                  {r.details && <p className="rounded-md bg-stone-50 px-3 py-2 text-sm">{r.details}</p>}
+                  <ol className="space-y-1 rounded-md bg-stone-50 p-3 text-sm">
+                    {[...c.messages].reverse().map((m) => (
+                      <li key={m.id}>
+                        <b className={m.fromUserId === reported.id ? "text-red-800" : "text-stone-700"}>{m.fromUserId === reported.id ? reported.name : reporter.name}:</b>{" "}
+                        <span className="whitespace-pre-line">{m.body}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="flex flex-wrap gap-2">
+                    <form action={resolveReport.bind(null, r.id, true)} className="flex flex-1 gap-2">
+                      <input name="note" className="input" placeholder="Reason for suspending" />
+                      <button className="btn whitespace-nowrap">Suspend {reported.name.split(" ")[0]}</button>
+                    </form>
+                    <form action={resolveReport.bind(null, r.id, false)}>
+                      <button className="btn-outline">Dismiss</button>
+                    </form>
+                  </div>
+                </li>
+              );
+            }
             const target = r.listing ?? r.event ?? r.roomWanted ?? r.serviceRequest;
             if (!target) return null;
             const kind = r.listing ? "listing" : r.event ? "event" : r.roomWanted ? "room request" : "service request";

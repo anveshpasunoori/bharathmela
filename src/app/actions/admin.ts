@@ -5,6 +5,7 @@ import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth";
 import { approvePayment, rejectPayment } from "@/lib/billing";
 import { db } from "@/lib/db";
+import { SELLER_HOLD_NOTE } from "@/lib/legal";
 import { rewardReferrer } from "@/lib/growth";
 
 const note = (form: FormData) => String(form.get("note") ?? "").trim().slice(0, 500);
@@ -24,6 +25,13 @@ export async function reject(paymentId: string, form: FormData) {
 }
 
 // Removing a reported listing or event closes every open report on it. Sellers can't restore removed items.
+// The other person in a reported conversation (not the one who reported it).
+async function reportedInConversation(conversationId: string, reporterKey: string) {
+  const c = await db.conversation.findUnique({ where: { id: conversationId }, select: { startedById: true, otherId: true } });
+  if (!c) return null;
+  return reporterKey === `u:${c.startedById}` ? c.otherId : c.startedById;
+}
+
 export async function resolveReport(reportId: string, remove: boolean, form: FormData) {
   const admin = await requireAdmin();
   const report = await db.report.findUnique({ where: { id: reportId } });
@@ -51,6 +59,24 @@ export async function resolveReport(reportId: string, remove: boolean, form: For
         db.report.updateMany({ where: { roomWantedId: report.roomWantedId, status: "OPEN" }, data: closeReports }),
       ]);
       await audit(admin.id, "roomWanted.remove", "roomWanted", report.roomWantedId, reason);
+    } else if (report.vendorId || report.conversationId) {
+      // A reported business or conversation: suspend the person (which hides their listings and ratings
+      // and signs them out), and close the other open reports about them.
+      const userId = report.vendorId
+        ? (await db.vendorProfile.findUniqueOrThrow({ where: { id: report.vendorId }, select: { userId: true } })).userId
+        : await reportedInConversation(report.conversationId!, report.reporterKey);
+      if (userId && userId !== admin.id) {
+        const vendor = await db.vendorProfile.findUnique({ where: { userId }, select: { id: true } });
+        await db.$transaction([
+          db.user.update({ where: { id: userId }, data: { suspendedAt: now, suspendReason: reason } }),
+          db.session.deleteMany({ where: { userId } }),
+          db.report.updateMany({
+            where: { status: "OPEN", OR: [{ id: reportId }, ...(vendor ? [{ vendorId: vendor.id }] : [])] },
+            data: closeReports,
+          }),
+        ]);
+        await audit(admin.id, "user.suspend", "user", userId, `after a report: ${reason}`);
+      }
     } else if (report.serviceRequestId) {
       await db.$transaction([
         db.serviceRequest.update({ where: { id: report.serviceRequestId }, data: removed }),
@@ -61,6 +87,10 @@ export async function resolveReport(reportId: string, remove: boolean, form: For
   } else {
     await db.report.update({ where: { id: reportId }, data: { status: "DISMISSED", resolvedAt: now } });
     await audit(admin.id, "report.dismiss", "report", reportId);
+    // A seller whose listings came down after reports gets them back once no reports on them are left open.
+    if (report.vendorId && !(await db.report.count({ where: { vendorId: report.vendorId, status: "OPEN" } }))) {
+      await db.listing.updateMany({ where: { vendorId: report.vendorId, status: "PENDING_REVIEW", moderationNote: SELLER_HOLD_NOTE }, data: { status: "ACTIVE", moderationNote: "" } });
+    }
     // A request held after reports goes back up once no reports on it are left open.
     if (report.serviceRequestId && !(await db.report.count({ where: { serviceRequestId: report.serviceRequestId, status: "OPEN" } }))) {
       await db.serviceRequest.updateMany({ where: { id: report.serviceRequestId, status: "PENDING_REVIEW" }, data: { status: "OPEN", moderationNote: "" } });

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ActionForm } from "@/components/ActionForm";
+import { ReportForm } from "@/components/ReportForm";
 import { db } from "@/lib/db";
-import { REPORT_REASONS } from "@/lib/legal";
 import { reportListing } from "../../../actions/report";
 
 export default async function ReportPage({
@@ -32,26 +31,7 @@ export default async function ReportPage({
       <h1 className="text-2xl font-bold">Report a listing</h1>
       <p className="mb-4 mt-1 text-stone-600">&ldquo;{listing.title}&rdquo;</p>
       <div className="card">
-        <ActionForm action={reportListing} submitLabel="Send report">
-          <input type="hidden" name="listingId" value={listing.id} />
-          <div>
-            <label className="label" htmlFor="reason">What&apos;s wrong?</label>
-            <select className="input" id="reason" name="reason" required defaultValue="">
-              <option value="" disabled>Choose…</option>
-              {REPORT_REASONS.map((r) => (
-                <option key={r.id} value={r.id}>{r.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="details">Details (optional)</label>
-            <textarea className="input min-h-24" id="details" name="details" maxLength={2000} />
-          </div>
-          <div>
-            <label className="label" htmlFor="email">Your email (optional, if you want a reply)</label>
-            <input className="input" id="email" name="email" type="email" />
-          </div>
-        </ActionForm>
+        <ReportForm action={reportListing} hidden={{ listingId: listing.id }} />
       </div>
     </div>
   );

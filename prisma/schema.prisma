@@ -96,6 +96,7 @@ model VendorProfile {
   referralRewardedAt   DateTime?
   createdAt            DateTime        @default(now())
   reviewRequests       ReviewRequest[]
+  reports              Report[]
   leads                Lead[]
   listings             Listing[]
   subscriptions        Subscription[]
@@ -213,6 +214,14 @@ model Report {
   roomWanted       RoomWanted?     @relation(fields: [roomWantedId], references: [id], onDelete: Cascade)
   serviceRequestId String?
   serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  // A whole business (fake business, scams), or a conversation (scam messages, either direction).
+  vendorId         String?
+  vendor           VendorProfile?  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  conversationId   String?
+  conversation     Conversation?   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  // Who reported: "u:<user id>" when signed in, else a hash of their network address. Automatic holds count
+  // different reporters, so one person can't take a listing down by reporting it three times.
+  reporterKey      String          @default("")
   reason           String // see REPORT_REASONS in src/lib/legal.ts
   details          String          @default("")
   reporterEmail    String          @default("")
@@ -221,6 +230,7 @@ model Report {
   resolvedAt       DateTime?
 
   @@index([status])
+  @@index([vendorId])
 }
 
 // A paid monthly plan. Free plan has no row: no active subscription means FREE.
@@ -537,6 +547,7 @@ model Conversation {
   otherReadAt     DateTime?
   createdAt       DateTime    @default(now())
   messages        Message[]
+  reports         Report[]
 
   @@index([startedById, lastMessageAt])
   @@index([otherId, lastMessageAt])

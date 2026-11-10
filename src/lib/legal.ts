@@ -144,6 +144,9 @@ export const CATEGORY_RULES: Record<string, { seller: string[]; buyer?: string; 
 
 export const REPORT_REASONS = [
   { id: "SCAM", label: "Scam or fraud" },
+  { id: "FAKE_BUSINESS", label: "Fake business, or pretending to be someone else" },
+  { id: "PAYMENT", label: "Asked for gift cards, crypto, a wire or a deposit upfront" },
+  { id: "NO_DELIVERY", label: "Took payment but didn't deliver" },
   { id: "DISCRIMINATION", label: "Discriminatory wording" },
   { id: "ILLEGAL", label: "Illegal item or service" },
   { id: "SAFETY", label: "Safety concern" },
@@ -152,6 +155,10 @@ export const REPORT_REASONS = [
   { id: "COPYRIGHT", label: "Uses my photos, text or trademark" },
   { id: "OTHER", label: "Something else" },
 ] as const;
+
+// Listings held because their seller was reported (rather than the listing itself), so dismissing those
+// reports can put them back.
+export const SELLER_HOLD_NOTE = "held automatically after reports on the seller";
 
 export function reportReasonLabel(id: string) {
   return REPORT_REASONS.find((r) => r.id === id)?.label ?? id;

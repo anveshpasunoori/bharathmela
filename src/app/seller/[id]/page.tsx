@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ContactButtons } from "@/components/ContactButtons";
@@ -137,6 +138,13 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
         <ReviewList reviews={reviews} sellerName={seller.businessName} />
         <p className="mt-2 text-xs text-stone-500">Ratings are the opinions of individual users, not of BharathMela.</p>
       </section>
+      {viewer?.vendor?.id !== id && (
+        <p className="text-xs text-stone-500">
+          BharathMela doesn&apos;t take part in deals. Never pay with gift cards, wire transfers or crypto.{" "}
+          <Link href="/safety" className="underline">Safety tips</Link> ·{" "}
+          <Link href={`/seller/${id}/report`} className="font-semibold text-red-700 underline">Report this business</Link>
+        </p>
+      )}
       <JsonLd data={sellerSchema(seller, summary)} />
     </div>
   );

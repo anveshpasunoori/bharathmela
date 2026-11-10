@@ -67,7 +67,8 @@ export default async function ConversationPage({ params, searchParams }: { param
       {risky && (
         <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
           ⚠️ This conversation mentions a payment method scammers use. Never pay with gift cards, wire transfers or crypto, and don&apos;t pay a
-          deposit before you&apos;ve met or seen the place. <Link href="/safety" className="font-semibold underline">Safety tips</Link>
+          deposit before you&apos;ve met or seen the place. <Link href="/safety" className="font-semibold underline">Safety tips</Link> ·{" "}
+          <Link href={`/messages/${conversation.id}/report`} className="font-semibold underline">Report</Link>
         </p>
       )}
 
@@ -97,7 +98,7 @@ export default async function ConversationPage({ params, searchParams }: { param
 
       <p className="text-xs text-stone-500">
         Messages stay on BharathMela; your email address isn&apos;t shared. Something wrong?{" "}
-        <Link href={`/contact?topic=${encodeURIComponent("Report a seller or listing")}`} className="underline">Report this conversation</Link>.
+        <Link href={`/messages/${conversation.id}/report`} className="font-semibold text-red-700 underline">Report this conversation</Link>.
       </p>
     </div>
   );

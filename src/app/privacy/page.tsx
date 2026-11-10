@@ -15,7 +15,11 @@ export default function PrivacyPage() {
         <li>Anyone: reports you send us (and your email if you give it). If you tap &ldquo;Use my location&rdquo; or enter a ZIP code, we look up your city on our own server (no outside
           location service) and remember your city, ZIP and approximate area (rounded to about 1 km) in a cookie on your device for up to 6 months,
           so we can show listings near you. We don&apos;t store it in our database. Use &ldquo;forget&rdquo; next to your location to remove it.</li>
-        <li>Basic technical data such as a login cookie.</li>
+        <li>Messages you send other users on BharathMela. Our team reads a conversation only if one of the two people reports it.</li>
+        <li>
+          Basic technical data such as a login cookie, and a scrambled (hashed) form of your internet address when you sign in, rate a seller or send
+          a report. We use it only to spot fake ratings and repeated reports from one person.
+        </li>
       </ul>
 
       <h2>What is public</h2>
