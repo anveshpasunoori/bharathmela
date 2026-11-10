@@ -29,7 +29,7 @@ export default async function VendorProfilePage() {
             <textarea className="input min-h-28" id="about" name="about" maxLength={1000} defaultValue={vendor.about}
               placeholder="Who you are, what you specialize in, languages you speak, areas you serve…" />
           </div>
-          <p className="text-sm text-stone-500">City: {metroName(vendor.metro)} · ZIP {vendor.zip}. Contact support to change your city.</p>
+          <p className="text-sm text-stone-500">City: {vendor.city || metroName(vendor.metro)} · ZIP {vendor.zip}. Contact support to change your city.</p>
         </ActionForm>
       </div>
     </div>

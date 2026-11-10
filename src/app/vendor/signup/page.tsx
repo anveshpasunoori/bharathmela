@@ -2,9 +2,9 @@ import Link from "next/link";
 import { SocialLogin } from "@/components/SocialLogin";
 import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
+import { CityZipFields } from "@/components/CityZipFields";
 import { SellerKindFields } from "@/components/SellerSignupFields";
 import { getCurrentUser } from "@/lib/auth";
-import { METROS } from "@/lib/metros";
 import { becomeSeller, vendorSignup } from "../../actions/auth";
 
 export const metadata = { title: "Start selling", alternates: { canonical: "/vendor/signup" } };
@@ -35,23 +35,7 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
               <input type="checkbox" name="whatsapp" /> Buyers can also message me on WhatsApp at this number
             </label>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2">
-              <label className="label" htmlFor="metro">City</label>
-              <select className="input" id="metro" name="metro" required defaultValue="">
-                <option value="" disabled>Choose…</option>
-                {METROS.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}, {m.state}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label" htmlFor="zip">ZIP</label>
-              <input className="input" id="zip" name="zip" inputMode="numeric" maxLength={5} required autoComplete="postal-code" />
-            </div>
-          </div>
+          <CityZipFields />
           {!user && (
             <>
               <div>

@@ -84,7 +84,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
             </h1>
             <div className="flex flex-wrap items-center gap-x-3 text-sm text-stone-600">
               {summary ? <Stars rating={summary.average} count={summary.count} /> : <span>No ratings yet</span>}
-              <span>{metroName(seller.metro)}</span>
+              <span>{seller.city || metroName(seller.metro)}</span>
               <span>Member since {seller.user.createdAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
             </div>
           </div>

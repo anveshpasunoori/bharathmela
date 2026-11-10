@@ -1,7 +1,7 @@
 "use server";
 
-import { metroFor, placeFromCoords, placeFromZip } from "@/lib/geo";
-import { isMetro } from "@/lib/metros";
+import { metroFor, placeFromCoords, placeFromZip, sellerPlace } from "@/lib/geo";
+import { LOCAL_MILES, isMetro, metroName } from "@/lib/metros";
 import { clearUserLocation, saveMetroChoice, saveUserLocation } from "@/lib/user-location";
 
 type Result = { ok: true; label: string; metro: string } | { ok: false; error: string };
@@ -35,4 +35,12 @@ export async function chooseMetro(metro: string) {
   if (!isMetro(metro)) return;
   await clearUserLocation();
   await saveMetroChoice(metro);
+}
+
+// The seller sign-up form's ZIP box: the town for that ZIP and the BharathMela city area it falls in.
+// Nothing is saved.
+export async function lookupSellerZip(zip: string) {
+  if (!/^\d{5}$/.test(zip)) return null;
+  const place = sellerPlace(zip, "");
+  return place && { city: place.zipCity, state: place.state, area: metroName(place.metro), far: place.miles > LOCAL_MILES };
 }

@@ -16,6 +16,7 @@ import { TOO_MANY, clientIp, hit } from "@/lib/rate-limit";
 import { checkVerificationCode, sendVerificationCode } from "@/lib/verification";
 import { readAttribution, referringVendorId, welcomeVerifiedSeller } from "@/lib/growth";
 import { resolveLocation } from "@/lib/user-location";
+import { sellerPlace } from "@/lib/geo";
 
 function field(form: FormData, name: string) {
   return String(form.get(name) ?? "").trim();
@@ -51,13 +52,14 @@ function sellerDetails(form: FormData, name: string) {
   const individual = field(form, "kind") === "individual";
   const businessName = (individual ? name : field(form, "businessName")).slice(0, 100);
   const phone = field(form, "phone");
-  const metro = field(form, "metro");
   const zip = field(form, "zip");
   if (!name || !businessName) return { error: individual ? "Please enter your name." : "Please enter your business name." };
   if (phone.replace(/\D/g, "").length < 10) return { error: "Enter a 10-digit US phone number." };
-  if (!isMetro(metro)) return { error: "Choose your city." };
   if (!/^\d{5}$/.test(zip)) return { error: "Enter a 5-digit ZIP code." };
-  return { businessName, phone, whatsapp: form.get("whatsapp") === "on", metro, zip };
+  // The ZIP decides the metro (which city page the listings appear on); the town is what they typed.
+  const place = sellerPlace(zip, field(form, "city"));
+  if (!place) return { error: `We couldn't find ZIP ${zip}. Please check it.` };
+  return { businessName, phone, whatsapp: form.get("whatsapp") === "on", metro: place.metro, city: place.city, zip };
 }
 
 export async function vendorSignup(_: FormState, form: FormData): Promise<FormState> {

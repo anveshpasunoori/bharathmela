@@ -81,3 +81,13 @@ export function metroFor(place: { lat: number; lng: number }) {
   }
   return { metro: best.id, miles };
 }
+
+// Where a seller is, from the ZIP they enter: the town (what they typed, or the ZIP's own town) and the metro
+// whose pages their listings appear on. Null for a ZIP we don't know.
+export function sellerPlace(zip: string, typedCity: string) {
+  const place = placeFromZip(zip);
+  if (!place) return null;
+  const { metro, miles } = metroFor(place);
+  const town = typedCity.replace(/\s+/g, " ").replace(/,\s*[A-Za-z]{2}$/, "").trim().slice(0, 60) || place.city;
+  return { city: `${town}, ${place.state}`, zipCity: place.city, state: place.state, metro, miles };
+}

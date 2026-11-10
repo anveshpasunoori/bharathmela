@@ -76,6 +76,9 @@ model VendorProfile {
   whatsapp             Boolean         @default(false) // phone number also takes WhatsApp messages
   metro                String // metro slug, see src/lib/metros.ts
   zip                  String
+  // The town the seller typed (e.g. "Saint Johns, FL"); filled from the ZIP if left empty. The metro above is
+  // worked out from the ZIP and decides which city page their listings appear on.
+  city                 String          @default("")
   about                String          @default("")
   // One of the first sellers in their city, given free Pro (see src/lib/growth.ts).
   foundingSeller       Boolean         @default(false)
