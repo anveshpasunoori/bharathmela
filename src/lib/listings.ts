@@ -53,6 +53,8 @@ export type BrowseOptions = {
   // without it, the metro is browsed and listings just get a distance.
   near?: { lat: number; lng: number; radiusMiles: number | null };
   sort?: SortId;
+  // Every city at once (the nationwide creators pages); metro is then ignored.
+  anywhere?: boolean;
 };
 
 export const SORTS = [
@@ -80,6 +82,7 @@ export async function browseListings({
   creatorFilters = {},
   near,
   sort = "best",
+  anywhere = false,
 }: BrowseOptions) {
   const now = new Date();
   const byRadius = near?.radiusMiles != null;
@@ -95,7 +98,7 @@ export async function browseListings({
   const filteringRentals = category === "ROOM_RENTAL" && Object.values(rentalFilters).some((v) => v != null && v !== false);
   // Creators who work nationwide (online audience anywhere) show in every city and every radius.
   const nationwide = category === "CREATORS" ? { tags: { contains: ",NATIONWIDE," } } : null;
-  const place: Prisma.ListingWhereInput = byRadius ? {} : nationwide ? { OR: [{ metro }, nationwide] } : { metro };
+  const place: Prisma.ListingWhereInput = byRadius || anywhere ? {} : nationwide ? { OR: [{ metro }, nationwide] } : { metro };
   const fetched = await db.listing.findMany({
     where: { ...filters, ...place },
     include: withPlans(now),

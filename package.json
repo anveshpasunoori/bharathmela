@@ -11,7 +11,7 @@
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
     "postinstall": "prisma generate",
-    "test": "tsx tests/moderation.ts && tsx tests/search.ts && tsx tests/rentals.ts && tsx tests/event-services.ts && tsx tests/duplicates.ts && tsx tests/rent-stats.ts && tsx tests/samples.ts && tsx tests/saved-searches.ts && tsx tests/garage-sales.ts && tsx tests/email-template.ts && tsx tests/subcategories.ts && tsx tests/i18n.ts && tsx tests/scam-words.ts && tsx tests/creators.ts",
+    "test": "tsx tests/moderation.ts && tsx tests/search.ts && tsx tests/rentals.ts && tsx tests/event-services.ts && tsx tests/duplicates.ts && tsx tests/rent-stats.ts && tsx tests/samples.ts && tsx tests/saved-searches.ts && tsx tests/garage-sales.ts && tsx tests/email-template.ts && tsx tests/subcategories.ts && tsx tests/i18n.ts && tsx tests/scam-words.ts && tsx tests/creators.ts && tsx tests/page-faq.ts",
     "alerts": "curl -s http://localhost:3000/api/cron/alerts && echo",
     "test:db": "tsx tests/db/rate-limit.ts",
     "daily": "curl -s http://localhost:3000/api/cron/daily && echo",

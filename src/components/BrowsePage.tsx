@@ -10,7 +10,7 @@ import { SortSelect } from "@/components/SortSelect";
 import { syncExpirations } from "@/lib/billing";
 import { CATEGORIES, DIET_TAGS, categoryLabel, tagLabel } from "@/lib/constants";
 import { upcomingEvents } from "@/lib/event-data";
-import { metroFor } from "@/lib/geo";
+import { metroFor, placeFromZip } from "@/lib/geo";
 import { getCurrentUser } from "@/lib/auth";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, publicListing, savedListingIds } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
@@ -21,9 +21,9 @@ import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
-import { cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
+import { CATEGORY_PITCH, RELATED_CATEGORIES, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
 import { citySubcategoryPath, listingSubcategories, pickedSubcategory, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
-import { pageFaq } from "@/lib/page-faq";
+import { cityFaq, joinList, pageFaq, pageIntro } from "@/lib/page-faq";
 import { breadcrumbs, faqSchema, itemListSchema } from "@/lib/structured-data";
 import { JsonLd } from "@/components/JsonLd";
 import { ListingsMap, type MapPoint } from "@/components/ListingsMap";
@@ -235,10 +235,52 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
 
   const pageWhat = picked?.label ?? categoryInfo?.label ?? "";
   const pageCity = nearMode ? place!.city : metroName(metro).split(",")[0];
-  const faq = seoPage
-    ? pageFaq({ what: pageWhat, city: pageCity, listings, tip: SAFETY_TIPS[category!] })
+  // The towns sellers on this page are in, most first ("Orange Park, Ponte Vedra…"), from their ZIP codes.
+  const towns = seoPage
+    ? [
+        ...listings
+          .filter((l) => l.metro === metro)
+          .reduce((m, l) => {
+            const town = placeFromZip(l.zip)?.city;
+            return town ? m.set(town, (m.get(town) ?? 0) + 1) : m;
+          }, new Map<string, number>()),
+      ]
+        .sort((a, b) => b[1] - a[1])
+        .map(([town]) => town)
     : [];
-  const pageSchema = seoPage
+  const takesRequests = category !== "ROOM_RENTAL" && category !== "GARAGE_SALE";
+  const faq = seoPage
+    ? pageFaq({ what: pageWhat, city: pageCity, listings, tip: SAFETY_TIPS[category!], towns, requests: takesRequests })
+    : [];
+  const intro = seoPage
+    ? pageIntro({
+        lead: picked
+          ? category === "CREATORS"
+            ? `${picked.label} creators and influencers who promote businesses`
+            : `${picked.label} from Indian-owned businesses and home sellers`
+          : CATEGORY_PITCH[category!],
+        city: pageCity,
+        listings,
+        towns,
+        noun: category === "CREATORS" ? "creator" : "seller",
+      })
+    : null;
+  // A city's own page (/in/jacksonville): a summary and questions from its category counts and events.
+  const cityPage = !showingListings && !nearMode && isMetro(params.metro);
+  const busiest = [...CATEGORIES].filter((c) => (counts.get(c.id) ?? 0) > 0).sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
+  const cityIntro = cityPage
+    ? busiest.length
+      ? `Indian home businesses, professionals and families selling in ${pageCity}: ${[...counts.values()].reduce((a, b) => a + b, 0)} listings, most in ${joinList(busiest.slice(0, 3).map((c) => c.label.toLowerCase()))}. Compare prices and reviews and contact sellers directly. It's free for buyers.`
+      : `Home food, tutors, pujaris, dance and music classes, wedding vendors, home services and more from the Indian community in ${pageCity}.`
+    : null;
+  const questions = seoPage
+    ? faq
+    : cityPage
+      ? cityFaq({ city: pageCity, counts: CATEGORIES.map((c) => ({ label: c.label, n: counts.get(c.id) ?? 0 })), events })
+      : [];
+  const pageSchema = cityPage
+    ? [breadcrumbs([{ name: "Home", path: "/" }, { name: metroName(metro), path: cityPath(metro) }]), faqSchema(questions)]
+    : seoPage
     ? [
         breadcrumbs([
           { name: "Home", path: "/" },
@@ -352,12 +394,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <>Results for &ldquo;{q}&rdquo;</>
               )}
             </h1>
+            {intro && <p className="mt-1.5 max-w-3xl text-sm text-stone-600">{intro}</p>}
           </div>
         ) : (
           <div>
             <h1 className="relative text-2xl font-bold sm:text-4xl sm:tracking-tight">
               {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : t(lang, "localBusinessesNear")}
             </h1>
+            {cityIntro && <p className="relative mt-2 max-w-2xl text-sm text-stone-700">{cityIntro}</p>}
           </div>
         )}
         {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
@@ -661,7 +705,10 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft px-5 py-4 ring-1 ring-orange-100">
           <div>
             <p className="font-semibold">Want creators to come to you?</p>
-            <p className="text-sm text-stone-600">Post a collab request: paid or barter. Matching creators get an email and send you their ideas and prices.</p>
+            <p className="text-sm text-stone-600">
+              Post a collab request: paid or barter. Matching creators get an email and send you their ideas and prices. Or{" "}
+              <Link href="/creators" className="font-semibold text-brand hover:underline">see creators across the US</Link>.
+            </p>
           </div>
           <Link href="/requests/new?category=CREATORS" className="btn">Post a collab request</Link>
         </div>
@@ -707,13 +754,13 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </div>
       )}
 
-      {faq.length > 0 && (
+      {questions.length > 0 && (
         <section>
           <h2 className="mb-2 text-lg font-semibold">
-            {pageWhat} in {pageCity}: common questions
+            {seoPage ? pageWhat : "Indian businesses"} in {pageCity}: common questions
           </h2>
           <div className="divide-y divide-stone-200 rounded-xl bg-white ring-1 ring-stone-200">
-            {faq.map((f) => (
+            {questions.map((f) => (
               <details key={f.q} className="group px-4 py-3">
                 <summary className="cursor-pointer list-none font-medium text-stone-800 marker:hidden">
                   <span className="flex items-center justify-between gap-3">
@@ -761,7 +808,10 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         <section>
           <h2 className="mb-2 text-sm font-semibold text-stone-700">{t(lang, "otherCategories", { where: whereT })}</h2>
           <nav className="flex flex-wrap gap-2 text-sm" aria-label="Other categories">
-            {CATEGORIES.filter((c) => c.id !== category).map((c) => (
+            {/* Closely related categories first (Home Food → Wedding & Event Services, Goods). */}
+            {CATEGORIES.filter((c) => c.id !== category)
+              .sort((a, b) => Number(RELATED_CATEGORIES[category]?.includes(b.id) ?? 0) - Number(RELATED_CATEGORIES[category]?.includes(a.id) ?? 0))
+              .map((c) => (
               <Link key={c.id} href={href(c.id)} className="badge whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
                 {c.icon} {catName(c)}
               </Link>

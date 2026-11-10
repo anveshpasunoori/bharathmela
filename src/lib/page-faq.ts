@@ -23,7 +23,49 @@ export function priceRange(listings: Priced[]) {
   return { unit, low: sorted[0], high: sorted[sorted.length - 1], typical: sorted[Math.floor(sorted.length / 2)], count: sorted.length };
 }
 
-export function pageFaq({ what, city, listings, tip }: { what: string; city: string; listings: Priced[]; tip?: string }): Faq[] {
+// "Ponte Vedra, Orange Park and Fleming Island": the first few, joined for a sentence.
+export const joinList = (items: string[]) => (items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`);
+
+// The paragraph under a city-category or subcategory page's heading, written from what's listed, so each
+// page reads differently from the same category in another city.
+export function pageIntro({ lead, city, listings, towns, noun = "seller" }: { lead: string; city: string; listings: Priced[]; towns: string[]; noun?: string }) {
+  if (!listings.length) {
+    return `${lead} in ${city}. Nothing is listed here yet: post what you need and local ${noun}s will send you quotes as they join, or list your own business free.`;
+  }
+  const sellers = new Set(listings.map((l) => l.vendor.businessName)).size;
+  const range = priceRange(listings);
+  const unit = range?.unit && !/^(starting at|from)$/.test(range.unit) ? ` ${range.unit}` : "";
+  return (
+    `${lead} in ${city}. ${plural(listings.length, "listing")} from ${plural(sellers, `local ${noun}`)}` +
+    `${towns.length ? ` in ${joinList(towns.slice(0, 4))}` : ""}` +
+    `${range ? `, with prices from ${formatUSD(range.low)}${unit}` : ""}. ` +
+    `Compare prices and reviews, then message them directly. It's free for buyers.`
+  );
+}
+
+// Questions for a city's own page ("Indian businesses in Jacksonville"), from its category counts and events.
+export function cityFaq({ city, counts, events }: { city: string; counts: { label: string; n: number }[]; events: { title: string }[] }): Faq[] {
+  const busy = counts.filter((c) => c.n > 0).sort((a, b) => b.n - a.n);
+  const total = busy.reduce((sum, c) => sum + c.n, 0);
+  const faq: Faq[] = [
+    {
+      q: `What Indian businesses and services are in ${city}?`,
+      a: total
+        ? `${plural(total, "listing")} from the Indian community, most in ${joinList(busy.slice(0, 4).map((c) => c.label.toLowerCase()))}.`
+        : `Home food, tutors, pujaris, dance and music classes, wedding vendors, home services and more, as local sellers join.`,
+    },
+  ];
+  if (events.length) {
+    faq.push({ q: `Are there Indian events in ${city} coming up?`, a: `Yes: ${joinList(events.slice(0, 3).map((e) => e.title))}. See all on the events page.` });
+  }
+  faq.push(
+    { q: `Can I get quotes without calling around?`, a: `Post what you need and local sellers who offer it get your request by email and send you quotes. It's free.` },
+    { q: `How do I list my business in ${city}?`, a: `Sign up as a seller and post your first listing free. Home businesses and individuals selling once (a room, a garage sale) can list too.` },
+  );
+  return faq;
+}
+
+export function pageFaq({ what, city, listings, tip, towns = [], requests = true }: { what: string; city: string; listings: Priced[]; tip?: string; towns?: string[]; requests?: boolean }): Faq[] {
   const faq: Faq[] = [];
   const sellers = new Set(listings.map((l) => l.vendor.businessName)).size;
   faq.push({
@@ -48,7 +90,13 @@ export function pageFaq({ what, city, listings, tip }: { what: string; city: str
       a: `${top.vendor.businessName}, rated ${top.rating.average.toFixed(1)} out of 5 from ${plural(top.rating.count, "review")}, for "${top.title}".`,
     });
   }
+  if (towns.length > 1) {
+    faq.push({ q: `Which areas around ${city} are covered?`, a: `Sellers here are in ${joinList(towns.slice(0, 6))}. Each listing shows how far it is from you once you set your location.` });
+  }
   if (tip) faq.push({ q: `What should I check first?`, a: tip });
+  if (requests) {
+    faq.push({ q: `Can I get quotes without calling around?`, a: `Yes. Post what you need for free, and local sellers who offer ${what.toLowerCase()} get it by email and send you quotes.` });
+  }
   faq.push({
     q: `How do I contact a seller?`,
     a: `Open a listing to message the seller on BharathMela, or call or text them if they share a phone number. It's free for buyers, and you pay the seller directly.`,

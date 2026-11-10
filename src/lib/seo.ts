@@ -106,3 +106,26 @@ export function snippet(text: string, max = 155) {
 
 export const ALL_CITY_CATEGORY_PAGES = () =>
   METROS.flatMap((m) => CATEGORIES.map((c) => ({ metro: m.id, category: c.id })));
+
+// Categories people looking at one often need next, linked first from each category page.
+export const RELATED_CATEGORIES: Record<string, string[]> = {
+  FOOD: ["EVENT_SERVICES", "GOODS", "DOMESTIC_HELP"],
+  TUTORING: ["DANCE_MUSIC", "DOMESTIC_HELP"],
+  DANCE_MUSIC: ["TUTORING", "CLOTHING", "EVENT_SERVICES"],
+  PUJARI: ["EVENT_SERVICES", "FOOD", "GOODS"],
+  EVENT_SERVICES: ["FOOD", "PUJARI", "BEAUTY", "CLOTHING"],
+  DOMESTIC_HELP: ["FOOD", "TUTORING", "HOME_SERVICES"],
+  HOME_SERVICES: ["REALTOR", "ROOM_RENTAL", "AUTO"],
+  AUTO: ["HOME_SERVICES", "TRAVEL"],
+  BEAUTY: ["CLOTHING", "EVENT_SERVICES"],
+  ROOM_RENTAL: ["REALTOR", "GARAGE_SALE", "HOME_SERVICES"],
+  REALTOR: ["LEGAL", "TAX_FINANCE", "HOME_SERVICES"],
+  LEGAL: ["TAX_FINANCE", "REALTOR", "TRAVEL"],
+  TAX_FINANCE: ["LEGAL", "REALTOR"],
+  TRAVEL: ["LEGAL", "TAX_FINANCE"],
+  ART: ["CLOTHING", "GOODS", "EVENT_SERVICES"],
+  CLOTHING: ["BEAUTY", "ART", "EVENT_SERVICES"],
+  GARAGE_SALE: ["ROOM_RENTAL", "GOODS"],
+  CREATORS: ["FOOD", "BEAUTY", "EVENT_SERVICES"],
+  GOODS: ["FOOD", "PUJARI", "ART"],
+};
