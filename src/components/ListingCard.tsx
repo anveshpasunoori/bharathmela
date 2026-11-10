@@ -5,7 +5,7 @@ import { CategoryIcon } from "./CategoryIcon";
 import { listingSubcategories, subcategoryLabel } from "@/lib/subcategories";
 import { SaveHeart } from "./SaveHeart";
 import { categoryLabel, parseTags, tagLabel } from "@/lib/constants";
-import { audienceSummary, readCreator } from "@/lib/creators";
+import { anyVerified, audienceSummary, readCreator } from "@/lib/creators";
 import { readEventService, serviceLabels } from "@/lib/event-services";
 import type { BrowseListing } from "@/lib/listings";
 import { priceLabel } from "@/lib/plans";
@@ -26,7 +26,7 @@ function keyFacts(listing: BrowseListing) {
   }
   if (listing.category === "CREATORS") {
     const c = readCreator(listing.details);
-    if (c) return [audienceSummary(c), c.nationwide && "Nationwide", c.barter && "Barter OK"].filter(Boolean).join(" · ");
+    if (c) return [anyVerified(c) && "✓ Verified", audienceSummary(c), c.nationwide && "Nationwide", c.barter && "Barter OK"].filter(Boolean).join(" · ");
   }
   if (isProfessional(listing.category)) {
     const p = readProfessional(listing.details);

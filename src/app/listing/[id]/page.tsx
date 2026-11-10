@@ -250,7 +250,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
                   <Link href={`/login?next=${here}`} className="font-semibold text-brand">Log in</Link> or{" "}
                   <Link href={`/signup?next=${here}`} className="font-semibold text-brand">sign up free</Link> to review this seller.
                 </p>
-              ) : user.role !== "BUYER" ? (
+              ) : user.role !== "BUYER" && !(user.role === "VENDOR" && listing.category === "CREATORS") ? (
                 <p className="text-stone-600">Reviews are written from buyer accounts.</p>
               ) : !user.emailVerifiedAt ? (
                 <p className="text-stone-600">

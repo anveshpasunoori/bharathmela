@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { approve, reject, resolveReport, setReviewVisibility } from "../actions/admin";
+import { reviewHandleCheck } from "../actions/creator-checks";
+import { formatFollowers, platformLabel, profileUrl, readCreator } from "@/lib/creators";
 import { reportReasonLabel } from "@/lib/legal";
-import { sellerPath } from "@/lib/seo";
+import { listingPath, sellerPath } from "@/lib/seo";
 import { syncExpirations } from "@/lib/billing";
 import { db } from "@/lib/db";
 import { metroName } from "@/lib/metros";
@@ -16,6 +18,12 @@ export default async function AdminPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
+  const handleChecks = await db.creatorCheck.findMany({
+    where: { status: "SUBMITTED" },
+    include: { listing: { select: { id: true, title: true, details: true, vendor: { select: { businessName: true } } } } },
+    orderBy: { submittedAt: "asc" },
+    take: 50,
+  });
   const [heldReviews, latestReviews, reports, pending, recent, revenue, vendorCount, activeSubs] = await Promise.all([
     db.review.findMany({
       where: { status: "PENDING" },
@@ -242,6 +250,48 @@ export default async function AdminPage() {
           ))}
         </ul>
       </section>
+
+      {handleChecks.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">Creator handles to check ({handleChecks.length})</h2>
+          <p className="mb-3 text-sm text-stone-600">
+            Open the profile, check the code is in the bio and the follower count is about right (and the followers look real: posts, likes and
+            comments match the size). Enter the count you see; it replaces theirs.
+          </p>
+          <ul className="space-y-2">
+            {handleChecks.map((c) => {
+              const p = readCreator(c.listing.details)?.platforms.find((x) => x.platform === c.platform);
+              return (
+                <li key={c.id} className="card space-y-2 py-3 text-sm">
+                  <p>
+                    <b>{c.listing.vendor.businessName}</b> ·{" "}
+                    <Link href={listingPath(c.listing)} target="_blank" className="text-brand hover:underline">{c.listing.title}</Link>
+                  </p>
+                  <p>
+                    {platformLabel(c.platform)}:{" "}
+                    {p ? (
+                      <a href={profileUrl(p)} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand underline">@{c.handle}</a>
+                    ) : (
+                      <>@{c.handle} (no longer on their profile)</>
+                    )}{" "}
+                    · says {p ? formatFollowers(p.followers) : "?"} followers · code <code className="rounded bg-stone-100 px-1.5 font-mono font-bold">{c.code}</code>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <form action={reviewHandleCheck.bind(null, c.id, true)} className="flex flex-wrap gap-2">
+                      <input name="followers" className="input w-32" placeholder="Followers seen" defaultValue={p ? formatFollowers(p.followers) : ""} />
+                      <button className="btn py-1.5 text-sm">Verify</button>
+                    </form>
+                    <form action={reviewHandleCheck.bind(null, c.id, false)} className="flex flex-1 gap-2">
+                      <input name="note" className="input" placeholder="Why not (shown to the creator)" />
+                      <button className="btn-outline whitespace-nowrap py-1.5 text-sm">Not verified</button>
+                    </form>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {heldReviews.length > 0 && (
         <section>

@@ -81,6 +81,7 @@ export type BrowseParams = {
   minf?: string;
   barter?: string;
   nw?: string;
+  ver?: string;
   radius?: string;
   sort?: string;
   from?: string;
@@ -306,6 +307,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       pick("minf", "Followers", "Any audience", "minf", FOLLOWER_STEPS.map((n) => ({ id: String(n), label: `${formatFollowers(n)}+ followers` })), creatorFilters.minFollowers ? String(creatorFilters.minFollowers) : undefined),
       { kind: "toggle", key: "barter", param: "barter", label: "Open to barter", on: !!creatorFilters.barter },
       { kind: "toggle", key: "nw", param: "nw", label: "Nationwide", on: !!creatorFilters.nationwide },
+      { kind: "toggle", key: "ver", param: "ver", label: "✓ Verified", on: !!creatorFilters.verified },
     );
   }
 

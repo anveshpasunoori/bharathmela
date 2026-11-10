@@ -11,7 +11,7 @@ import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib
 import { hasServiceTypes, serializeServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
 import { CATEGORY_RULES, REVIEW_FIRST_LISTING } from "@/lib/legal";
-import { creatorTags, parseCreatorForm } from "@/lib/creators";
+import { carryVerification, creatorTags, parseCreatorForm, readCreator } from "@/lib/creators";
 import { parseEventServiceForm } from "@/lib/event-services";
 import { LANGUAGES, isProfessional, parseProfessionalForm } from "@/lib/professionals";
 import { parseRentalForm } from "@/lib/rentals";
@@ -178,6 +178,8 @@ export async function createListing(_: FormState, form: FormData): Promise<FormS
   // A seller who joined through a referral link has now posted: their referrer earns a free Pro month.
   if (created.status === "ACTIVE") await rewardReferrer(vendor.id);
   revalidatePath("/vendor");
+  // New creators go straight to verifying their handles.
+  if (created.category === "CREATORS") redirect("/vendor/verify-handles");
   redirect(`/vendor?${decision.status === "PENDING_REVIEW" ? "review=1" : "published=1"}`);
 }
 
@@ -191,6 +193,12 @@ export async function updateListing(_: FormState, form: FormData): Promise<FormS
 
   const decision = await moderate(input, vendor.id, listing.id);
   if ("error" in decision) return decision;
+  // Verified creator handles stay verified if the handle didn't change.
+  if (input.category === "CREATORS") {
+    const creator = carryVerification(readCreator(input.details)!, listing.category === "CREATORS" ? readCreator(listing.details) : null);
+    input.details = JSON.stringify(creator);
+    input.tags = creatorTags(creator);
+  }
   const removeIds = form.getAll("removePhotos").map(String);
   const photos = uploadedFiles(form, "photos");
   const existing = await db.listingPhoto.count({ where: { listingId: listing.id, id: { notIn: removeIds } } });

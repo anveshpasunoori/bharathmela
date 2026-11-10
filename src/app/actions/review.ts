@@ -17,7 +17,6 @@ export async function submitReview(_: FormState, form: FormData): Promise<FormSt
   const listingId = String(form.get("listingId") ?? "");
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/listing/${listingId}`);
-  if (user.role !== "BUYER") return { error: "Only buyer accounts can rate sellers." };
   if (!user.emailVerifiedAt) redirect(`/verify?next=/listing/${listingId}`);
   if (Date.now() - user.createdAt.getTime() < MIN_ACCOUNT_AGE_MS) {
     return { error: "New accounts can rate sellers 10 minutes after signing up." };
@@ -31,8 +30,10 @@ export async function submitReview(_: FormState, form: FormData): Promise<FormSt
   if (textProblem) return { error: textProblem };
   if (form.get("honest") !== "on") return { error: "Please confirm this rating is based on your own experience." };
 
-  const listing = await db.listing.findUnique({ where: { id: listingId }, select: { vendorId: true, vendor: { select: { userId: true } } } });
+  const listing = await db.listing.findUnique({ where: { id: listingId }, select: { vendorId: true, category: true, vendor: { select: { userId: true } } } });
   if (!listing) return { error: "This listing no longer exists." };
+  // Buyers rate sellers; businesses (seller accounts) can also rate the creators who promoted them.
+  if (user.role !== "BUYER" && !(user.role === "VENDOR" && listing.category === "CREATORS")) return { error: "Only buyer accounts can rate sellers." };
   if (listing.vendor.userId === user.id) return { error: "You can't rate your own business." };
 
   const existing = await db.review.findUnique({ where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } } });

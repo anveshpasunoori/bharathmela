@@ -42,7 +42,40 @@ export const FOLLOWER_STEPS = [1_000, 5_000, 10_000, 50_000, 100_000];
 // Where sample posts may link to: the platforms themselves, nothing else.
 const SAMPLE_HOSTS = /^(www\.|m\.)?(instagram\.com|youtube\.com|youtu\.be|tiktok\.com|facebook\.com|fb\.watch|x\.com|twitter\.com)$/i;
 
-export type CreatorPlatform = { platform: string; handle: string; followers: number };
+export type CreatorPlatform = {
+  platform: string;
+  handle: string;
+  followers: number;
+  // Set when an admin confirmed the creator owns this handle (bio code), with the follower count then.
+  verifiedAt?: string;
+  verifiedFollowers?: number;
+};
+
+// A verified badge lasts while the handle stays the same and the reported audience hasn't jumped more
+// than this past what was checked (real growth is fine; re-check to raise it further).
+export const VERIFIED_GROWTH = 1.25;
+
+export const isVerified = (p: CreatorPlatform) => !!p.verifiedAt && p.followers <= Math.max((p.verifiedFollowers ?? 0) * VERIFIED_GROWTH, (p.verifiedFollowers ?? 0) + 500);
+export const anyVerified = (d: CreatorDetails) => d.platforms.some(isVerified);
+
+// Keep verification through an edit for handles that didn't change.
+export function carryVerification(next: CreatorDetails, prev: CreatorDetails | null): CreatorDetails {
+  if (!prev) return next;
+  return {
+    ...next,
+    platforms: next.platforms.map((p) => {
+      const old = prev.platforms.find((o) => o.platform === p.platform && o.handle.toLowerCase() === p.handle.toLowerCase());
+      return old?.verifiedAt ? { ...p, verifiedAt: old.verifiedAt, verifiedFollowers: old.verifiedFollowers } : p;
+    }),
+  };
+}
+
+// The code a creator puts in their bio: "BM-" and 4 characters that are easy to read and type.
+export function newCheckCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  return `BM-${[...bytes].map((b) => chars[b % chars.length]).join("")}`;
+}
 
 export type CreatorDetails = {
   platforms: CreatorPlatform[];
@@ -141,9 +174,19 @@ export function parseCreatorForm(form: FormData): CreatorDetails | { error: stri
   return { platforms, niches, languages, nationwide: form.get("c_nationwide") === "on", barter: form.get("c_barter") === "on", rates, samples };
 }
 
+// Mark one handle verified (or not) on the stored details, keeping everything else.
+export function withVerification(d: CreatorDetails, platform: string, verified: { at: Date; followers: number } | null): CreatorDetails {
+  return {
+    ...d,
+    platforms: d.platforms.map((p) =>
+      p.platform !== platform ? p : verified ? { ...p, followers: verified.followers, verifiedAt: verified.at.toISOString(), verifiedFollowers: verified.followers } : { ...p, verifiedAt: undefined, verifiedFollowers: undefined },
+    ),
+  };
+}
+
 // Tags kept on the listing for filtering in the database query.
 export function creatorTags(d: CreatorDetails) {
-  const tags = [d.nationwide && "NATIONWIDE", d.barter && "BARTER"].filter(Boolean);
+  const tags = [d.nationwide && "NATIONWIDE", d.barter && "BARTER", anyVerified(d) && "VERIFIED"].filter(Boolean);
   return tags.length ? `,${tags.join(",")},` : "";
 }
 
@@ -167,10 +210,10 @@ export function creatorSearchText(d: CreatorDetails) {
   ].join(" ");
 }
 
-export type CreatorFilters = { niche?: string; platform?: string; language?: string; minFollowers?: number; barter?: boolean; nationwide?: boolean };
+export type CreatorFilters = { niche?: string; platform?: string; language?: string; minFollowers?: number; barter?: boolean; nationwide?: boolean; verified?: boolean };
 
 export function matchesCreatorFilters(d: CreatorDetails | null, f: CreatorFilters) {
-  if (!f.niche && !f.platform && !f.language && !f.minFollowers && !f.barter && !f.nationwide) return true;
+  if (!f.niche && !f.platform && !f.language && !f.minFollowers && !f.barter && !f.nationwide && !f.verified) return true;
   if (!d) return false;
   if (f.niche && !d.niches.includes(f.niche)) return false;
   if (f.platform && !d.platforms.some((p) => p.platform === f.platform)) return false;
@@ -178,5 +221,6 @@ export function matchesCreatorFilters(d: CreatorDetails | null, f: CreatorFilter
   if (f.minFollowers && totalFollowers(d) < f.minFollowers) return false;
   if (f.barter && !d.barter) return false;
   if (f.nationwide && !d.nationwide) return false;
+  if (f.verified && !anyVerified(d)) return false;
   return true;
 }

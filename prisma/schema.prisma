@@ -171,6 +171,7 @@ model Listing {
   vendor         VendorProfile  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   leads          Lead[]
   conversations  Conversation[]
+  creatorChecks  CreatorCheck[]
   title          String
   description    String
   category       String
@@ -569,4 +570,24 @@ model Passkey {
   lastUsedAt   DateTime?
 
   @@index([userId])
+}
+
+// A creator proving they own a social handle: they put `code` in that profile's bio and submit, then an admin
+// looks at the live profile and verifies or rejects. The verified state itself is kept on the listing's
+// creator details (platforms[].verifiedAt), so pages don't need this table.
+model CreatorCheck {
+  id          String    @id @default(cuid())
+  listingId   String
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  platform    String // see PLATFORMS in src/lib/creators.ts
+  handle      String
+  code        String
+  status      String    @default("WAITING") // WAITING (code shown) | SUBMITTED | VERIFIED | REJECTED
+  reviewNote  String    @default("")
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([listingId, platform])
+  @@index([status])
 }

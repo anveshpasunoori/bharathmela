@@ -1,6 +1,9 @@
 // Run with `npm test`. Creator profiles: handles and follower counts are read the way people type them,
 // only social links are accepted as samples, and the filters and nationwide tag work.
-import { cleanHandle, creatorTags, formatFollowers, matchesCreatorFilters, parseCreatorForm, parseFollowers } from "../src/lib/creators";
+import {
+  type CreatorDetails, anyVerified, carryVerification, cleanHandle, creatorTags, formatFollowers, isVerified, matchesCreatorFilters, newCheckCode,
+  parseCreatorForm, parseFollowers, withVerification,
+} from "../src/lib/creators";
 
 let failed = 0;
 const check = (ok: boolean, msg: string) => {
@@ -43,4 +46,20 @@ check(!!err({ ...base, c_niches: [] }), "needs a niche");
 check(!!err({ ...base, c_rules: "" }), "needs the rules confirmed");
 check(!!err({ ...base, c_samples: "https://my-shady-site.xyz/promo" }), "sample links must be social platforms");
 check(!!err({ ...base, c_handle_INSTAGRAM: "bad handle!" }), "bad handle is rejected");
+// Handle verification.
+check(/^BM-[A-HJ-NP-Z2-9]{4}$/.test(newCheckCode()), "check codes look like BM-7Q2X");
+const parsed = parseCreatorForm(form({ ...base, c_handle_YOUTUBE: "@JaxEats", c_followers_YOUTUBE: "2K" })) as CreatorDetails;
+const verified = withVerification(parsed, "INSTAGRAM", { at: new Date(), followers: 8000 });
+check(isVerified(verified.platforms[0]) && verified.platforms[0].followers === 8000, "admin's follower count replaces the creator's");
+check(!isVerified(verified.platforms[1]) && anyVerified(verified), "only the checked handle is verified");
+check(creatorTags(verified).includes("VERIFIED") && matchesCreatorFilters(verified, { verified: true }), "verified tag and filter");
+check(!matchesCreatorFilters(parsed, { verified: true }), "unverified creator is filtered out");
+const sameHandle = carryVerification(parseCreatorForm(form({ ...base, c_handle_INSTAGRAM: "@JAX.DESI.EATS", c_followers_INSTAGRAM: "9K" })) as CreatorDetails, verified);
+check(isVerified(sameHandle.platforms[0]), "an edit keeps the badge when the handle is the same");
+const grown = carryVerification(parseCreatorForm(form({ ...base, c_followers_INSTAGRAM: "15K" })) as CreatorDetails, verified);
+check(!isVerified(grown.platforms[0]), "the badge lapses when followers jump more than 25%");
+const renamed = carryVerification(parseCreatorForm(form({ ...base, c_handle_INSTAGRAM: "@someone.else" })) as CreatorDetails, verified);
+check(!isVerified(renamed.platforms[0]), "a new handle needs a new check");
+const forged = parseCreatorForm(form({ ...base, verifiedAt: "2026-01-01" })) as CreatorDetails;
+check(!anyVerified(forged), "the form can't mark itself verified");
 console.log(failed ? `${failed} failed` : "all passed");

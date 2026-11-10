@@ -284,6 +284,9 @@ export default async function VendorDashboard({
                       <button className="btn py-1.5">Renew 90 days</button>
                     </form>
                   )}
+                  {l.category === "CREATORS" && l.status !== "REMOVED" && (
+                    <Link href="/vendor/verify-handles" className="btn-outline py-1.5">Verify handles</Link>
+                  )}
                   {l.status !== "REMOVED" && (
                     <Link href={`/vendor/listings/${l.id}/edit`} className="btn-outline py-1.5">
                       {l.status === "REJECTED" ? "Fix & resubmit" : "Edit"}

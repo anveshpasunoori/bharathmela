@@ -15,7 +15,7 @@ export const RADII = [5, 10, 25, 50, 100];
 // The query-string keys that make up a search (location and sort are kept separately).
 export const SEARCH_PARAMS = [
   "category", "q", "diet", "type", "space", "maxRent", "by", "pbath", "furn", "pets", "spec", "lang", "free", "svc", "item", "occ", "ins",
-  "niche", "plat", "clang", "minf", "barter", "nw",
+  "niche", "plat", "clang", "minf", "barter", "nw", "ver",
 ] as const;
 
 export function parseFilters(params: Params) {
@@ -66,6 +66,7 @@ export function parseFilters(params: Params) {
           minFollowers: FOLLOWER_STEPS.includes(Number(params.minf)) ? Number(params.minf) : undefined,
           barter: params.barter === "1",
           nationwide: params.nw === "1",
+          verified: params.ver === "1",
         }
       : {};
   return { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters, creatorFilters };
@@ -115,6 +116,7 @@ export function describeSearch(f: Filters, where: string) {
   if (c.minFollowers) parts.push(`${formatFollowers(c.minFollowers)}+ followers`);
   if (c.barter) parts.push("open to barter");
   if (c.nationwide) parts.push("nationwide");
+  if (c.verified) parts.push("verified handles");
   parts.push(where);
   return parts.filter(Boolean).join(" · ").slice(0, 200);
 }

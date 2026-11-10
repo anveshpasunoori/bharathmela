@@ -1,4 +1,4 @@
-import { type CreatorDetails, RATE_KINDS, formatFollowers, nicheLabels, platformLabel, profileUrl, totalFollowers } from "@/lib/creators";
+import { type CreatorDetails, RATE_KINDS, anyVerified, formatFollowers, isVerified, nicheLabels, platformLabel, profileUrl, totalFollowers } from "@/lib/creators";
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
@@ -24,13 +24,20 @@ export function CreatorDetailsView({ details }: { details: CreatorDetails }) {
                   <span>
                     <span className="font-semibold">{platformLabel(p.platform)}</span>{" "}
                     <span className="text-stone-500">@{p.handle}</span>
+                    {isVerified(p) && (
+                      <span className="badge ml-1.5 bg-green-50 text-green-800 ring-1 ring-green-200" title="BharathMela checked that this creator owns this account">✓ Verified</span>
+                    )}
                   </span>
                   <span className="font-semibold text-brand">{formatFollowers(p.followers)}</span>
                 </a>
               </li>
             ))}
         </ul>
-        <p className="mt-1 text-xs text-stone-500">Follower counts are reported by the creator. Open their profiles to check before you agree on a deal.</p>
+        <p className="mt-1 text-xs text-stone-500">
+          {anyVerified(details)
+            ? "✓ Verified: BharathMela checked the creator owns that account and saw the follower count. Others are reported by the creator."
+            : "Follower counts are reported by the creator. Open their profiles to check before you agree on a deal."}
+        </p>
       </div>
 
       <div>
