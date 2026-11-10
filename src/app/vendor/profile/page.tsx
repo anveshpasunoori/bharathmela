@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import { requireVendor } from "@/lib/auth";
+import { CityZipFields } from "@/components/CityZipFields";
 import { metroName } from "@/lib/metros";
+import { lookupSellerZip } from "../../actions/location";
 import { updateProfile } from "../../actions/vendor";
 
 export default async function VendorProfilePage() {
   const { vendor } = await requireVendor();
+  // Their current city area, as saved (older sellers picked it from a list, so it can differ from the ZIP's).
+  const zipInfo = await lookupSellerZip(vendor.zip);
+  const found = zipInfo && { ...zipInfo, area: metroName(vendor.metro) };
+  // Sellers who joined before the city box existed: start from their ZIP's town.
+  const city = (vendor.city || zipInfo?.city || "").replace(/,\s*[A-Z]{2}$/, "");
   return (
     <div className="mx-auto max-w-lg">
       <Link href="/vendor" className="text-sm text-stone-500 hover:text-brand">← Dashboard</Link>
@@ -29,7 +36,7 @@ export default async function VendorProfilePage() {
             <textarea className="input min-h-28" id="about" name="about" maxLength={1000} defaultValue={vendor.about}
               placeholder="Who you are, what you specialize in, languages you speak, areas you serve…" />
           </div>
-          <p className="text-sm text-stone-500">City: {vendor.city || metroName(vendor.metro)} · ZIP {vendor.zip}. Contact support to change your city.</p>
+          <CityZipFields initialZip={vendor.zip} initialCity={city} initialFound={found} />
         </ActionForm>
       </div>
     </div>

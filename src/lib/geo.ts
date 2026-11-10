@@ -89,5 +89,5 @@ export function sellerPlace(zip: string, typedCity: string) {
   if (!place) return null;
   const { metro, miles } = metroFor(place);
   const town = typedCity.replace(/\s+/g, " ").replace(/,\s*[A-Za-z]{2}$/, "").trim().slice(0, 60) || place.city;
-  return { city: `${town}, ${place.state}`, zipCity: place.city, state: place.state, metro, miles };
+  return { zip: place.zip, city: `${town}, ${place.state}`, zipCity: place.city, state: place.state, metro, miles };
 }

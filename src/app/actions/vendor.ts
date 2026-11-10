@@ -21,6 +21,8 @@ import { listingExpiry } from "@/lib/listings";
 import { checkPhotos, deleteListingFiles, deletePhotos, savePhotos, uploadedFiles } from "@/lib/photos";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
 import { toE164 } from "@/lib/sms";
+import { sellerPlace } from "@/lib/geo";
+import { metroName } from "@/lib/metros";
 import { checkPhoneCode, sendPhoneCode } from "@/lib/verification";
 import { AI_DAILY_LIMIT, AI_WRITER_PLANS, PLANS, boostOption, isPaidPlan } from "@/lib/plans";
 
@@ -342,15 +344,30 @@ export async function updateProfile(_: FormState, form: FormData): Promise<FormS
   const screening = screenListing(`${businessName}\n${about}`, "GOODS");
   if (screening.block) return { error: screening.block };
   if (/https?:\/\/|www\./i.test(about)) return { error: "Links aren't allowed in your profile." };
-  await db.vendorProfile.update({
-    where: { id: vendor.id },
-    data: { businessName, phone, about, whatsapp: form.get("whatsapp") === "on" },
-  });
+  const zip = field(form, "zip");
+  if (!/^\d{5}$/.test(zip)) return { error: "Enter a 5-digit ZIP code." };
+  const place = sellerPlace(zip, field(form, "city"));
+  if (!place) return { error: `We couldn't find ZIP ${zip}. Please check it.` };
+  // Same ZIP: keep the city area they have (older sellers picked it from a list). A new ZIP decides it afresh.
+  const metro = zip === vendor.zip ? vendor.metro : place.metro;
+  const moved = zip !== vendor.zip;
+  await db.$transaction([
+    db.vendorProfile.update({
+      where: { id: vendor.id },
+      data: { businessName, phone, about, whatsapp: form.get("whatsapp") === "on", zip, city: place.city, metro },
+    }),
+    // Listings take the seller's location, so they move with the seller.
+    ...(moved ? [db.listing.updateMany({ where: { vendorId: vendor.id }, data: { zip, metro } })] : []),
+  ]);
   // A new number has to be verified again.
   if (toE164(phone) !== toE164(vendor.phone)) {
     await db.user.update({ where: { id: vendor.userId }, data: { phoneVerifiedAt: null } });
   }
   revalidatePath("/seller/[id]", "page");
+  if (metro !== vendor.metro) {
+    revalidatePath("/", "layout");
+    return { message: `Profile saved. Your listings now appear under ${metroName(metro)}.` };
+  }
   return { message: "Profile saved." };
 }
 
