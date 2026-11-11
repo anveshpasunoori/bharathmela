@@ -4,6 +4,7 @@ import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { publicEventWhere, upcomingEvents } from "@/lib/event-data";
 import { browseListings, categoryCounts, publicListing, savedListingIds } from "@/lib/listings";
+import { everydayHomeCover } from "@/lib/home-cover";
 import { localFestivalCover, selectFestivalCover } from "@/lib/festival-cover";
 import { METROS, metroName, metroTimeZone } from "@/lib/metros";
 import { cityCategoryPath, cityPath } from "@/lib/seo";
@@ -93,12 +94,13 @@ export async function HomePage() {
     ...(place ? [{ value: "near", label: `Near ${place.city}, ${place.state}` }] : []),
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
   ];
-  const [popular, counts, festivalCover] = await Promise.all([popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro)]);
+  const now = new Date();
+  const [popular, counts, festivalCover] = await Promise.all([popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro, now)]);
 
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={place ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} />
+      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={place ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />
