@@ -117,7 +117,7 @@ export async function HomePage() {
       <Suspense fallback={<EventsSkeleton />}>
         <Events metro={metro} />
       </Suspense>
-      <TrustIndicators cities={METROS.length} />
+      <TrustIndicators />
     </div>
   );
 }

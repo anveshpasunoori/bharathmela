@@ -1,7 +1,7 @@
 import { Reveal } from "./Reveal";
 
 // Four plain promises at the bottom of the home page. Each one is something the site actually does.
-export function TrustIndicators({ cities }: { cities: number }) {
+export function TrustIndicators() {
   const items = [
     {
       title: "Trusted community",
@@ -25,7 +25,7 @@ export function TrustIndicators({ cities }: { cities: number }) {
     },
     {
       title: "Supporting the Indian community",
-      text: `Across ${cities} cities in America`,
+      text: "Across America",
       icon: <path d="M12 20.5S3 15 3 8.8C3 6 5.1 4 7.6 4c1.9 0 3.5 1.1 4.4 2.6C12.9 5.1 14.5 4 16.4 4 18.9 4 21 6 21 8.8 21 15 12 20.5 12 20.5z" />,
     },
   ];
