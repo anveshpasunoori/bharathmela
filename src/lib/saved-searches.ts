@@ -73,15 +73,17 @@ export async function runSearchAlerts(now = new Date()) {
   let sent = 0;
   for (const s of due) {
     const fresh = (await savedSearchResults(s)).filter((l) => l.createdAt > s.alertedUntil);
-    await db.savedSearch.update({ where: { id: s.id }, data: { alertedUntil: now, ...(fresh.length ? { lastAlertAt: now } : {}) } });
-    if (!fresh.length) continue;
+    if (!fresh.length) {
+      await db.savedSearch.update({ where: { id: s.id }, data: { alertedUntil: now } });
+      continue;
+    }
     const base = appUrl();
     const lines = fresh.slice(0, 5).map((l) => {
       const price = l.priceCents != null ? priceLabel(l.priceCents, l.priceUnit) : null;
       return `• ${l.title}${price ? ` – ${price.main} ${price.unit}`.trimEnd() : ""}\n  ${l.vendor.businessName} · ${base}${listingPath(l)}`;
     });
     const more = fresh.length > 5 ? `\n…and ${fresh.length - 5} more.` : "";
-    await sendEmail(
+    const delivered = await sendEmail(
       s.user.email,
       `${fresh.length} new on BharathMela: ${s.name.slice(0, 60)}`,
       `Hi ${s.user.name},\n\nNew listings match your saved search "${s.name}":\n\n${lines.join("\n\n")}${more}\n\n` +
@@ -90,7 +92,10 @@ export async function runSearchAlerts(now = new Date()) {
         `Stop these emails: ${base}/alerts/unsubscribe/${s.unsubscribeToken}\n\n– BharathMela`,
       undefined,
       { "List-Unsubscribe": `<${base}/api/alerts/unsubscribe?token=${s.unsubscribeToken}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
-    ).then((ok) => ok && sent++);
+    );
+    if (!delivered) continue;
+    await db.savedSearch.update({ where: { id: s.id }, data: { alertedUntil: now, lastAlertAt: now } });
+    sent++;
   }
   return { checked: due.length, sent };
 }

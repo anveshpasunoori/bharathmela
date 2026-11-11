@@ -120,7 +120,8 @@ export default async function EventsPage({
         </div>
       ) : (
         <div className="card text-center text-stone-600">
-          <p>No upcoming events match. Try another date or type.</p>
+          <p>{filtered ? "No upcoming events match these filters." : `No upcoming events in ${metroName(metro)} yet.`}</p>
+          {filtered && <Link href={`/events?metro=${metro}`} className="mt-3 inline-block font-semibold text-brand">See all dates and event types →</Link>}
           <Link href="/vendor/events/new" className="mt-3 inline-block font-semibold text-brand">Hosting one? Post it free →</Link>
         </div>
       )}

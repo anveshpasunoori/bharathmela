@@ -6,10 +6,8 @@ import { LocationPicker } from "./LocationPicker";
 
 // "📍 Fremont, CA ▾" in the top bar on every page; opens the location panel.
 export async function HeaderLocation() {
-  const { place, guess, metro, chosen } = await resolveLocation();
-  // Precise saved place first, then the city guessed from the connection, then the chosen metro.
-  const shown = place ?? guess;
-  const label = shown ? `${shown.city}, ${shown.state}` : metroName(metro);
+  const { place, metro, chosen } = await resolveLocation();
+  const label = place ? `${place.city}, ${place.state}` : metroName(metro);
   return (
     <details data-location data-dropdown className="group relative">
       <summary className="flex cursor-pointer list-none items-center gap-1 text-sm text-stone-700 hover:text-brand">

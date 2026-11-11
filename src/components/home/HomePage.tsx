@@ -50,16 +50,16 @@ async function popularSuggestions(metro: string): Promise<SearchSuggestion[]> {
 
 async function Featured({ where, label, allHref }: { where: Where; label: string; allHref: string }) {
   const { place, metro } = where;
-  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: null } : undefined;
+  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: 25 } : undefined;
   const [{ listings }, viewer] = await Promise.all([browseListings({ metro, near, sort: "best" }), getCurrentUser()]);
   const picked = pickFeatured(listings);
   const saved = await savedListingIds(viewer?.id, picked.map((l) => l.id));
   return <FeaturedBusinesses listings={picked} savedIds={saved} ownVendorId={viewer?.vendor?.id} allHref={allHref} where={label} />;
 }
 
-async function Events({ metro, label }: { metro: string; label: string }) {
+async function Events({ metro }: { metro: string }) {
   const events = await upcomingEvents({ metro, take: 6 });
-  return <CommunityEvents events={events} allHref="/events" where={label} />;
+  return <CommunityEvents events={events} allHref={`/events?metro=${metro}`} where={`in ${metroName(metro)}`} />;
 }
 
 async function homepageFestivalCover(metro: string, now = new Date()) {
@@ -87,7 +87,7 @@ export async function HomePage() {
   const where = await resolveLocation();
   const { place, metro } = where;
   const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: 25 } : undefined;
-  const label = place ? `near ${place.city}` : `in ${metroName(metro)}`;
+  const label = place ? `within 25 mi of ${place.city}` : `in ${metroName(metro)}`;
   const allHref = place ? "/?radius=25" : cityPath(metro);
   const hrefFor = (id: string) => (place ? `/?category=${id}&radius=25` : cityCategoryPath(metro, id));
   const locations: SearchLocation[] = [
@@ -107,7 +107,7 @@ export async function HomePage() {
       </Suspense>
       <PostRequestBanner />
       <Suspense fallback={<EventsSkeleton />}>
-        <Events metro={metro} label={label} />
+        <Events metro={metro} />
       </Suspense>
       <TrustIndicators cities={METROS.length} />
     </div>

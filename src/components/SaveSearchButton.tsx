@@ -30,7 +30,7 @@ export function SaveSearchButton({ query, saved }: { query: string; saved: boole
     return (
       <Link href="/saved?tab=searches" className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3.5 py-1.5 text-sm font-medium text-brand ring-1 ring-orange-200 hover:ring-brand">
         <BellIcon filled />
-        Search saved · alerts on
+        Manage saved search
       </Link>
     );
   }
@@ -51,7 +51,7 @@ export function SaveSearchButton({ query, saved }: { query: string; saved: boole
         <BellIcon />
         {pending ? "Saving…" : "Save search"}
       </button>
-      {error && <span className="max-w-xs text-right text-xs text-red-700">{error}</span>}
+      {error && <span className="max-w-xs text-right text-xs text-red-700" role="alert">{error}</span>}
     </span>
   );
 }

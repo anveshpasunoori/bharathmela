@@ -165,6 +165,18 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const searchSaved = mySearches.some((s) => s.params === searchQuery && sameLocation(s, here));
   if (viewer && params.ss) await db.savedSearch.updateMany({ where: { id: params.ss, userId: viewer.id }, data: { viewedAt: new Date() } });
   const pageQuery = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => typeof e[1] === "string")).toString();
+  const requestParams = new URLSearchParams();
+  if (!nearMode) requestParams.set("metro", metro);
+  if (category) requestParams.set("category", category);
+  const requestHref = `/requests/new${requestParams.size ? `?${requestParams}` : ""}`;
+  const widerSearch = (miles?: number) => {
+    const p = new URLSearchParams(pageQuery);
+    for (const key of ["metro", "radius", "ss", "from", "deleted", "view"]) p.delete(key);
+    if (miles) p.set("radius", String(miles));
+    else p.set("metro", metro);
+    return `/?${p}`;
+  };
+  const nextRadius = RADII.find((miles) => miles > radius);
   // Busiest categories first; the rest keep their usual order.
   const tileOrder = [...CATEGORIES].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
   const totalListings = [...counts.values()].reduce((sum, n) => sum + n, 0);
@@ -510,7 +522,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-line bg-white px-4 py-3 text-sm">
               <p className="font-semibold text-stone-800">BharathMela is just getting started {where}.</p>
               <p className="flex flex-wrap gap-x-5 gap-y-1 font-semibold">
-                <Link href="/requests/new" className="text-brand">Post what you need →</Link>
+                <Link href={requestHref} className="text-brand">Post what you need →</Link>
                 <Link href="/vendor/signup" className="text-brand">List your business free →</Link>
               </p>
             </div>
@@ -553,7 +565,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         </section>
       )}
 
-      {newest.length > 0 && <ListingRow title={t(lang, "newIn", { where: whereT })} listings={newest} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
+      {newest.length > 0 && (
+        <div id="new-listings" className="scroll-mt-28">
+          <ListingRow title={t(lang, "newIn", { where: whereT })} listings={newest} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />
+        </div>
+      )}
       {topRated.length > 0 && <ListingRow title={t(lang, "topRated")} listings={topRated} savedIds={savedIds} viewerVendorId={viewer?.vendor?.id} />}
 
       {events.length > 0 && (
@@ -621,7 +637,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                   <Link href={viewHref("map")} aria-current={mapView ? "page" : undefined} className={`px-3 py-1.5 ${mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>{t(lang, "map")}</Link>
                 </span>
               )}
-              <SaveSearchButton query={pageQuery} saved={searchSaved} />
+              {listings.length > 0 && <SaveSearchButton key={pageQuery} query={pageQuery} saved={searchSaved} />}
               {listings.length > 1 && <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />}
             </div>
           </div>
@@ -665,23 +681,23 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
         <div className="card text-center text-stone-600">
           <p className="font-semibold text-stone-800">{q || diet.length ? `Nothing matches ${where} yet.` : `No listings ${where} yet.`}</p>
           <p className="mt-1 text-sm">
-            BharathMela is new here and growing. Be the first to list your business free, or post what you need and sellers will come to you.
+            Save this search to check for new matches later, or post what you need so matching sellers can respond.
           </p>
-          <p className="mt-3 flex flex-wrap justify-center gap-2">
-            <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">Post what you need</Link>
-            <Link href="/vendor/signup" className="btn-outline">List your business free</Link>
-          </p>
+          <div className="mt-3 flex flex-wrap items-start justify-center gap-2">
+            <SaveSearchButton key={pageQuery} query={pageQuery} saved={searchSaved} />
+            <Link href={requestHref} className="btn-outline py-1.5">Post what you need</Link>
+          </div>
           {nearMode && (
-            <p className="mt-2 text-sm">
-              {radius < 100 && (
+            <p className="mt-3 text-sm">
+              {nextRadius && (
                 <>
-                  <Link href={`/?${new URLSearchParams({ radius: String(RADII.find((r) => r > radius)), ...(category ? { category } : {}), ...(q ? { q } : {}) })}`} className="font-semibold text-brand">
-                    Search within {RADII.find((r) => r > radius)} miles
+                  <Link href={widerSearch(nextRadius)} className="font-semibold text-brand">
+                    Search within {nextRadius} miles
                   </Link>
                   {" · "}
                 </>
               )}
-              <Link href={href(category, diet, q, metro)} className="font-semibold text-brand">
+              <Link href={widerSearch()} className="font-semibold text-brand">
                 Browse all of {metroName(metro)}
               </Link>
               {placeMetro && placeMetro.miles > 60 && <> ({Math.round(placeMetro.miles)} mi away, our nearest city)</>}

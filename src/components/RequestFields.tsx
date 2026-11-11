@@ -61,10 +61,12 @@ export function RequestFields({
   categories,
   initialCategory,
   initialZip,
+  areaLabel,
 }: {
   categories: readonly { id: string; label: string }[];
   initialCategory: string;
   initialZip: string;
+  areaLabel?: string;
 }) {
   const [category, setCategory] = useState(initialCategory);
   const creators = category === "CREATORS";
@@ -117,7 +119,8 @@ export function RequestFields({
         </div>
         <div>
           <label className="label" htmlFor="zip">ZIP code</label>
-          <input id="zip" name="zip" required inputMode="numeric" maxLength={5} pattern="\d{5}" className="input" defaultValue={initialZip} />
+          <input id="zip" name="zip" required inputMode="numeric" maxLength={5} pattern="\d{5}" className="input" defaultValue={initialZip} aria-describedby={areaLabel ? "request-area" : undefined} />
+          {areaLabel && <p id="request-area" className="mt-1 text-xs text-muted">Enter the ZIP code where you need service in the {areaLabel} area.</p>}
         </div>
       </div>
       <p className="text-xs text-stone-500">

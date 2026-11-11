@@ -15,16 +15,6 @@ type HeaderUser = { name: string; email: string; role: string; vendor: unknown }
 const navLink = "rounded-md px-3 py-2 font-semibold text-ink/80 transition-colors duration-150 hover:bg-ivory hover:text-forest";
 const dropLink = "flex cursor-pointer list-none items-center gap-1 rounded-md px-3 py-2 font-semibold text-ink/80 transition-colors duration-150 hover:text-forest";
 
-// The Explore menu: the main ways into the marketplace.
-const EXPLORE = [
-  { href: "/", label: "Home", blurb: "Popular categories, businesses and events near you" },
-  { href: "/indian-classifieds", label: "Indian classifieds", blurb: "Every category in every BharathMela city" },
-  { href: "/?category=ROOM_RENTAL", label: "Rooms & rentals", blurb: "Rooms, apartments and in-law units" },
-  { href: "/rooms-wanted", label: "People looking for a place", blurb: "Renters describing what they need" },
-  { href: "/creators", label: "Creators & influencers", blurb: "Promote your business with local creators" },
-  { href: "/requests/new", label: "Post what you need", blurb: "Get quotes from local businesses" },
-];
-
 function Chevron() {
   return (
     <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4 text-muted transition-transform duration-200 group-open:rotate-180" fill="currentColor">
@@ -47,36 +37,23 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
 
         {/* Desktop sections */}
         <div className="hidden items-center gap-0.5 lg:flex">
-          <details data-dropdown className="group relative">
-            <summary className={`${dropLink} group-open:text-forest`}>
-              Explore <Chevron />
-            </summary>
-            <div className="dropdown-panel absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-line bg-white p-2 shadow-xl">
-              {EXPLORE.map((x) => (
-                <Link key={x.href} href={x.href} className="block rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-ivory">
-                  <span className="block font-semibold text-ink">{x.label}</span>
-                  <span className="block text-xs text-muted">{x.blurb}</span>
-                </Link>
-              ))}
-            </div>
-          </details>
           <details data-dropdown className="group">
             <summary className={`${dropLink} group-open:text-forest`}>
               {t(lang, "categories")} <Chevron />
             </summary>
             <nav aria-label={t(lang, "categories")} className="dropdown-panel absolute inset-x-0 top-full z-30 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-y border-line bg-white shadow-xl">
-              <div className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-6 py-5 xl:grid-cols-6 xl:px-8">
+              <div className="mx-auto grid max-w-7xl grid-cols-3 gap-x-6 gap-y-3 px-6 py-4 xl:px-8">
                 {NAV_GROUPS.map((g) => (
-                  <div key={g.title} className="rounded-xl border border-line bg-ivory/45 p-2">
-                    <p className="mb-1 px-2 pt-1 text-xs font-semibold leading-tight text-forest xl:min-h-8">{g.title}</p>
+                  <div key={g.title} className="p-1">
+                    <p className="mb-1 px-2 pt-1 text-xs font-semibold leading-tight text-forest">{g.title}</p>
                     <ul className="space-y-0.5">
                       {g.items.map((c) => (
                         <li key={c.id}>
-                          <Link href={c.href} className="flex min-h-14 items-center gap-2 rounded-lg px-1.5 py-2 transition-colors hover:bg-white focus-visible:bg-white">
-                            <CategoryIcon id={c.id} size={40} vector className="size-10 rounded-full" />
+                          <Link href={c.href} className="flex min-h-11 items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-ivory focus-visible:bg-ivory">
+                            <CategoryIcon id={c.id} size={32} vector className="size-8 shrink-0 rounded-full" />
                             <span className="min-w-0">
                               <span className="block text-sm font-semibold leading-tight text-ink">{c.label}</span>
-                              <span className="mt-1 block text-xs leading-tight text-muted">{c.blurb}</span>
+                              {c.id === "PUJARI" && <span className="mt-1 block text-xs leading-tight text-muted">{c.blurb}</span>}
                             </span>
                           </Link>
                         </li>
@@ -87,9 +64,9 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
               </div>
               <div className="border-t border-line bg-ivory">
                 <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-1 px-8 py-3 text-sm">
-                  <Link href="/requests/new" className="font-medium text-ink/80 hover:text-forest">Post what you need</Link>
+                  <Link href="/indian-classifieds" className="font-semibold text-forest hover:underline">Browse all cities →</Link>
                   <Link href="/rooms-wanted" className="text-muted hover:text-forest">People looking for a place</Link>
-                  <Link href="/vendor/signup" className="ml-auto font-semibold text-saffron-dark">List your business free →</Link>
+                  <Link href="/creators" className="text-muted hover:text-forest">Find local creators</Link>
                 </div>
               </div>
             </nav>
@@ -147,7 +124,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                 </div>
                 <div className="py-1">
                   <Link href="/account" className={menuLink}>Account settings</Link>
-                  <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/saved" className={menuLink}>Saved listings &amp; searches</Link>
                   <Link href="/messages" className={menuLink}>Messages</Link>
                   <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>
@@ -190,23 +167,26 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                 <Link href="/signup" className="btn">{t(lang, "signUp")}</Link>
               </div>
             )}
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Browse</p>
-            <div className="grid gap-2 min-[400px]:grid-cols-2">
-              {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
-                <Link key={c.id} href={c.href} className="flex min-h-14 items-center gap-2 rounded-xl border border-line bg-ivory/45 p-2 text-sm font-medium hover:border-brand focus-visible:border-brand">
-                  <CategoryIcon id={c.id} size={40} vector className="size-10 rounded-full" />
-                  <span className="leading-tight">{c.label}</span>
-                </Link>
-              ))}
-            </div>
-            <p className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-stone-500">More</p>
+            <details className="mb-3 rounded-xl border border-line bg-ivory/45 p-3">
+              <summary className="cursor-pointer font-semibold text-ink">Browse categories</summary>
+              <div className="mt-3 grid gap-2 min-[400px]:grid-cols-2">
+                {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
+                  <Link key={c.id} href={c.href} className="flex min-h-14 items-center gap-2 rounded-xl border border-line bg-ivory/45 p-2 text-sm font-medium hover:border-brand focus-visible:border-brand">
+                    <CategoryIcon id={c.id} size={40} vector className="size-10 rounded-full" />
+                    <span className="leading-tight">{c.label}</span>
+                  </Link>
+                ))}
+              </div>
+              <Link href="/indian-classifieds" className={menuLink}>Browse all cities →</Link>
+            </details>
             <div className="text-base">
               <Link href="/events" className={menuLink}>Events near you</Link>
               <Link href="/requests/new" className={menuLink}>Post what you need</Link>
               <Link href="/rooms-wanted" className={menuLink}>People looking for a place</Link>
+              <Link href="/creators" className={menuLink}>Find local creators</Link>
               {user && (
                 <>
-                  <Link href="/saved" className={menuLink}>Saved listings</Link>
+                  <Link href="/saved" className={menuLink}>Saved listings &amp; searches</Link>
                   <Link href="/messages" className={menuLink}>Messages</Link>
                   <Link href="/requests" className={menuLink}>Requests &amp; quotes</Link>
                   <Link href="/rooms-wanted/mine" className={menuLink}>My room requests</Link>

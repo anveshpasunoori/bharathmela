@@ -26,7 +26,7 @@ export function HeroSection({
   const cover = festivalCover ?? everydayCover;
   return (
     <section className="relative isolate overflow-hidden bg-ivory" aria-labelledby="home-hero">
-      <div className="relative aspect-[3/2] max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_90%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_30%)]">
+      <div className="relative aspect-[3/2] max-h-48 overflow-hidden sm:max-h-80 [mask-image:linear-gradient(to_bottom,black_90%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_30%)]">
         <Parallax className="absolute inset-0">
           <Image
             src={cover.src}
@@ -50,7 +50,7 @@ export function HeroSection({
             Discover local home cooks, shops, tutors, and services.
           </p>
           <div className="anim-scale relative z-10 mt-7 [animation-delay:180ms] lg:w-[46rem] lg:max-w-[calc(100vw-4rem)]">
-            <SmartSearch suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />
+            <SmartSearch key={defaultLocation} suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />
           </div>
           <div className="anim-rise mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold text-forest [animation-delay:260ms]">
             <Link href={exploreHref} className="py-2 underline underline-offset-4 hover:text-forest-dark">

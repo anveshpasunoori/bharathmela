@@ -8,7 +8,7 @@ import { SellerKindFields } from "@/components/SellerSignupFields";
 import { getCurrentUser } from "@/lib/auth";
 import { becomeSeller, vendorSignup } from "../../actions/auth";
 
-export const metadata = { title: "Start selling", alternates: { canonical: "/vendor/signup" } };
+export const metadata = { title: "List your business", alternates: { canonical: "/vendor/signup" } };
 
 // New sellers sign up here; people who already have an account (buyers) just add seller details.
 // `kind=individual` and `next` come from links like "Having a garage sale? List it free".
@@ -20,13 +20,16 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
   const next = safeNextPath(params.next, "/vendor");
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="text-2xl font-bold">{kind === "individual" ? "List something on BharathMela" : "Sell on BharathMela"}</h1>
+      <h1 className="text-2xl font-bold">{kind === "individual" ? "List something on BharathMela" : "List your business"}</h1>
       <p className="mb-4 mt-1 text-stone-600">
-        {user ? `Add a few details to your account, ${user.name.split(" ")[0]}, and you can post right away.` : "Free to start with one listing. Upgrade any time."}
+        {user ? `Add a few details to your account, ${user.name.split(" ")[0]}, and you can post right away.` : "Your first listing is free."}
+      </p>
+      <p className="mb-5 text-sm leading-relaxed text-muted">
+        Set up your seller profile with a contact number and ZIP code. Then create your first listing with a description, pricing if available, and photos.
       </p>
       <div className="card space-y-3">
         {!user && <SocialLogin next="/vendor/signup" label="Sign up" />}
-        <ActionForm action={user ? becomeSeller : vendorSignup} submitLabel={user ? "Start selling" : "Create seller account"}>
+        <ActionForm action={user ? becomeSeller : vendorSignup} submitLabel={user ? "Set up seller profile" : "Create seller account"}>
           <input type="hidden" name="next" value={next} />
           <SellerKindFields initialKind={kind} showName={!user} />
           <div>

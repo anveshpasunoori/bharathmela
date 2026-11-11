@@ -10,9 +10,10 @@ import { createWanted } from "../../actions/room-wanted";
 export const metadata = { title: "I need a place to live", robots: { index: false } };
 
 export default async function NewWantedPage({ searchParams }: { searchParams: Promise<{ metro?: string }> }) {
-  const user = await requireUser("/rooms-wanted/new");
-  if (!user.emailVerifiedAt) redirect("/verify?next=/rooms-wanted/new");
   const { metro } = await searchParams;
+  const next = isMetro(metro) ? `/rooms-wanted/new?metro=${metro}` : "/rooms-wanted/new";
+  const user = await requireUser(next);
+  if (!user.emailVerifiedAt) redirect(`/verify?next=${encodeURIComponent(next)}`);
   return (
     <div className="mx-auto max-w-2xl">
       <Link href="/rooms-wanted" className="text-sm text-stone-500 hover:text-brand">← People looking for a place</Link>

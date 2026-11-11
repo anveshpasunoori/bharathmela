@@ -131,7 +131,7 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
 export function FeaturedBusinesses({ listings, savedIds, ownVendorId, allHref, where }: { listings: BrowseListing[]; savedIds: Set<string>; ownVendorId?: string; allHref: string; where: string }) {
   return (
     <Reveal className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8" aria-labelledby="home-featured">
-      <SectionHeading id="home-featured" icon="star" title="Featured businesses near you" href={allHref} linkText="View all businesses" />
+      <SectionHeading id="home-featured" icon="star" title="Featured businesses near you" href={listings.length ? `${allHref}#new-listings` : undefined} linkText="See new listings" />
       {listings.length ? (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {listings.map((l) => (
@@ -149,7 +149,7 @@ export function FeaturedBusinesses({ listings, savedIds, ownVendorId, allHref, w
           </Link>
         </div>
       )}
-      {listings.length > 0 && <MobileViewAll href={allHref}>View all businesses</MobileViewAll>}
+      {listings.length > 0 && <MobileViewAll href={`${allHref}#new-listings`}>See new listings</MobileViewAll>}
     </Reveal>
   );
 }

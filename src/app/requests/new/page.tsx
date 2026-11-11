@@ -4,17 +4,28 @@ import { ActionForm } from "@/components/ActionForm";
 import { RequestFields } from "@/components/RequestFields";
 import { requireUser } from "@/lib/auth";
 import { MAX_NOTIFIED, REQUEST_CATEGORIES, REQUEST_DAYS } from "@/lib/service-requests";
+import { metroFor, placeFromZip } from "@/lib/geo";
+import { isMetro, metroName } from "@/lib/metros";
 import { getUserLocation } from "@/lib/user-location";
 import { createRequest } from "../../actions/service-request";
 
 export const metadata = { title: "Post what you need", robots: { index: false } };
 
-export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
-  const { category } = await searchParams;
-  if (category === "ROOM_RENTAL") redirect("/rooms-wanted/new");
-  const user = await requireUser(`/requests/new${category ? `?category=${category}` : ""}`);
-  if (!user.emailVerifiedAt) redirect("/verify?next=/requests/new");
+export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ category?: string; metro?: string }> }) {
+  const params = await searchParams;
+  const category = REQUEST_CATEGORIES.find((c) => c.id === params.category)?.id;
+  const metro = isMetro(params.metro) ? params.metro : undefined;
+  const query = new URLSearchParams();
+  if (metro) query.set("metro", metro);
+  if (params.category === "ROOM_RENTAL") redirect(`/rooms-wanted/new${query.size ? `?${query}` : ""}`);
+  if (category) query.set("category", category);
+  const next = `/requests/new${query.size ? `?${query}` : ""}`;
+  const user = await requireUser(next);
+  if (!user.emailVerifiedAt) redirect(`/verify?next=${encodeURIComponent(next)}`);
   const place = await getUserLocation();
+  const zip = place?.zip ?? user.vendor?.zip ?? "";
+  const zipPlace = metro && zip ? place ?? placeFromZip(zip) : null;
+  const initialZip = !metro || (zipPlace && metroFor(zipPlace).metro === metro) ? zip : "";
   return (
     <div className="mx-auto max-w-2xl">
       <Link href="/requests" className="text-sm text-stone-500 hover:text-brand">← My requests</Link>
@@ -34,8 +45,9 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
         <ActionForm action={createRequest} submitLabel="Get quotes">
           <RequestFields
             categories={REQUEST_CATEGORIES}
-            initialCategory={REQUEST_CATEGORIES.some((c) => c.id === category) ? category! : ""}
-            initialZip={place?.zip ?? user.vendor?.zip ?? ""}
+            initialCategory={category ?? ""}
+            initialZip={initialZip}
+            areaLabel={metro ? metroName(metro) : undefined}
           />
         </ActionForm>
       </div>
