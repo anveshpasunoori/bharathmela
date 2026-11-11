@@ -89,6 +89,7 @@ model VendorProfile {
   // Card payments through Stripe (src/lib/stripe.ts): the customer, and their current plan subscription.
   stripeCustomerId     String?         @unique
   stripeSubscriptionId String?
+  boostTrialUsedAt     DateTime?
   // The seller whose referral link this seller signed up through; rewarded once this seller posts a listing.
   referredById         String?
   referredBy           VendorProfile?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
@@ -187,6 +188,7 @@ model Listing {
   status         String         @default("ACTIVE")
   moderationNote String         @default("") // why it was held, rejected or removed
   views          Int            @default(0)
+  viewDedup      ListingView[]
   updatedAt      DateTime       @default(now()) @updatedAt
   // Listings go stale: they stop showing after this date unless the seller renews them.
   // Set on create and on renew (see LISTING_DAYS in src/lib/listings.ts).
@@ -261,6 +263,8 @@ model AdBoost {
   endsAt    DateTime?
   createdAt DateTime  @default(now())
   payment   Payment?
+  viewTrackingStartedAt DateTime?
+  trackedViews Int @default(0)
 }
 
 // What a vendor paid us, for either a subscription or an ad boost.
@@ -604,4 +608,14 @@ model MarketIntent {
 
   @@id([day, metro, action, kind, visitorKey])
   @@index([metro, day])
+}
+
+model ListingView {
+  listingId String
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  day DateTime @db.Date
+  visitorKey String
+
+  @@id([listingId, day, visitorKey])
+  @@index([day])
 }

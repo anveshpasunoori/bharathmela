@@ -33,11 +33,16 @@ function growthStats() {
     db.user.count({ where: { cityEmails: true, deletedAt: null } }),
     db.reviewRequest.count({ where: { sentAt: { gt: since(30) } } }),
     db.review.count({ where: { createdAt: { gt: since(30) } } }),
+    db.payment.groupBy({
+      by: ["vendorId"],
+      where: { purpose: "AD_BOOST", status: "APPROVED", amountCents: { gt: 0 }, reviewedAt: { gte: since(90) } },
+      _count: true,
+    }),
   ]);
 }
 
 export default async function GrowthPage() {
-  const [week, month, quarter, bySource, liveByCity, foundersByCity, referred, rewarded, topReferrers, subscribers, requests, reviews, intentReport] =
+  const [week, month, quarter, bySource, liveByCity, foundersByCity, referred, rewarded, topReferrers, subscribers, requests, reviews, boostBuyers, intentReport] =
     await Promise.all([growthStats(), marketplaceIntentReport()]).then(([stats, report]) => [...stats, report] as const);
 
   const split = (rows: { role: string; _count: number }[]) => ({
@@ -80,6 +85,13 @@ export default async function GrowthPage() {
             ))}
           </ol>
         ) : <p className="text-sm text-stone-600">No marketplace actions recorded yet.</p>}
+      </section>
+
+      <section>
+        <h2 className="mb-2 font-semibold">Paid promotions · last 90 days</h2>
+        <p className="text-sm text-stone-600">
+          {boostBuyers.length} sellers bought a promotion. {boostBuyers.filter((row) => row._count > 1).length} bought more than one.
+        </p>
       </section>
 
       <section>

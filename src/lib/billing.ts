@@ -121,9 +121,12 @@ export async function approvePayment(paymentId: string, adminId: string) {
 
 // Starts a paid boost: the listing is featured for its days, stacked after any boost still running.
 export async function activateBoost(tx: Tx, boost: { id: string; days: number }, listing: { id: string; featuredUntil: Date | null }, now = new Date()) {
-  const startsAt = listing.featuredUntil && listing.featuredUntil > now ? listing.featuredUntil : now;
+  const [current] = await tx.$queryRaw<{ featuredUntil: Date | null }[]>`
+    SELECT "featuredUntil" FROM "Listing" WHERE "id" = ${listing.id} FOR UPDATE
+  `;
+  const startsAt = current?.featuredUntil && current.featuredUntil > now ? current.featuredUntil : now;
   const endsAt = new Date(startsAt.getTime() + boost.days * DAY_MS);
-  await tx.adBoost.update({ where: { id: boost.id }, data: { status: "ACTIVE", startsAt, endsAt } });
+  await tx.adBoost.update({ where: { id: boost.id }, data: { status: "ACTIVE", startsAt, endsAt, viewTrackingStartedAt: startsAt } });
   await tx.listing.update({ where: { id: listing.id }, data: { featuredUntil: endsAt } });
 }
 

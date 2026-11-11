@@ -150,7 +150,7 @@ export async function browseListings({
       isNew: isNewListing(item.createdAt),
       distanceMiles,
       rating: ratings.get(item.vendorId),
-      score: score * (isFeatured ? 1.15 : 1) * (isPro ? 1.05 : 1) * nearby,
+      score: score * nearby,
     };
   });
   // At most MAX_PINNED sponsored listings sit at the top, so paid placement never crowds out the page.
@@ -163,21 +163,19 @@ export async function browseListings({
       .slice(0, MAX_PINNED)
       .map((l) => l.id),
   );
+  const organic = (a: (typeof listings)[number], b: (typeof listings)[number]) =>
+    searching ? b.score - a.score : (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity);
   const recommended = (a: (typeof listings)[number], b: (typeof listings)[number]) =>
-    searching
-      ? b.score - a.score
-      : Number(pinned.has(b.id)) - Number(pinned.has(a.id)) ||
-        (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) ||
-        Number(b.isPro) - Number(a.isPro);
+    searching ? organic(a, b) : Number(pinned.has(b.id)) - Number(pinned.has(a.id)) || organic(a, b) || Number(b.isPro) - Number(a.isPro);
   // Listings without a price go last when sorting by price.
   const price = (l: (typeof listings)[number], dir: 1 | -1) => (l.priceCents == null ? Infinity : dir * l.priceCents);
   const comparators: Record<SortId, (a: (typeof listings)[number], b: (typeof listings)[number]) => number> = {
     best: recommended,
-    near: (a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) || recommended(a, b),
-    price_asc: (a, b) => price(a, 1) - price(b, 1) || recommended(a, b),
-    price_desc: (a, b) => price(a, -1) - price(b, -1) || recommended(a, b),
+    near: (a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity) || organic(a, b),
+    price_asc: (a, b) => price(a, 1) - price(b, 1) || organic(a, b),
+    price_desc: (a, b) => price(a, -1) - price(b, -1) || organic(a, b),
     rating: (a, b) =>
-      (b.rating?.average ?? 0) - (a.rating?.average ?? 0) || (b.rating?.count ?? 0) - (a.rating?.count ?? 0) || recommended(a, b),
+      (b.rating?.average ?? 0) - (a.rating?.average ?? 0) || (b.rating?.count ?? 0) - (a.rating?.count ?? 0) || organic(a, b),
     new: (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   };
   listings.sort(comparators[sort] ?? recommended);

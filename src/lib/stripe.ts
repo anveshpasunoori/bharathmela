@@ -68,7 +68,7 @@ export async function boostCheckoutUrl(vendor: Seller, email: string, listing: {
     line_items: [
       {
         quantity: 1,
-        price_data: { currency: "usd", unit_amount: option.priceCents, product_data: { name: `Feature "${listing.title.slice(0, 80)}" for ${days} days` } },
+        price_data: { currency: "usd", unit_amount: option.priceCents, product_data: { name: `${days}-day sponsored placement for "${listing.title.slice(0, 80)}"` } },
       },
     ],
     metadata: { kind: "boost", vendorId: vendor.id, listingId: listing.id, days: String(days) },
@@ -76,6 +76,13 @@ export async function boostCheckoutUrl(vendor: Seller, email: string, listing: {
     cancel_url: absoluteUrl("/vendor"),
   });
   return session.url!;
+}
+
+export async function sellerStripeSubscription(vendor: { stripeCustomerId: string | null; stripeSubscriptionId: string | null }) {
+  if (!stripeEnabled() || !vendor.stripeCustomerId || !vendor.stripeSubscriptionId) return null;
+  const subscription = await stripe().subscriptions.retrieve(vendor.stripeSubscriptionId);
+  const customer = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+  return customer === vendor.stripeCustomerId && (subscription.status === "active" || subscription.status === "trialing") ? subscription : null;
 }
 
 // Stripe's page for updating the card, switching plans or cancelling.
@@ -149,10 +156,13 @@ async function grantPlanPeriod(vendorId: string, plan: "BASIC" | "PRO", invoiceI
 }
 
 async function grantBoost(vendorId: string, listingId: string, days: number, sessionId: string, amountCents: number) {
-  if (!boostOption(days) || (await db.payment.findFirst({ where: { reference: sessionId } }))) return;
-  const listing = await db.listing.findFirst({ where: { id: listingId, vendorId } });
-  if (!listing) return;
+  if (!boostOption(days)) return;
   await db.$transaction(async (tx) => {
+    const [listing] = await tx.$queryRaw<{ id: string; featuredUntil: Date | null }[]>`
+      SELECT "id", "featuredUntil" FROM "Listing"
+      WHERE "id" = ${listingId} AND "vendorId" = ${vendorId} FOR UPDATE
+    `;
+    if (!listing || (await tx.payment.findFirst({ where: { reference: sessionId, method: "CARD" } }))) return;
     const boost = await tx.adBoost.create({ data: { listingId, days } });
     await tx.payment.create({
       data: { vendorId, purpose: "AD_BOOST", adBoostId: boost.id, amountCents, method: "CARD", reference: sessionId, status: "APPROVED", reviewedAt: new Date() },

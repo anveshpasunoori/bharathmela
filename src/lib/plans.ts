@@ -30,7 +30,7 @@ export const PLANS = {
       "Up to 10 upcoming events",
       "AI ad writer: turn your idea into a ready-to-post ad",
       "\"Pro\" badge on every listing",
-      "Ranked above Free and Basic listings",
+      "Priority among equally close listings in recommended browsing",
     ],
   },
 } as const;
@@ -46,7 +46,7 @@ export function isPaidPlan(id: string): id is (typeof PAID_PLAN_IDS)[number] {
   return (PAID_PLAN_IDS as readonly string[]).includes(id);
 }
 
-// Featured ad boosts: a listing is pinned to the top of its city and category.
+// One-time boosts rotate through sponsored slots in recommended browsing.
 export const BOOSTS = [
   { days: 7, priceCents: 500 },
   { days: 30, priceCents: 1500 },

@@ -6,7 +6,7 @@ export default function PricingPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Pricing for sellers</h1>
-        <p className="mt-1 text-stone-600">Buyers always browse free. Sellers pick a plan and can boost listings to the top.</p>
+        <p className="mt-1 text-stone-600">Buyers always browse free. Sellers can list free or choose a plan. Eligible listings can rotate through sponsored placements.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

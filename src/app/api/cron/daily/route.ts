@@ -1,7 +1,7 @@
 import { syncExpirations } from "@/lib/billing";
 import { cronAuthorized } from "@/lib/cron";
 import { db } from "@/lib/db";
-import { pruneMarketIntents } from "@/lib/market-intent-data";
+import { intentDay, pruneMarketIntents } from "@/lib/market-intent-data";
 import { pruneRateLimits } from "@/lib/rate-limit";
 import { runCityDigest } from "@/lib/city-digest";
 import { runReviewRequests } from "@/lib/review-requests";
@@ -18,12 +18,13 @@ export async function GET(req: Request) {
   const reviews = await runReviewRequests(now);
   // The monthly city email goes out on the 1st; ?digest=1 sends it now (for testing).
   const digest = await runCityDigest(now, { force: new URL(req.url).searchParams.get("digest") === "1" });
-  const [sessions, emailCodes, phoneCodes, limits, intents] = await Promise.all([
+  const [sessions, emailCodes, phoneCodes, limits, intents, views] = await Promise.all([
     db.session.deleteMany({ where: { expiresAt: { lt: now } } }),
     db.emailCode.deleteMany({ where: { expiresAt: { lt: now } } }),
     db.phoneCode.deleteMany({ where: { expiresAt: { lt: now } } }),
     pruneRateLimits(),
     pruneMarketIntents(now).catch(() => null),
+    db.listingView.deleteMany({ where: { day: { lt: intentDay(now, 7) } } }).catch(() => null),
   ]);
-  return Response.json({ alerts, ...reviews, ...digest, cleared: { sessions: sessions.count, emailCodes: emailCodes.count, phoneCodes: phoneCodes.count, rateLimits: limits.count, marketIntents: intents?.count ?? null } });
+  return Response.json({ alerts, ...reviews, ...digest, cleared: { sessions: sessions.count, emailCodes: emailCodes.count, phoneCodes: phoneCodes.count, rateLimits: limits.count, marketIntents: intents?.count ?? null, listingViewKeys: views?.count ?? null } });
 }

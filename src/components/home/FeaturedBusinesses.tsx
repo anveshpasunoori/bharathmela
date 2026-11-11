@@ -25,8 +25,7 @@ export function pickFeatured(listings: BrowseListing[], max = 6) {
   const score = (l: BrowseListing) =>
     (l.vendor.businessVerifiedAt ? 3 : 0) +
     (l.rating && l.rating.count > 0 ? l.rating.average * Math.min(l.rating.count, 20) / 20 : 0) +
-    (l.photos[0] ? 1 : 0) +
-    (l.isFeatured ? 1.5 : 0);
+    (l.photos[0] ? 1 : 0);
   return [...byVendor.values()]
     .map((l, i) => ({ l, s: score(l), i }))
     .sort((a, b) => b.s - a.s || a.i - b.i)
@@ -69,7 +68,7 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
       </Link>
       <div className="absolute right-3 top-3 z-10 flex gap-1.5">
         {listing.isFeatured && (
-          <span className="badge bg-stone-900/80 text-stone-50" title="This seller paid to show this listing first">Sponsored</span>
+          <span className="badge bg-stone-900/80 text-stone-50" title="This listing has an active promotion">Sponsored</span>
         )}
         {v.businessVerifiedAt && (
           <span className="badge inline-flex items-center gap-1 bg-forest text-snow shadow-sm" title="BharathMela checked this business is real">

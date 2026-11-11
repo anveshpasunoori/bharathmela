@@ -1,3 +1,4 @@
+import { TrackListingView } from "@/components/TrackListingView";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -101,10 +102,6 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const miles = place && coords ? Math.round(milesBetween(place, coords)) : null;
   const own = user?.id === listing.vendor.userId;
   const rent = rental ? await rentComparison(listing) : null;
-  // Count views from everyone except the seller.
-  if (user?.id !== listing.vendor.userId) {
-    await db.listing.update({ where: { id: listing.id }, data: { views: { increment: 1 } } });
-  }
   const summary = ratings.get(listing.vendorId);
   const mine = user ? await db.review.findUnique({ where: { vendorId_buyerId: { vendorId: listing.vendorId, buyerId: user.id } } }) : null;
   const here = listingPath(listing);
@@ -121,6 +118,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
 
   return (
     <div className="mx-auto max-w-2xl space-y-5 pb-24 sm:pb-0">
+      {!own && <TrackListingView id={listing.id} />}
       <div className="flex items-center justify-between gap-2">
         <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-stone-500">
           <ol className="flex flex-wrap items-center gap-x-1.5">

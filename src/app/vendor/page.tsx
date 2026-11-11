@@ -7,9 +7,13 @@ import { deleteEvent, setEventVisibility } from "../actions/event";
 import { deleteListing, renewListing, setListingVisibility } from "../actions/vendor";
 import { requireVendor } from "@/lib/auth";
 import { requestsForVendor } from "@/lib/service-requests";
+import { boostDemandForMetro } from "@/lib/boost-offer";
+import { MIN_INTENT_SIGNALS } from "@/lib/market-intents";
 import { getVendorPlan, syncExpirations } from "@/lib/billing";
 import { welcomeVerifiedSeller } from "@/lib/growth";
-import { openBillingPortal } from "../actions/stripe";
+import { ActionForm } from "@/components/ActionForm";
+import { sellerStripeSubscription } from "@/lib/stripe";
+import { openBillingPortal, setPlanRenewal } from "../actions/stripe";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatEventTime } from "@/lib/events";
@@ -76,6 +80,9 @@ export default async function VendorDashboard({
   const leadTotal = Object.values(leadsByKind).reduce((a, b) => a + b, 0) + messagesThisMonth;
   const rating = ratings.get(vendor.id);
   const tab = params.tab === "events" || params.tab === "billing" ? params.tab : "listings";
+  const boostDemand = tab === "listings" && activeCount > 0 ? await boostDemandForMetro(vendor.metro, now) : null;
+  const cardSubscription = tab === "billing" ? await sellerStripeSubscription(vendor).catch(() => null) : null;
+
   const inReview = listings.filter((l) => l.status === "PENDING_REVIEW").length + events.filter((e) => e.status === "PENDING_REVIEW").length;
 
   // One message at a time, from whatever the seller just did.
@@ -212,7 +219,7 @@ export default async function VendorDashboard({
           <p className="text-sm text-stone-600">
             {usedCount} of {plan.maxListings} listings · {upcomingEventCount} of {plan.maxEvents} events
             {subscription?.endsAt && (
-              <> · {subscription.source === "PAID" ? "paid" : "free"} through {fmtDate(plan.id === "PRO" && proUntil ? proUntil : subscription.endsAt)}</>
+              <> · {["PAID", "STRIPE"].includes(subscription.source) ? "paid" : "free"} through {fmtDate(plan.id === "PRO" && proUntil ? proUntil : subscription.endsAt)}</>
             )}
           </p>
         </div>
@@ -228,10 +235,20 @@ export default async function VendorDashboard({
             </Link>
           )}
           {vendor.stripeSubscriptionId ? (
-            // Paying by card: renewals are automatic; changes happen on Stripe's billing page.
-            <form action={openBillingPortal}>
-              <button className="btn-outline">Manage billing</button>
-            </form>
+            <>
+              <form action={openBillingPortal}>
+                <button className="btn-outline">Manage billing</button>
+              </form>
+              {cardSubscription && (
+                <div className="basis-full rounded-xl border border-line p-3 text-sm">
+                  <p className="mb-2 text-muted">{cardSubscription.cancel_at_period_end
+                    ? "Automatic renewal is off. You can restart renewal before the paid period ends."
+                    : "You can stop automatic renewal and keep your current plan through the paid period."}</p>
+                  <ActionForm action={setPlanRenewal.bind(null, cardSubscription.cancel_at_period_end)}
+                    submitLabel={cardSubscription.cancel_at_period_end ? "Resume automatic renewal" : "Stop automatic renewal"} secondary />
+                </div>
+              )}
+            </>
           ) : (
             plan.id !== "FREE" && (
               <Link href={`/vendor/upgrade?plan=${plan.id}`} className="btn-outline">
@@ -268,11 +285,11 @@ export default async function VendorDashboard({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{l.title}</span>
                       <ListingStatus status={l.status} />
-                      {featured && <span className="badge bg-brand text-snow">Featured until {fmtDate(l.featuredUntil!)}</span>}
+                      {featured && <span className="badge bg-brand text-snow">Sponsored until {fmtDate(l.featuredUntil!)}</span>}
                     </div>
                     <p className="text-sm text-stone-500">
                       {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
-                      {leadsByListing.get(l.id) ? <> · <b className="text-stone-800">{leadsByListing.get(l.id)} contact{leadsByListing.get(l.id) === 1 ? "" : "s"}</b> this month</> : null}
+                      {leadsByListing.get(l.id) ? <> · <b className="text-stone-800">{leadsByListing.get(l.id)} contact {leadsByListing.get(l.id) === 1 ? "tap" : "taps"}</b> this month</> : null}
                       {l.expiresAt && (l.status === "ACTIVE" || l.status === "HIDDEN") && (
                         <>
                           {" · "}
@@ -286,6 +303,13 @@ export default async function VendorDashboard({
                         </>
                       )}
                     </p>
+                    {l.status === "ACTIVE" && boostDemand && (
+                      <p className="text-xs text-muted">
+                        {(boostDemand.get(l.category) ?? 0) >= MIN_INTENT_SIGNALS
+                          ? `${boostDemand.get(l.category)} category searches in your area over 14 days`
+                          : "Low local search activity over the last 14 days"}
+                      </p>
+                    )}
                     {(l.status === "REJECTED" || l.status === "REMOVED") && l.moderationNote && (
                       <p className="mt-1 text-sm text-red-700">Reason: {l.moderationNote}</p>
                     )}
@@ -294,7 +318,7 @@ export default async function VendorDashboard({
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-sm">
                   {l.status === "ACTIVE" && (!l.expiresAt || l.expiresAt > now) && (
                     <Link href={`/vendor/listings/${l.id}/boost`} className="btn-outline py-1.5">
-                      {featured ? "Extend promotion" : "Promote"}
+                      Worth boosting?
                     </Link>
                   )}
                   {(l.status === "ACTIVE" || l.status === "HIDDEN") && l.expiresAt && daysUntil(l.expiresAt) <= 14 && (
