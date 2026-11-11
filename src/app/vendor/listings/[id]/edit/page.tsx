@@ -51,7 +51,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
         </p>
       )}
       <section aria-labelledby="listing-coach" className="mt-4 rounded-2xl border border-line bg-brand-soft p-5">
-        <h2 id="listing-coach" className="text-xl font-semibold text-ink">Listing coach</h2>
+        <h2 id="listing-coach" className="scroll-mt-24 text-xl font-semibold text-ink">Listing coach</h2>
         {suggestions.length ? (
           <ul className="mt-3 space-y-3">
             {suggestions.map(({ field, label, detail }) => (
