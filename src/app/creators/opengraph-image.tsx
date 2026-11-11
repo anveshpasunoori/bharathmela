@@ -1,7 +1,8 @@
 import { creatorsFor } from "@/lib/creator-pages";
 import { OG_SIZE, shareCard } from "@/lib/og-card";
 
-// The share card for the creators page.
+// The creator count is live data. Keep this image out of build-time prerendering.
+export const dynamic = "force-dynamic";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 export const alt = "Indian influencers and content creators on BharathMela";
