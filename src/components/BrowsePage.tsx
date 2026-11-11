@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { HOME_CATEGORY_PHOTOS } from "@/lib/home-art";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EventCard } from "@/components/EventCard";
@@ -519,14 +521,20 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-4">
             {tileOrder.map((c, i) => {
               const n = counts.get(c.id) ?? 0;
+              const photo = HOME_CATEGORY_PHOTOS[c.id];
               return (
                 <Link
                   key={c.id}
                   href={href(c.id)}
-                  className={`card market-tile group/tile flex-col items-center gap-2 p-2.5 text-center sm:flex sm:flex-row sm:gap-3 sm:p-4 sm:text-left ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
+                  className={`market-tile group/tile flex-col overflow-hidden rounded-xl border border-stone-200 bg-white text-center shadow-soft sm:flex ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
                 >
-                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/tile:scale-105 motion-safe:group-focus-visible/tile:scale-105 sm:h-14 sm:w-14" />
-                  <span className="min-w-0">
+                  <span className="relative block aspect-[3/2] w-full overflow-hidden bg-brand-soft">
+                    {photo && <Image src={photo} alt="" fill sizes="(min-width: 1024px) 245px, 33vw" className="object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover/tile:scale-105" />}
+                  </span>
+                  <span className="relative flex flex-1 flex-col items-center bg-[#fff5e2] px-1.5 pb-3 pt-5 dark:bg-white">
+                    <span className="absolute -top-4 grid size-8 place-items-center rounded-full bg-[#fff5e2] shadow-sm">
+                      <CategoryIcon id={c.id} size={24} className="size-6" />
+                    </span>
                     <span className="block text-xs font-semibold leading-snug sm:text-base sm:leading-tight">{catName(c)}</span>
                     <span className="hidden text-xs text-stone-500 sm:inline">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
                   </span>

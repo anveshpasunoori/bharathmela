@@ -1,3 +1,4 @@
+import { CategoryThumbnail } from "@/components/CategoryThumbnail";
 import type { SavedSearch } from "@prisma/client";
 import Link from "next/link";
 import { deleteSavedSearch } from "@/app/actions/saved-search";
@@ -5,7 +6,6 @@ import { parseFilters } from "@/lib/browse-params";
 import { ALERT_OPTIONS, savedSearchHref } from "@/lib/saved-searches";
 import { timeAgo } from "@/lib/time";
 import { AlertSelect } from "./AlertSelect";
-import { CategoryIcon } from "./CategoryIcon";
 import { BellIcon } from "./SaveSearchButton";
 
 // The Searches tab on the Saved page: each saved search with its new listings, a link to its results,
@@ -35,7 +35,7 @@ export function SavedSearchList({ searches, newCounts }: { searches: SavedSearch
           <li key={s.id} className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 sm:flex-row sm:items-center">
             <Link href={savedSearchHref(s)} className="flex min-w-0 flex-1 items-center gap-3">
               {category ? (
-                <CategoryIcon id={category} size={48} className="h-12 w-12" />
+                <CategoryThumbnail id={category} size={48} className="h-12 w-12" />
               ) : (
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[22%] bg-brand-soft text-xl" aria-hidden>🔍</span>
               )}

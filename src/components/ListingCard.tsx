@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { listingPlaceholderPhoto } from "@/lib/home-art";
 import { listingPath } from "@/lib/seo";
 import { CategoryIcon } from "./CategoryIcon";
 import { listingSubcategories, subcategoryLabel } from "@/lib/subcategories";
@@ -52,6 +53,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
   const miles = listing.category === "CREATORS" && listing.tags.includes(",NATIONWIDE,") ? null : listing.distanceMiles;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const sub = listingSubcategories(listing)[0];
+  const stockPhoto = listingPlaceholderPhoto(listing.category);
   const subLabel = sub ? subcategoryLabel(listing.category, sub) : undefined;
   return (
     <div className="group relative">
@@ -66,6 +68,11 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
               sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
               className="h-full w-full object-cover"
             />
+          ) : stockPhoto ? (
+            <>
+              <Image src={stockPhoto} alt="" fill sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+              <span className="absolute bottom-2 left-2 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-stone-700">Illustrative photo</span>
+            </>
           ) : (
             // No photo yet: the subcategory's drawing on a warm patterned panel, with its name.
             <div className="card-pattern flex h-full flex-col items-center justify-center gap-1.5">

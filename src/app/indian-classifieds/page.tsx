@@ -1,6 +1,6 @@
+import { CategoryThumbnail } from "@/components/CategoryThumbnail";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CategoryIcon } from "@/components/CategoryIcon";
 import { JsonLd } from "@/components/JsonLd";
 import { FaqList } from "@/components/OurPoints";
 import { CATEGORIES } from "@/lib/constants";
@@ -69,7 +69,7 @@ export default async function IndianClassifiedsPage() {
             const s = byCategory.get(c.id);
             return (
               <li key={c.id} className="card flex gap-3">
-                <CategoryIcon id={c.id} size={44} className="h-11 w-11 shrink-0" />
+                <CategoryThumbnail id={c.id} size={44} className="h-11 w-11 shrink-0" />
                 <div className="min-w-0 text-sm">
                   <p className="font-semibold">{c.label}</p>
                   <p className="text-stone-600">{CATEGORY_PITCH[c.id]}.</p>

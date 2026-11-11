@@ -1,52 +1,4 @@
-// The hero's painted backdrop, drawn in SVG so it stays sharp at any size and weighs a few kilobytes: a
-// sunrise over a South Indian temple gopuram, palms, a temple tank with lotuses, and birds. Decorative only.
-
-const TIERS = 8;
-
-function Gopuram({ x, base, width, tierH, tone }: { x: number; base: number; width: number; tierH: number; tone: "near" | "far" }) {
-  const light = tone === "near" ? "#E9B57A" : "#EFC896";
-  const mid = tone === "near" ? "#D49556" : "#E1AE78";
-  const dark = tone === "near" ? "#A8652E" : "#C68E58";
-  const niche = tone === "near" ? "#7A4520" : "#A87645";
-  const tiers = Array.from({ length: TIERS }, (_, i) => {
-    const w = width * (1 - i * 0.085);
-    const nw = width * (1 - (i + 1) * 0.085);
-    const y = base - (i + 1) * tierH;
-    return { i, w, nw, y };
-  });
-  const top = base - TIERS * tierH;
-  const topW = width * (1 - TIERS * 0.085);
-  return (
-    <g>
-      {/* Gateway base */}
-      <rect x={x - width / 2 - 6} y={base} width={width + 12} height={tierH * 2.2} fill={mid} />
-      <rect x={x - width / 2 - 6} y={base} width={width + 12} height={4} fill={dark} />
-      <path d={`M${x - 11} ${base + tierH * 2.2} v-${tierH * 1.4} a11 11 0 0 1 22 0 v${tierH * 1.4}z`} fill={niche} />
-      {tiers.map(({ i, w, nw, y }) => (
-        <g key={i}>
-          <path d={`M${x - w / 2} ${y + tierH} L${x - nw / 2} ${y} H${x + nw / 2} L${x + w / 2} ${y + tierH}z`} fill={i % 2 ? light : mid} />
-          {/* Shaded right side for depth */}
-          <path d={`M${x + w / 4} ${y + tierH} L${x + nw / 4} ${y} H${x + nw / 2} L${x + w / 2} ${y + tierH}z`} fill={dark} opacity={0.35} />
-          <rect x={x - w / 2 - 2} y={y + tierH - 3} width={w + 4} height={3} fill={dark} />
-          {Array.from({ length: Math.max(2, Math.round(nw / 14)) }, (_, k) => k).map((k, _, arr) => {
-            const span = nw * 0.8;
-            const nx = x - span / 2 + (span / (arr.length - 1 || 1)) * k;
-            return <rect key={k} x={nx - 2.2} y={y + tierH * 0.28} width={4.4} height={tierH * 0.45} rx={2} fill={niche} opacity={0.75} />;
-          })}
-        </g>
-      ))}
-      {/* Barrel-vault crown and kalasams */}
-      <path d={`M${x - topW / 2 - 4} ${top} q0 -${tierH * 1.4} ${topW / 2 + 4} -${tierH * 1.6} q${topW / 2 + 4} ${tierH * 0.2} ${topW / 2 + 4} ${tierH * 1.6}z`} fill={mid} />
-      <path d={`M${x - topW / 2 - 8} ${top} h${topW + 16}`} stroke={dark} strokeWidth={3} />
-      {[-0.32, 0, 0.32].map((f) => (
-        <g key={f}>
-          <ellipse cx={x + topW * f} cy={top - tierH * 1.55 - 5} rx={3.2} ry={4.5} fill="#D4A017" />
-          <path d={`M${x + topW * f} ${top - tierH * 1.55 - 14} v5`} stroke="#D4A017" strokeWidth={1.6} />
-        </g>
-      ))}
-    </g>
-  );
-}
+// A sunrise over palm-lined backwaters with festival kites. Decorative only.
 
 function Palm({ x, y, h, flip = false, color = "#2F6B3A" }: { x: number; y: number; h: number; flip?: boolean; color?: string }) {
   const s = flip ? -1 : 1;
@@ -117,24 +69,25 @@ export function HeroScene({ className = "" }: { className?: string }) {
       <path d="M0 360 C120 320 210 330 300 345 S520 320 620 335 S720 330 760 340 V400 H0z" fill="#9DBB8A" opacity="0.7" />
       <path d="M0 375 C140 350 260 360 380 368 S620 352 760 362 V410 H0z" fill="#6F9C68" opacity="0.8" />
 
-      {/* Temple: a far shrine, the great gopuram, and the compound wall */}
-      <Gopuram x={665} base={352} width={70} tierH={13} tone="far" />
-      <rect x="420" y="338" width="320" height="30" fill="#D9A56C" />
-      {Array.from({ length: 16 }, (_, i) => (
-        <rect key={i} x={426 + i * 20} y="330" width="10" height="10" fill="#C68E58" />
-      ))}
-      <Gopuram x={545} base={330} width={130} tierH={23} tone="near" />
+      {/* Paper kites over the backwaters */}
+      <g strokeLinecap="round">
+        <path d="M555 111Q587 182 624 214T680 297" fill="none" stroke="#99552f" strokeWidth="1.5" opacity=".55" />
+        <path d="M554 62l39 29-38 36-42-30z" fill="#e95e28" />
+        <path d="M554 62l1 65-42-30z" fill="#f7ae49" />
+        <path d="M514 97l79-6M554 63l1 64" stroke="#fff0cd" strokeWidth="1.5" />
+        <path d="M662 130q12 32 38 51t31 50" fill="none" stroke="#407054" strokeWidth="1.2" opacity=".55" />
+        <path d="M655 92l26 19-17 31-28-24z" fill="#287955" />
+        <path d="M655 92l9 50-28-24z" fill="#75a65f" />
+        <path d="M637 118l44-7M655 92l9 50" stroke="#fff0cd" strokeWidth="1" />
+      </g>
 
       <Palm x={420} y={380} h={170} flip />
       <Palm x={455} y={384} h={120} color="#3B7A45" />
       <Palm x={720} y={384} h={150} />
       <Palm x={250} y={382} h={110} flip color="#467E4B" />
 
-      {/* Temple tank with reflections */}
+      {/* Backwater reflections */}
       <rect x="0" y="380" width="760" height="140" fill="url(#hs-water)" />
-      <g opacity="0.18" transform="translate(0 760) scale(1 -1)">
-        <Gopuram x={545} base={380} width={130} tierH={23} tone="near" />
-      </g>
       <g stroke="#FFF3DC" strokeWidth="2" strokeLinecap="round" opacity="0.55">
         <path d="M470 420h60M500 440h90M430 456h50M560 466h70M620 430h40" />
       </g>

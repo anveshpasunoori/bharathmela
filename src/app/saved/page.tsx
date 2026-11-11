@@ -1,3 +1,4 @@
+import { CategoryThumbnail } from "@/components/CategoryThumbnail";
 import Link from "next/link";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { HeartIcon } from "@/components/HeartIcon";
@@ -95,7 +96,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {STARTERS.map((id) => (
             <Link key={id} href={`/?category=${id}`} className="card flex flex-col items-center gap-2 p-4 text-sm font-medium transition hover:shadow-md">
-              <CategoryIcon id={id} size={56} className="h-14 w-14" />
+              <CategoryThumbnail id={id} size={56} className="h-14 w-14" />
               {categoryLabel(id)}
             </Link>
           ))}
@@ -184,7 +185,7 @@ export default async function SavedPage({ searchParams }: { searchParams: Promis
               <ul className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white">
                 {gone.map(({ listing }) => (
                   <li key={listing.id} className="flex items-center gap-3 p-3">
-                    <CategoryIcon id={listing.category} size={40} className="h-10 w-10 opacity-50 grayscale" />
+                    <CategoryThumbnail id={listing.category} size={40} className="h-10 w-10 opacity-50 grayscale" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-stone-500 line-through decoration-stone-300">{listing.title}</p>
                       <p className="text-xs text-stone-500">

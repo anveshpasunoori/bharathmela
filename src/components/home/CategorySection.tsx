@@ -65,7 +65,7 @@ export function CategorySection({ hrefFor, allHref, counts }: { hrefFor: (id: st
                 href={hrefFor(c.id)}
                 className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_40px_-18px_rgba(32,41,35,0.35)]"
               >
-                <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${c.tint}`}>
+                <div className={`relative aspect-[3/2] overflow-hidden bg-gradient-to-br ${c.tint}`}>
                   {photo ? (
                     <Image src={photo} alt="" fill sizes="(min-width: 1280px) 220px, (min-width: 640px) 33vw, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
                   ) : (
@@ -79,8 +79,8 @@ export function CategorySection({ hrefFor, allHref, counts }: { hrefFor: (id: st
                     </div>
                   )}
                 </div>
-                <div className="relative flex flex-1 flex-col items-center px-3 pb-4 pt-8 text-center">
-                  <span className="absolute -top-6 grid h-12 w-12 place-items-center rounded-full border-4 border-white bg-forest text-snow shadow-md transition duration-300 group-hover:bg-saffron">
+                <div className="relative flex flex-1 flex-col items-center bg-[#fff5e2] px-3 pb-4 pt-8 text-center dark:bg-white">
+                  <span className="absolute -top-6 grid h-12 w-12 place-items-center rounded-full border-4 border-white bg-[#fff5e2] text-forest-dark shadow-md transition-colors duration-300 group-hover:text-saffron-dark dark:bg-white dark:text-forest">
                     <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
                       {c.badge}
                     </svg>

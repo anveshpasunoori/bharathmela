@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { SaveHeart } from "@/components/SaveHeart";
 import { TrackedContactLink } from "@/components/TrackedContactLink";
+import { listingPlaceholderPhoto } from "@/lib/home-art";
 import { categoryLabel } from "@/lib/constants";
 import type { BrowseListing } from "@/lib/listings";
 import { listingPath, snippet } from "@/lib/seo";
@@ -44,10 +45,11 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
   const tel = telHref(v.phone);
   const miles = listing.distanceMiles;
   const sub = listingSubcategories(listing)[0];
+  const stockPhoto = listingPlaceholderPhoto(listing.category);
   const about = snippet(v.about || listing.description, 90) || listing.title;
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_44px_-20px_rgba(32,41,35,0.38)]">
-      <Link href={href} className="relative block aspect-[16/10] overflow-hidden bg-brand-soft" tabIndex={-1} aria-hidden>
+      <Link href={href} className="relative block aspect-[2/1] overflow-hidden bg-brand-soft" tabIndex={-1} aria-hidden>
         {listing.photos[0] ? (
           <Image
             src={listing.photos[0].thumbUrl}
@@ -56,6 +58,8 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
             sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition duration-500 group-hover:scale-105"
           />
+        ) : stockPhoto ? (
+          <Image src={stockPhoto} alt="" fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" className="object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105" />
         ) : (
           <div className="card-pattern flex h-full items-center justify-center">
             <CategoryIcon id={listing.category} sub={sub} size={140} className="w-32 drop-shadow-md transition duration-500 group-hover:scale-110" />
@@ -97,7 +101,9 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
             {miles != null && <span>{miles < 1 ? "Under 1 mi" : `${miles < 10 ? miles.toFixed(1) : Math.round(miles)} mi`}</span>}
           </p>
         )}
-        <p className="mt-1 text-xs font-medium uppercase tracking-wide text-forest/80">{categoryLabel(listing.category)}</p>
+        <p className="mt-1 text-xs font-medium text-muted">
+          {categoryLabel(listing.category)}{!listing.photos[0] && stockPhoto && " · Illustrative photo"}
+        </p>
         <p className="mt-1.5 line-clamp-2 text-sm text-ink/75">{about}</p>
         <div className="relative z-10 mt-auto flex items-center justify-between gap-3 pt-4">
           <Link href={href} className="group/link inline-flex items-center gap-1 text-sm font-semibold text-forest hover:text-forest-dark">
@@ -156,7 +162,7 @@ export function FeaturedSkeleton() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {[0, 1, 2].map((i) => (
           <div key={i} className="overflow-hidden rounded-2xl border border-line bg-white">
-            <div className="skeleton aspect-[16/10]" />
+            <div className="skeleton aspect-[2/1]" />
             <div className="space-y-2 p-5">
               <div className="skeleton h-5 w-2/3 rounded" />
               <div className="skeleton h-4 w-1/2 rounded" />

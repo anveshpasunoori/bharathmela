@@ -1,5 +1,5 @@
+import { CategoryThumbnail } from "@/components/CategoryThumbnail";
 import Link from "next/link";
-import { CategoryIcon } from "@/components/CategoryIcon";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { firstName } from "@/lib/rooms-wanted";
@@ -58,7 +58,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             {near.map(({ request: r, quoted, miles }) => (
               <li key={r.id}>
                 <Link href={`/requests/${r.id}`} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 transition hover:shadow-sm">
-                  <CategoryIcon id={r.category} size={48} className="h-12 w-12" />
+                  <CategoryThumbnail id={r.category} size={48} className="h-12 w-12" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-xs font-medium uppercase tracking-wide text-stone-500">{requestServiceLabel(r)}</span>
                     <span className="block font-semibold leading-snug">{r.title}</span>
@@ -85,7 +85,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
           {mine.map((r) => (
             <li key={r.id}>
               <Link href={`/requests/${r.id}`} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 transition hover:shadow-sm">
-                <CategoryIcon id={r.category} size={48} className={`h-12 w-12 ${isOpen(r) ? "" : "opacity-50 grayscale"}`} />
+                <CategoryThumbnail id={r.category} size={48} className={`h-12 w-12 ${isOpen(r) ? "" : "opacity-50 grayscale"}`} />
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold leading-snug">{r.title}</span>
                   <span className="block text-xs text-stone-500">

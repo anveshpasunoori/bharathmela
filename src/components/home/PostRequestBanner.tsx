@@ -1,6 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
-import { HOME_REQUEST_BANNER, HOME_REQUEST_SKYLINE } from "@/lib/home-art";
 import { Reveal } from "./Reveal";
 
 // "Can't find what you need?": opens the existing request form, where local sellers send quotes.
@@ -8,17 +6,11 @@ export function PostRequestBanner() {
   return (
     <Reveal as="div" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-3xl border border-[#d9e6cf] bg-gradient-to-r from-[#F1F6E8] via-[#F4F7EC] to-[#E6F0DA] px-6 py-8 sm:px-10 sm:py-9">
-        {HOME_REQUEST_BANNER && (
-          <Image src={HOME_REQUEST_BANNER} alt="" fill sizes="(min-width: 1280px) 1216px, 100vw" className="object-cover object-right" />
-        )}
-        {!HOME_REQUEST_BANNER && (
-          <Image src={HOME_REQUEST_SKYLINE} alt="" width={1200} height={260} className="pointer-events-none absolute bottom-0 right-0 h-auto w-[78%] max-w-3xl opacity-90 [mask-image:linear-gradient(to_right,transparent,black_30%)]" />
-        )}
-        {/* Temple skyline drawing, kept for when no skyline picture is set */}
-        {!HOME_REQUEST_BANNER && !HOME_REQUEST_SKYLINE && <svg aria-hidden viewBox="0 0 520 140" preserveAspectRatio="xMaxYMax meet" className="pointer-events-none absolute bottom-0 right-0 h-full w-[70%] text-forest opacity-[0.09]">
-          <path fill="currentColor" d="M0 140V118c40-6 70 2 110-4s60-10 90-6V96h10V70h8V52h6v-8h4v8h6v18h8v26h10v12c20 0 30-6 52-4V84h8V62h6V48h4v-8h4v8h4v14h6v22h8v24c30 0 50-10 80-8V92h6V74h6V64h4v10h6v18h6v16c30-4 60 4 90 0v32z" />
-          <path fill="currentColor" d="M300 140v-20c8-14 22-18 34-12 6-10 20-12 28-2 10-6 24-2 26 10l10 24z" />
-        </svg>}
+        <svg aria-hidden viewBox="0 0 520 140" preserveAspectRatio="xMaxYMax meet" className="pointer-events-none absolute bottom-0 right-0 h-full w-[70%] text-forest">
+          <path d="M0 140c130-18 178-75 274-66 88 8 152 49 246-8v74z" fill="currentColor" opacity=".09" />
+          <path d="M30 140c128-17 212-1 314-38 71-25 130-30 176-8v46z" fill="currentColor" opacity=".14" />
+          <path d="M380 140q-18-28-15-66m4 32q-24-6-32-28 24 4 32 28m-3-14q19-8 26-30-22 9-26 30m87 48q6-29 1-53m1 25q18-5 26-24-20 4-26 24" fill="none" stroke="currentColor" strokeWidth="3" opacity=".19" />
+        </svg>
         <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center">
           <span className="anim-float grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white shadow-md ring-1 ring-[#d9e6cf]">
             <svg aria-hidden viewBox="0 0 48 48" className="h-12 w-12">

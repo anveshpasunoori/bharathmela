@@ -1,11 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
-import { HOME_HERO_PHOTO } from "@/lib/home-art";
 import { HeroScene, HeroWave } from "./HeroScene";
 import { Parallax } from "./Parallax";
 import { SmartSearch, type SearchLocation, type SearchSuggestion } from "./SmartSearch";
 
-// The top of the home page: headline, search and the two main actions over a temple-at-sunrise scene.
+// The top of the home page: headline, search and the two main actions over a backwater sunrise.
 // On phones the scene sits above the text as a banner; on wide screens it fills the right side.
 export function HeroSection({
   suggestions,
@@ -22,20 +20,11 @@ export function HeroSection({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#FFF8EC] via-[#FFF3E2] to-[#FDE7CC]" aria-labelledby="home-hero">
-      {HOME_HERO_PHOTO ? (
-        // The photo already fades to cream on its left, so it can span the whole hero behind the text.
-        <div className="relative h-52 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)] sm:h-72 lg:absolute lg:inset-0 lg:h-auto lg:[mask-image:none]">
-          <Parallax className="absolute inset-x-0 bottom-0 top-0 lg:-top-16">
-            <Image src={HOME_HERO_PHOTO} alt="" fill priority sizes="100vw" className="anim-scale object-cover object-[80%_center] lg:object-right" />
-          </Parallax>
-        </div>
-      ) : (
         <div className="relative h-52 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)] sm:h-64 lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[62%] lg:[mask-image:linear-gradient(to_right,transparent,black_28%)]">
           <Parallax className="absolute inset-x-0 bottom-0 top-0 lg:-top-24">
             <HeroScene className="anim-scale h-full w-full" />
           </Parallax>
         </div>
-      )}
 
       {/* Floating marigold petals, purely decorative */}
       <span aria-hidden className="anim-float absolute left-[46%] top-16 hidden h-3 w-3 rounded-full bg-saffron/70 lg:block" />
@@ -74,7 +63,7 @@ export function HeroSection({
         </div>
       </div>
       {/* The photo has its own saffron and green ribbon; the drawing gets this one. */}
-      <HeroWave className={`absolute inset-x-0 bottom-0 h-12 w-full sm:h-16 lg:h-20 ${HOME_HERO_PHOTO ? "lg:hidden" : ""}`} />
+      <HeroWave className="absolute inset-x-0 bottom-0 h-12 w-full sm:h-16 lg:h-20" />
     </section>
   );
 }
