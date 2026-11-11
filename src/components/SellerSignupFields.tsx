@@ -8,7 +8,7 @@ export function SellerKindFields({ initialKind, showName }: { initialKind: "busi
   const [kind, setKind] = useState(initialKind);
   const option = (value: "business" | "individual", title: string, hint: string) => (
     <label className={`flex cursor-pointer gap-3 rounded-lg p-3 ring-1 ${kind === value ? "bg-brand-soft ring-brand" : "bg-white ring-stone-200"}`}>
-      <input type="radio" name="kind" value={value} checked={kind === value} onChange={() => setKind(value)} className="mt-1 accent-[#c2410c]" />
+      <input type="radio" name="kind" value={value} checked={kind === value} onChange={() => setKind(value)} className="mt-1 accent-[#145638]" />
       <span>
         <span className="block font-semibold">{title}</span>
         <span className="block text-xs text-stone-500">{hint}</span>

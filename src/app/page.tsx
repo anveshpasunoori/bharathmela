@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BrowsePage, type BrowseParams } from "@/components/BrowsePage";
+import { HomePage } from "@/components/home/HomePage";
 import { CATEGORIES } from "@/lib/constants";
 import { isMetro } from "@/lib/metros";
 import { cityCategoryPath, cityPath } from "@/lib/seo";
@@ -13,6 +14,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return { alternates: { canonical }, ...(p.q || p.ss ? { robots: { index: false, follow: true } } : {}) };
 }
 
+// The plain home page gets its own layout; any search, category, city or filter opens the browse page.
 export default async function Home({ searchParams }: { searchParams: Promise<BrowseParams> }) {
-  return <BrowsePage params={await searchParams} />;
+  const params = await searchParams;
+  if (!Object.values(params).some((v) => v != null && v !== "")) return <HomePage />;
+  return <BrowsePage params={params} />;
 }

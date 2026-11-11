@@ -239,7 +239,7 @@ function FilterPanelBody({ filter: f, onApply }: { filter: Exclude<FilterDef, { 
       <div className="space-y-1">
         {f.items.map((item, i) => (
           <label key={item.param} className="flex cursor-pointer items-center gap-3 rounded-md px-1 py-1.5 text-sm hover:bg-stone-50">
-            <input type="checkbox" className="h-4 w-4 accent-[#c2410c]" checked={checks[i]}
+            <input type="checkbox" className="h-4 w-4 accent-[#145638]" checked={checks[i]}
               onChange={(e) => setChecks(checks.map((c, j) => (j === i ? e.target.checked : c)))} />
             {item.label}
           </label>

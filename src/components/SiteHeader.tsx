@@ -6,11 +6,32 @@ import { HeartIcon } from "./HeartIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
 import { LanguagePicker } from "./LanguagePicker";
+import { Logo } from "./Logo";
+import { NavLink } from "./NavLink";
 import { type Lang, t } from "@/lib/i18n";
 
 type HeaderUser = { name: string; email: string; role: string; vendor: unknown } | null;
 
-const navLink = "rounded-md px-3 py-2 font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-900";
+const navLink = "rounded-md px-3 py-2 font-semibold text-ink/80 transition-colors duration-150 hover:bg-ivory hover:text-forest";
+const dropLink = "flex cursor-pointer list-none items-center gap-1 rounded-md px-3 py-2 font-semibold text-ink/80 transition-colors duration-150 hover:text-forest";
+
+// The Explore menu: the main ways into the marketplace.
+const EXPLORE = [
+  { href: "/", label: "Home", blurb: "Popular categories, businesses and events near you" },
+  { href: "/indian-classifieds", label: "Indian classifieds", blurb: "Every category in every BharathMela city" },
+  { href: "/?category=ROOM_RENTAL", label: "Rooms & rentals", blurb: "Rooms, apartments and in-law units" },
+  { href: "/rooms-wanted", label: "People looking for a place", blurb: "Renters describing what they need" },
+  { href: "/creators", label: "Creators & influencers", blurb: "Promote your business with local creators" },
+  { href: "/requests/new", label: "Post what you need", blurb: "Get quotes from local businesses" },
+];
+
+function Chevron() {
+  return (
+    <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4 text-muted transition-transform duration-200 group-open:rotate-180" fill="currentColor">
+      <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
+    </svg>
+  );
+}
 const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 
 // The top bar. Desktop shows the main sections as words, with categories grouped under Browse and the
@@ -18,32 +39,44 @@ const menuLink = "block rounded-md px-3 py-2 hover:bg-stone-100";
 export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { user: HeaderUser; savedCount?: number; unread?: number; lang?: Lang }) {
   const initial = (user?.name || user?.email || "?").trim()[0]?.toUpperCase();
   return (
-    <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur print:hidden">
-      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-2 text-sm" aria-label="Main">
-        <Link href="/" className="mr-4 flex items-center gap-2 text-lg font-bold text-brand">
-          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm text-snow">BM</span>
-          BharathMela
+    <header className="sticky top-0 z-20 border-b border-line bg-white/90 backdrop-blur-md print:hidden">
+      <nav className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-2.5 text-sm sm:px-6 lg:px-8" aria-label="Main">
+        <Link href="/" className="mr-3 shrink-0 lg:mr-8" aria-label="BharathMela home">
+          <Logo />
         </Link>
 
         {/* Desktop sections */}
-        <div className="hidden items-center gap-1 md:flex">
-          <details data-dropdown className="group">
-            <summary className={`${navLink} flex cursor-pointer list-none items-center gap-1 group-open:bg-stone-100 group-open:text-stone-900`}>
-              {t(lang, "browse")} <span aria-hidden className="text-xs text-stone-500 transition group-open:rotate-180">▾</span>
+        <div className="hidden items-center gap-0.5 lg:flex">
+          <details data-dropdown className="group relative">
+            <summary className={`${dropLink} group-open:text-forest`}>
+              Explore <Chevron />
             </summary>
-            <div className="absolute inset-x-0 top-full z-30 border-y border-stone-200 bg-white shadow-lg">
-              <div className="mx-auto grid max-w-5xl grid-cols-3 gap-x-6 gap-y-5 px-4 py-6 lg:grid-cols-5">
+            <div className="dropdown-panel absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-line bg-white p-2 shadow-xl">
+              {EXPLORE.map((x) => (
+                <Link key={x.href} href={x.href} className="block rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-ivory">
+                  <span className="block font-semibold text-ink">{x.label}</span>
+                  <span className="block text-xs text-muted">{x.blurb}</span>
+                </Link>
+              ))}
+            </div>
+          </details>
+          <details data-dropdown className="group">
+            <summary className={`${dropLink} group-open:text-forest`}>
+              {t(lang, "categories")} <Chevron />
+            </summary>
+            <div className="dropdown-panel absolute inset-x-0 top-full z-30 border-y border-line bg-white shadow-xl">
+              <div className="mx-auto grid max-w-7xl grid-cols-3 gap-x-6 gap-y-5 px-6 py-6 xl:grid-cols-6">
                 {NAV_GROUPS.map((g) => (
                   <div key={g.title}>
-                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-stone-500">{g.title}</p>
+                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-muted">{g.title}</p>
                     <ul className="space-y-0.5">
                       {g.items.map((c) => (
                         <li key={c.id}>
-                          <Link href={c.href} className="flex gap-2 rounded-md px-2 py-1.5 hover:bg-stone-50">
+                          <Link href={c.href} className="flex gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-ivory">
                             <CategoryIcon id={c.id} size={36} className="h-9 w-9" />
                             <span>
-                              <span className="block font-medium text-stone-800">{c.label}</span>
-                              <span className="block text-xs text-stone-500">{c.blurb}</span>
+                              <span className="block font-medium text-ink">{c.label}</span>
+                              <span className="block text-xs text-muted">{c.blurb}</span>
                             </span>
                           </Link>
                         </li>
@@ -52,30 +85,34 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                   </div>
                 ))}
               </div>
-              <div className="border-t border-stone-100 bg-stone-50">
-                <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-1 px-6 py-3 text-sm">
-                  <Link href="/" className="font-medium text-stone-700 hover:text-brand">All categories</Link>
-                  <Link href="/requests/new" className="font-medium text-stone-700 hover:text-brand">Post what you need</Link>
-                  <Link href="/rooms-wanted" className="text-stone-600 hover:text-brand">People looking for a place</Link>
-                  <Link href="/events" className="text-stone-600 hover:text-brand">Events near you</Link>
-                  <Link href="/vendor/signup" className="ml-auto font-semibold text-brand">List your business free →</Link>
+              <div className="border-t border-line bg-ivory">
+                <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-1 px-8 py-3 text-sm">
+                  <Link href="/requests/new" className="font-medium text-ink/80 hover:text-forest">Post what you need</Link>
+                  <Link href="/rooms-wanted" className="text-muted hover:text-forest">People looking for a place</Link>
+                  <Link href="/vendor/signup" className="ml-auto font-semibold text-saffron-dark">List your business free →</Link>
                 </div>
               </div>
             </div>
           </details>
-          <Link href="/?category=ROOM_RENTAL" className={navLink}>{t(lang, "rooms")}</Link>
-          <Link href="/events" className={navLink}>{t(lang, "events")}</Link>
-          {user?.vendor ? (
-            <Link href="/vendor" className={navLink}>My business</Link>
-          ) : (
-            <Link href="/vendor/signup" className="ml-1 rounded-full px-3.5 py-1.5 font-semibold text-brand ring-1 ring-brand hover:bg-brand-soft">
-              {t(lang, "listBusiness")}
-            </Link>
-          )}
-          <Link href="/requests/new" className="rounded-md px-3 py-2 font-semibold text-brand hover:bg-brand-soft">{t(lang, "postNeed")}</Link>
+          <NavLink href="/events">{t(lang, "events")}</NavLink>
+          <NavLink href="/requests/new" match="/requests">{t(lang, "postRequest")}</NavLink>
         </div>
 
         <div className="ml-auto flex items-center gap-1">
+          {user?.vendor ? (
+            <Link href="/vendor" className={`${navLink} hidden lg:block`}>My business</Link>
+          ) : (
+            <Link
+              href="/vendor/signup"
+              className="mr-1 hidden items-center gap-2 rounded-full bg-saffron px-4 py-2 font-semibold text-snow shadow-md shadow-saffron/25 transition duration-150 hover:-translate-y-px hover:bg-saffron-dark hover:shadow-lg sm:inline-flex"
+            >
+              <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 10h16l-1.5-5h-13zM5 10v9h14v-9M10 19v-5h4v5" />
+              </svg>
+              {t(lang, "listBusiness")}
+            </Link>
+          )}
+          <span aria-hidden className="mx-1 hidden h-6 w-px bg-line lg:block" />
           {user && (
             <Link href="/messages" className={`${navLink} relative flex items-center`} aria-label={unread ? `Messages (${unread} unread)` : "Messages"}>
               <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +133,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
             </Link>
           )}
           {user ? (
-            <details data-dropdown className="relative hidden md:block">
+            <details data-dropdown className="relative hidden lg:block">
               <summary
                 className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full bg-brand-soft font-semibold text-brand ring-1 ring-orange-200 hover:ring-brand"
                 aria-label="Account menu"
@@ -127,10 +164,13 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
               </div>
             </details>
           ) : (
-            <>
-              <Link href="/login" className={navLink}>{t(lang, "logIn")}</Link>
-              <Link href="/signup" className="btn hidden px-3 py-1.5 md:inline-flex">{t(lang, "signUp")}</Link>
-            </>
+            <Link href="/login" className={`${navLink} flex items-center gap-1.5`}>
+              <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+              </svg>
+              {t(lang, "logIn")}
+            </Link>
           )}
 
           {/* Phones */}
@@ -194,7 +234,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
         </div>
       </nav>
       {/* Location applies to the whole app, so it lives in the top bar. */}
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pb-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 pb-2 sm:px-6 lg:px-8">
         <HeaderLocation />
         <LanguagePicker lang={lang} label={t(lang, "language")} />
       </div>

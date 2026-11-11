@@ -6,6 +6,15 @@
   --color-brand-soft: var(--brand-soft);
   /* Text on colored buttons and badges: stays white in dark mode (unlike "white", which flips). */
   --color-snow: #ffffff;
+  /* Home page palette: forest green, saffron and warm ivory. */
+  --color-forest: var(--forest);
+  --color-forest-dark: var(--forest-dark);
+  --color-saffron: var(--saffron);
+  --color-saffron-dark: var(--saffron-dark);
+  --color-ivory: var(--page);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
   --font-sans: var(--font-geist-sans);
 }
 
@@ -73,16 +82,24 @@ h2 {
 
 :root {
   color-scheme: light;
-  --brand: #c2410c;
-  --brand-dark: #9a3412;
-  --brand-soft: #fff7ed;
-  --page: #fbf8f3;
-  --ink: #1c1917;
+  --brand: #145638;
+  --brand-dark: #0b3d2b;
+  --brand-soft: #edf5ef;
+  --forest: #145638;
+  --forest-dark: #0b3d2b;
+  --saffron: #f47721;
+  --saffron-dark: #d9600e;
+  --page: #faf8f2;
+  --ink: #202923;
+  --muted: #69736c;
+  --line: #eae5d9;
 }
 
 body {
   background: var(--page);
   color: var(--ink);
+  /* Full-width home sections reach the window edges without a sideways scroll. */
+  overflow-x: clip;
 }
 
 /* Dark mode, following the phone or computer's setting. Every Tailwind color the app uses comes from
@@ -91,11 +108,17 @@ body {
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --brand: #ea580c;
-    --brand-dark: #f97316;
-    --brand-soft: #2a1a0f;
+    --brand: #3fae76;
+    --brand-dark: #6cc796;
+    --brand-soft: #12261b;
+    --forest: #1f7a4f;
+    --forest-dark: #6cc796;
+    --saffron: #f58a3d;
+    --saffron-dark: #f7a064;
     --page: #0f0d0c;
     --ink: #f5f5f4;
+    --muted: #a8b0aa;
+    --line: #2f2b27;
     --color-white: #1c1917;
     --color-black: #ffffff;
     --color-stone-50: #221e1b;
@@ -262,4 +285,52 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 18px rgb(75 32 21 / 0.12);
   }
+}
+
+/* Home page motion. Short, calm and switched off for visitors who ask for reduced motion. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes heart-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+.anim-rise { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.anim-scale { animation: scale-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.anim-float { animation: float-y 6s ease-in-out infinite; }
+.heart-pop[aria-pressed="true"] svg { animation: heart-pop 0.35s ease-out; }
+/* Sections fade up as they scroll into view (Reveal adds data-shown). Without JavaScript they just show. */
+.js [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.js [data-reveal][data-shown] { opacity: 1; transform: none; }
+.skeleton {
+  background: linear-gradient(90deg, var(--color-stone-100) 0, var(--color-stone-50) 50%, var(--color-stone-100) 100%) 0 0 / 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise, .anim-scale, .anim-float, .heart-pop[aria-pressed="true"] svg, .skeleton { animation: none; }
+  .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+  * { scroll-behavior: auto !important; }
+}
+/* Header menus open with a short fade and drop. */
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+details[open] > .dropdown-panel { animation: drop-in 0.18s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  details[open] > .dropdown-panel { animation: none; }
 }

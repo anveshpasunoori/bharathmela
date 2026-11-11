@@ -5,7 +5,7 @@ import { getLang } from "@/lib/lang";
 import { unreadCount } from "@/lib/conversations";
 import { InstallApp } from "@/components/InstallApp";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist } from "next/font/google";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 import { NavProgress } from "@/components/NavProgress";
@@ -19,12 +19,14 @@ import { METROS } from "@/lib/metros";
 import { SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl, cityPath, siteUrl, socialLinks } from "@/lib/seo";
 import "./globals.css";
 
-// Display serif for headings (see globals.css); a warm, crafted feel next to the clean body sans.
-const display = Fraunces({ variable: "--font-display", subsets: ["latin"], display: "swap" });
+// Display serif for headings (see globals.css): elegant and warm next to the clean body sans.
+const display = Lora({ variable: "--font-display", subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
 
-const geistSans = Geist({
+// Body text. Kept on the --font-geist-sans variable so every existing style that names it keeps working.
+const geistSans = Plus_Jakarta_Sans({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -67,7 +69,7 @@ const SITE_JSON_LD = () => [
   },
 ];
 
-export const viewport: Viewport = { themeColor: "#c2410c" };
+export const viewport: Viewport = { themeColor: "#145638" };
 
 export default async function RootLayout({
   children,
@@ -79,7 +81,11 @@ export default async function RootLayout({
   const lang = await getLang();
   const unread = user ? await unreadCount(user.id) : 0;
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
+      <head>
+        {/* Lets scroll-in effects hide sections only when JavaScript is running to show them again. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body className={`${geistSans.variable} ${display.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-white focus:px-3 focus:py-2">
           Skip to content

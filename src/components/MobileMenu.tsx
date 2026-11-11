@@ -28,7 +28,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         ref={openRef}
         type="button"
@@ -41,7 +41,7 @@ export function MobileMenu({ children }: { children: React.ReactNode }) {
       </button>
       {onClient &&
         createPortal(
-          <div className={`fixed inset-0 z-50 md:hidden ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
+          <div className={`fixed inset-0 z-50 lg:hidden ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
             <div
               className={`absolute inset-0 bg-stone-900/40 transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
               onClick={() => setOpen(false)}
