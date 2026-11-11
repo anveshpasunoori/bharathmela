@@ -25,8 +25,8 @@ export function HeroSection({
   festivalCover: FestivalCover | null;
 }) {
   return (
-    <section className="relative isolate overflow-hidden bg-ivory" aria-labelledby="home-hero">
-      <div className="relative aspect-[3/2] max-h-48 overflow-hidden sm:max-h-80 [mask-image:linear-gradient(to_bottom,black_90%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_30%)]">
+    <section className="relative z-10 isolate bg-ivory" aria-labelledby="home-hero">
+      <div className="relative aspect-[5/3] w-full max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_90%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_30%)]">
         <HeroCover festival={festivalCover} />
       </div>
 
