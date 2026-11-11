@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { HeroScene, HeroWave } from "./HeroScene";
+import { HeroWave } from "./HeroScene";
 import { Parallax } from "./Parallax";
 import { SmartSearch, type SearchLocation, type SearchSuggestion } from "./SmartSearch";
 
@@ -20,19 +21,26 @@ export function HeroSection({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#FFF8EC] via-[#FFF3E2] to-[#FDE7CC]" aria-labelledby="home-hero">
-        <div className="relative h-52 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)] sm:h-64 lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[62%] lg:[mask-image:linear-gradient(to_right,transparent,black_28%)]">
-          <Parallax className="absolute inset-x-0 bottom-0 top-0 lg:-top-24">
-            <HeroScene className="anim-scale h-full w-full" />
-          </Parallax>
-        </div>
+      <div className="relative aspect-[3/2] max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_86%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_24%)]">
+        <Parallax className="absolute inset-0">
+          <Image
+            src="/home/dance-and-food-hero.webp"
+            alt="A Bharatanatyam dancer beside a spread of Indian food on the Kerala backwaters"
+            fill
+            preload
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className="object-cover object-[65%_56%]"
+          />
+        </Parallax>
+      </div>
 
       {/* Floating marigold petals, purely decorative */}
       <span aria-hidden className="anim-float absolute left-[46%] top-16 hidden h-3 w-3 rounded-full bg-saffron/70 lg:block" />
       <span aria-hidden className="anim-float absolute left-[8%] top-[62%] hidden h-2 w-2 rounded-full bg-forest/40 [animation-delay:1.5s] lg:block" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-24 lg:px-8 lg:pb-32 lg:pt-20">
-        <div className="max-w-xl lg:max-w-[44rem]">
-          <h1 id="home-hero" className="anim-rise text-[2.4rem] font-semibold leading-[1.08] text-ink sm:text-5xl lg:text-[3.5rem]">
+      <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-24 lg:px-8 lg:pb-24 lg:pt-16 2xl:min-h-[31rem]">
+        <div className="max-w-xl lg:max-w-[37rem]">
+          <h1 id="home-hero" className="anim-rise text-[2.4rem] font-semibold leading-[1.08] text-ink sm:text-5xl lg:text-[3.15rem]">
             Discover the best of your <span className="relative whitespace-nowrap text-saffron">Indian</span> community.
           </h1>
           <p className="anim-rise mt-4 text-lg leading-relaxed text-ink/80 [animation-delay:90ms] sm:text-xl">
@@ -62,7 +70,6 @@ export function HeroSection({
           </div>
         </div>
       </div>
-      {/* The photo has its own saffron and green ribbon; the drawing gets this one. */}
       <HeroWave className="absolute inset-x-0 bottom-0 h-12 w-full sm:h-16 lg:h-20" />
     </section>
   );
