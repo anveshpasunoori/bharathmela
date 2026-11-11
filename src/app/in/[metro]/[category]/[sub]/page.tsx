@@ -50,5 +50,5 @@ export default async function CitySubcategoryPage({
   const page = await resolve(params);
   if (!page) notFound();
   const query = await searchParams;
-  return <BrowsePage params={{ ...query, category: page.category, [page.param]: page.sub.id, metro: query.radius ? undefined : page.metro }} />;
+  return <BrowsePage params={{ ...query, category: page.category, [page.param]: page.sub.id, metro: page.metro }} />;
 }

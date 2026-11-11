@@ -21,7 +21,7 @@ import { formatUSD, priceLabel } from "@/lib/plans";
 import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
 import { FOLLOWER_STEPS, PLATFORMS, formatFollowers } from "@/lib/creators";
 import { LANGUAGES, isProfessional } from "@/lib/professionals";
-import { RADII, parseFilters, searchQueryString } from "@/lib/browse-params";
+import { DEFAULT_SEARCH_RADIUS, RADII, listingSearchRadius, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
 import { CATEGORY_PITCH, RELATED_CATEGORIES, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
@@ -31,7 +31,7 @@ import { breadcrumbs, faqSchema, itemListSchema } from "@/lib/structured-data";
 import { JsonLd } from "@/components/JsonLd";
 import { ListingsMap, type MapPoint } from "@/components/ListingsMap";
 import { zipCoords } from "@/lib/geo";
-import { resolveLocation } from "@/lib/user-location";
+import { listingSearchCenter, resolveLocation } from "@/lib/user-location";
 import { FarNote } from "@/components/FarNote";
 import { NearMePrompt } from "@/components/NearMePrompt";
 import { ShowAllCategories } from "@/components/ShowAllCategories";
@@ -96,21 +96,30 @@ export type BrowseParams = {
 // The browse page: category tiles, or listings for a category or search. Rendered by the home page and
 // by the city (/in/[metro]) and city-category (/in/[metro]/[category]) pages search engines index.
 export async function BrowsePage({ params }: { params: BrowseParams }) {
-  // With a saved location and no city picked, browse "near you" by radius across metros.
-  const { place, metro, far } = await resolveLocation(params.metro);
-  const nearMode = !!place && !isMetro(params.metro);
-  const radius = RADII.includes(Number(params.radius)) ? Number(params.radius) : 25;
+  const location = await resolveLocation(params.metro);
+  const { place, metro, far, overridden } = location;
+  const center = listingSearchCenter(location);
+  const searchRadius = listingSearchRadius({ ...params, metro: overridden ? metro : undefined });
+  const nearMode = searchRadius != null;
+  const radius = searchRadius ?? DEFAULT_SEARCH_RADIUS;
   const placeMetro = place ? metroFor(place) : null;
   const { category, q, diet, serviceType, rentalFilters, proFilters, eventFilters, creatorFilters } = parseFilters(params);
   await syncExpirations();
-  const sort: SortId = SORTS.find((x) => x.id === params.sort && (x.id !== "near" || place))?.id ?? "best";
-  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: nearMode ? radius : null } : undefined;
+  const sort: SortId = SORTS.find((x) => x.id === params.sort)?.id ?? "best";
+  const near = { lat: center.lat, lng: center.lng, radiusMiles: searchRadius };
+
+  const locationParams = (city?: string) => {
+    const p = new URLSearchParams();
+    if (city || overridden || !nearMode) p.set("metro", city ?? metro);
+    p.set("radius", city ? String(DEFAULT_SEARCH_RADIUS) : nearMode ? String(radius) : "all");
+    return p;
+  };
   // Searching for something that belongs in another category ("pujari" while in Home Food) moves there.
   // `stay` is set when the visitor asked to search the category they were in after all.
   if (category && q && params.stay !== "1") {
     const target = await categoryForSearch({ metro, category, query: q, near });
     if (target) {
-      const p = new URLSearchParams(nearMode ? { radius: String(radius) } : { metro });
+      const p = locationParams();
       p.set("category", target);
       p.set("q", q);
       if (sort !== "best") p.set("sort", sort);
@@ -161,44 +170,36 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   // "Save search": whether this search, at this location, is already saved. Opening a saved search
   // (marked with `ss`) resets its count of new listings.
   const searchQuery = searchQueryString(params);
-  const here = { metro, nearLat: nearMode ? place!.lat : null, nearLng: nearMode ? place!.lng : null, radiusMiles: nearMode ? radius : null };
+  const here = { metro, nearLat: nearMode ? center.lat : null, nearLng: nearMode ? center.lng : null, radiusMiles: nearMode ? radius : null };
   const mySearches = viewer && showingListings ? await db.savedSearch.findMany({ where: { userId: viewer.id } }) : [];
   const searchSaved = mySearches.some((s) => s.params === searchQuery && sameLocation(s, here));
   if (viewer && params.ss) await db.savedSearch.updateMany({ where: { id: params.ss, userId: viewer.id }, data: { viewedAt: new Date() } });
   const pageQuery = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => typeof e[1] === "string")).toString();
   const requestParams = new URLSearchParams();
-  if (!nearMode) requestParams.set("metro", metro);
+  if (!nearMode || overridden || !place) requestParams.set("metro", metro);
   if (category) requestParams.set("category", category);
   const requestHref = `/requests/new${requestParams.size ? `?${requestParams}` : ""}`;
   const widerSearch = (miles?: number) => {
     const p = new URLSearchParams(pageQuery);
     for (const key of ["metro", "radius", "ss", "from", "deleted", "view"]) p.delete(key);
-    if (miles) p.set("radius", String(miles));
-    else p.set("metro", metro);
+    if (!miles || overridden) p.set("metro", metro);
+    p.set("radius", miles ? String(miles) : "all");
     return `/?${p}`;
   };
   const nextRadius = RADII.find((miles) => miles > radius);
   // Busiest categories first; the rest keep their usual order.
   const tileOrder = [...CATEGORIES].sort((a, b) => (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0));
   const totalListings = [...counts.values()].reduce((sum, n) => sum + n, 0);
-  const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
+  const where = nearMode ? `within ${radius} mi of ${center.city}` : `in ${metroName(metro)}`;
   // The same, in the visitor's language, for headings and buttons.
   const lang = await getLang();
-  const whereT = nearMode ? t(lang, "withinOf", { r: radius, place: place!.city }) : t(lang, "inCity", { city: metroName(metro) });
+  const whereT = nearMode ? t(lang, "withinOf", { r: radius, place: center.city }) : t(lang, "inCity", { city: metroName(metro) });
   const catName = (c: { id: string; label: string }) => categoryName(lang, c.id, c.label);
 
-  // Links keep the current location mode: "near you" (radius) or a picked metro.
-  const locationParams = (city?: string) => {
-    const p = new URLSearchParams();
-    if (city) p.set("metro", city);
-    else if (nearMode) p.set("radius", String(radius));
-    else p.set("metro", metro);
-    return p;
-  };
   // Plain browsing in a city uses its clean page (/in/jacksonville/home-food), which search engines index.
   const home = nearMode ? `/?${locationParams()}` : cityPath(metro);
   const href = (cat?: string, dietTags: string[] = [], query = q, city?: string) => {
-    const cleanCity = city ?? (nearMode ? undefined : metro);
+    const cleanCity = city ? undefined : (nearMode ? undefined : metro);
     if (cat && !query && !dietTags.length && cleanCity) return cityCategoryPath(cleanCity, cat);
     const p = locationParams(city);
     if (cat) p.set("category", cat);
@@ -206,10 +207,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     if (cat === "FOOD" && dietTags.length) p.set("diet", dietTags.join(","));
     return `/?${p}`;
   };
-  const locationInputs = nearMode ? (
-    <input type="hidden" name="radius" value={radius} />
-  ) : (
-    <input type="hidden" name="metro" value={metro} />
+  const locationInputs = (
+    <>
+      {(overridden || !nearMode) && <input type="hidden" name="metro" value={metro} />}
+      <input type="hidden" name="radius" value={params.radius === "all" ? "all" : radius} />
+    </>
   );
   const categoryInfo = CATEGORIES.find((c) => c.id === category);
   // City-category and subcategory pages (no search): questions answered from the listings, links to the
@@ -243,13 +245,13 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     const plain = [...p.keys()].every((k) => k === "category" || k === "metro");
     if (!nearMode && plain) return id ? citySubcategoryPath(metro, category!, id) : cityCategoryPath(metro, category!);
     p.set("category", category!);
-    if (!nearMode) p.set("metro", metro);
+    for (const [key, value] of locationParams()) p.set(key, value);
     if (id && subs) p.set(subs.param, id);
     return `/?${p}`;
   };
 
   const pageWhat = picked?.label ?? categoryInfo?.label ?? "";
-  const pageCity = nearMode ? place!.city : metroName(metro).split(",")[0];
+  const pageCity = nearMode ? center.city : metroName(metro).split(",")[0];
   // The towns sellers on this page are in, most first ("Orange Park, Ponte Vedra…"), from their ZIP codes.
   const towns = seoPage
     ? [
@@ -315,16 +317,16 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     selected: current ? opts.findIndex((o) => o.id === current) + 1 || null : null,
   });
   const filterBar: FilterDef[] = [];
-  if (place) {
+  {
     const options = [
-      ...RADII.map((r) => ({ label: `Within ${r} mi`, params: { radius: String(r), metro: null } })),
+      ...RADII.map((r) => ({ label: `Within ${r} mi`, params: { radius: String(r), metro: overridden ? metro : null } })),
       // A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker.
-      ...(far ? [] : [{ label: `All of ${metroName(metro)}`, params: { metro, radius: null } }]),
+      ...(far ? [] : [{ label: `All of ${metroName(metro)}`, params: { metro, radius: "all" } }]),
     ];
     filterBar.push({
       kind: "choice", key: "distance", label: "Distance", options,
       selected: nearMode ? RADII.indexOf(radius) : far ? null : RADII.length,
-      defaultIndex: RADII.indexOf(25),
+      defaultIndex: RADII.indexOf(DEFAULT_SEARCH_RADIUS),
     });
   }
   if (category === "FOOD") {
@@ -409,7 +411,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                     <CategoryIcon id={categoryInfo.id} sub={picked?.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
                     <span>
                       {picked?.label ?? catName(categoryInfo)}{" "}
-                      <span className="font-semibold text-stone-500">{nearMode ? t(lang, "nearPlace", { place: place!.city }) : t(lang, "inCity", { city: metroName(metro) })}</span>
+                      <span className="font-semibold text-stone-500">{nearMode ? t(lang, "nearPlace", { place: center.city }) : t(lang, "inCity", { city: metroName(metro) })}</span>
                     </span>
                   </>
                 ) : (
@@ -486,13 +488,14 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             </nav>
           )}
           {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
-          {place && !showingListings && (
+          {!showingListings && (
             // Distance from the visitor's location (set in the top bar).
             <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Distance">
               <span className="shrink-0 text-stone-500">{t(lang, "within")}</span>
               {RADII.map((r) => {
                 const p = new URLSearchParams();
                 p.set("radius", String(r));
+                if (overridden) p.set("metro", metro);
                 if (category) p.set("category", category);
                 if (q) p.set("q", q);
                 const on = nearMode && radius === r;
@@ -504,7 +507,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               })}
               {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
               {!far && (
-                <Link href={href(category, diet, q, metro)} aria-current={!nearMode ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-3 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                <Link href={widerSearch()} aria-current={!nearMode ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-3 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
                   {t(lang, "allOf", { city: metroName(metro) })}
                 </Link>
               )}
@@ -639,7 +642,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 </span>
               )}
               {listings.length > 0 && <SaveSearchButton key={pageQuery} query={pageQuery} saved={searchSaved} />}
-              {listings.length > 1 && <SortSelect options={SORTS.filter((x) => x.id !== "near" || place)} value={sort} />}
+              {listings.length > 1 && <SortSelect options={SORTS} value={sort} />}
             </div>
           </div>
           {movedFrom && q && (

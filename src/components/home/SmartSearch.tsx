@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
 import { VoiceSearchButton } from "../VoiceSearchButton";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState } from "react";
@@ -50,7 +51,7 @@ export function SmartSearch({
   }, [term, suggestions, popular]);
 
   // Where the location picker points: "near" keeps the visitor's own saved place (radius search).
-  const where = (): Record<string, string> => (loc === "near" ? { radius: "25" } : { metro: loc });
+  const where = (): Record<string, string> => ({ radius: String(DEFAULT_SEARCH_RADIUS), ...(loc === "near" ? {} : { metro: loc }) });
 
   function go(s?: SearchSuggestion) {
     setOpen(false);

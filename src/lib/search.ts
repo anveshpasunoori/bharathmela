@@ -183,7 +183,8 @@ function normalize(text: string) {
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/[’']/g, "")
-    .replace(/[^a-z0-9$<\s-]/g, " ")
+    .normalize("NFC")
+    .replace(/[^\p{L}\p{M}\p{N}$<\s-]/gu, " ")
     .replace(/-/g, " ")
     .replace(/\s+/g, " ")
     .trim();

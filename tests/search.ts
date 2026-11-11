@@ -1,4 +1,6 @@
 // Run with `npm test`. Each case: query, listing ids that must appear (first = top result), ids that must not.
+import { strict as assert } from "node:assert";
+import { listingSearchRadius } from "../src/lib/browse-params";
 import { betterCategories, parseQuery, rankListings, suggestQuery, type Searchable } from "../src/lib/search";
 const L = (id: string, category: string, title: string, description: string, priceCents: number | null, priceUnit = "", tags = "", biz = "Seller"): Searchable =>
   ({ id, title, description, category, priceCents, priceUnit, tags, vendor: { businessName: biz } });
@@ -101,5 +103,16 @@ for (const [q, current, want] of moves) {
   console.log(ok ? "PASS" : "FAIL", `${JSON.stringify(q)} in ${current}`.padEnd(40), "->", got.join(", ") || "(stay)");
 }
 for (const q of ["biriyaani", "bharatnatyam clases", "madubani", "pandit"]) console.log("suggest", q, "->", suggestQuery(parseQuery(q), docs));
+const regionalListings = [
+  L("telugu", "FOOD", "ఇంటి భోజనం", "తెలుగు వంటకాలు", null),
+  L("hindi", "FOOD", "घर का खाना", "उत्तर भारतीय भोजन", null),
+];
+assert.equal(rankListings(parseQuery("భోజనం"), regionalListings)[0]?.item.id, "telugu");
+assert.equal(rankListings(parseQuery("खाना"), regionalListings)[0]?.item.id, "hindi");
+assert.equal(listingSearchRadius({ q: "tiffin", metro: "jacksonville" }), 25);
+assert.equal(listingSearchRadius({ q: "tiffin" }), 25);
+assert.equal(listingSearchRadius({ q: "tiffin", radius: "50" }), 50);
+assert.equal(listingSearchRadius({ q: "tiffin", radius: "all", metro: "jacksonville" }), null);
+assert.equal(listingSearchRadius({ metro: "jacksonville" }), null);
 console.log(fail ? `${fail} failed` : "all passed");
 if (fail) process.exit(1);

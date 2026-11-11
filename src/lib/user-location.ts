@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
 import { type Place, metroFor, placeFromCoords } from "./geo";
-import { DEFAULT_METRO, LOCAL_MILES, isMetro } from "./metros";
+import { DEFAULT_METRO, LOCAL_MILES, METROS, isMetro } from "./metros";
 
 // The visitor's chosen location, kept only in a cookie on their device (never in our database).
 const COOKIE = "loc";
@@ -79,4 +79,11 @@ export async function resolveLocation(paramMetro?: string) {
       ? { city: `${from.city}, ${from.state}`, miles: Math.round(auto.miles) }
       : null;
   return { place, guess, metro, chosen: !!chosen, overridden, far };
+}
+
+// A selected city uses its center. Otherwise use the visitor's saved or approximate location first.
+export function listingSearchCenter({ place, guess, metro, overridden }: Awaited<ReturnType<typeof resolveLocation>>) {
+  if (!overridden && (place || guess)) return (place ?? guess)!;
+  const city = METROS.find((m) => m.id === metro) ?? METROS.find((m) => m.id === DEFAULT_METRO)!;
+  return { city: city.name, state: city.state, lat: city.lat, lng: city.lng };
 }

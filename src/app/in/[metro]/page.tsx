@@ -20,5 +20,5 @@ export default async function CityPage({ params, searchParams }: { params: Promi
   const { metro } = await params;
   if (!isMetro(metro)) notFound();
   const query = await searchParams;
-  return <BrowsePage params={{ ...query, metro: query.radius ? undefined : metro }} />;
+  return <BrowsePage params={{ ...query, metro: metro }} />;
 }

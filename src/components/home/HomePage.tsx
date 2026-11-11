@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
+import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
 import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { publicEventWhere, upcomingEvents } from "@/lib/event-data";
@@ -7,9 +8,8 @@ import { browseListings, categoryCounts, publicListing, savedListingIds } from "
 import { everydayHomeCover } from "@/lib/home-cover";
 import { localFestivalCover, selectFestivalCover } from "@/lib/festival-cover";
 import { METROS, metroName, metroTimeZone } from "@/lib/metros";
-import { cityCategoryPath, cityPath } from "@/lib/seo";
 import { listingSubcategories, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
-import { resolveLocation } from "@/lib/user-location";
+import { listingSearchCenter, resolveLocation } from "@/lib/user-location";
 import { CategorySection, HOME_CATEGORIES } from "./CategorySection";
 import { CommunityEvents, EventsSkeleton } from "./CommunityEvents";
 import { FeaturedBusinesses, FeaturedSkeleton, pickFeatured } from "./FeaturedBusinesses";
@@ -49,8 +49,9 @@ async function popularSuggestions(metro: string): Promise<SearchSuggestion[]> {
 }
 
 async function Featured({ where, label, allHref }: { where: Where; label: string; allHref: string }) {
-  const { place, metro } = where;
-  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: 25 } : undefined;
+  const { metro } = where;
+  const { lat, lng } = listingSearchCenter(where);
+  const near = { lat, lng, radiusMiles: DEFAULT_SEARCH_RADIUS };
   const [{ listings }, viewer] = await Promise.all([browseListings({ metro, near, sort: "best" }), getCurrentUser()]);
   const picked = pickFeatured(listings);
   const saved = await savedListingIds(viewer?.id, picked.map((l) => l.id));
@@ -85,13 +86,15 @@ async function homepageFestivalCover(metro: string, now = new Date()) {
 // browse pages, so their URLs, filters and SEO stay as they were.
 export async function HomePage() {
   const where = await resolveLocation();
-  const { place, metro } = where;
-  const near = place ? { lat: place.lat, lng: place.lng, radiusMiles: 25 } : undefined;
-  const label = place ? `within 25 mi of ${place.city}` : `in ${metroName(metro)}`;
-  const allHref = place ? "/?radius=25" : cityPath(metro);
-  const hrefFor = (id: string) => (place ? `/?category=${id}&radius=25` : cityCategoryPath(metro, id));
+  const { place, guess, metro } = where;
+  const localPlace = place ?? guess;
+  const { lat, lng, city } = listingSearchCenter(where);
+  const near = { lat, lng, radiusMiles: DEFAULT_SEARCH_RADIUS };
+  const label = `within ${DEFAULT_SEARCH_RADIUS} mi of ${city}`;
+  const allHref = `/?radius=${DEFAULT_SEARCH_RADIUS}`;
+  const hrefFor = (id: string) => `/?category=${id}&radius=${DEFAULT_SEARCH_RADIUS}`;
   const locations: SearchLocation[] = [
-    ...(place ? [{ value: "near", label: `Near ${place.city}, ${place.state}` }] : []),
+    ...(localPlace ? [{ value: "near", label: `Near ${localPlace.city}, ${localPlace.state}` }] : []),
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
   ];
   const now = new Date();
@@ -100,7 +103,7 @@ export async function HomePage() {
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={place ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
+      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />

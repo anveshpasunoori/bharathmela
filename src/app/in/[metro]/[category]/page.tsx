@@ -40,5 +40,5 @@ export default async function CityCategoryPage({
   const category = categoryFromSlug(slug);
   if (!isMetro(metro) || !category) notFound();
   const query = await searchParams;
-  return <BrowsePage params={{ ...query, category, metro: query.radius ? undefined : metro }} />;
+  return <BrowsePage params={{ ...query, category, metro: metro }} />;
 }

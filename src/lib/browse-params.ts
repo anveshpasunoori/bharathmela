@@ -10,7 +10,15 @@ import { SERVICE_TYPES, serviceTypeLabel } from "./service-types";
 type Params = Record<string, string | undefined>;
 
 // "Within N miles" choices for visitors who shared their location.
-export const RADII = [5, 10, 25, 50, 100];
+export const DEFAULT_SEARCH_RADIUS = 25;
+export const RADII = [5, 10, DEFAULT_SEARCH_RADIUS, 50, 100];
+
+export function listingSearchRadius(params: { radius?: string; metro?: string; q?: string }) {
+  if (params.radius === "all") return null;
+  const radius = Number(params.radius);
+  if (RADII.includes(radius)) return radius;
+  return params.q?.trim() || !params.metro ? DEFAULT_SEARCH_RADIUS : null;
+}
 
 // The query-string keys that make up a search (location and sort are kept separately).
 export const SEARCH_PARAMS = [

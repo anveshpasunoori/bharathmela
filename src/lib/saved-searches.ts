@@ -4,6 +4,7 @@ import { parseFilters } from "./browse-params";
 import { db } from "./db";
 import { sendEmail } from "./email";
 import { browseListings } from "./listings";
+import { METROS } from "./metros";
 import { priceLabel } from "./plans";
 import { listingPath, siteUrl } from "./seo";
 
@@ -26,10 +27,11 @@ export const sameLocation = (s: Location, l: Location) =>
   s.metro === l.metro && s.radiusMiles === l.radiusMiles && s.nearLat === l.nearLat && s.nearLng === l.nearLng;
 
 // The results page for a saved search. `ss` marks the visit so its new-listing count resets.
-export function savedSearchHref(s: Pick<SavedSearch, "id" | "params" | "metro" | "radiusMiles">) {
+export function savedSearchHref(s: Pick<SavedSearch, "id" | "params" | "metro" | "radiusMiles" | "nearLat" | "nearLng">) {
   const p = new URLSearchParams(s.params);
-  if (s.radiusMiles != null) p.set("radius", String(s.radiusMiles));
-  else p.set("metro", s.metro);
+  const city = METROS.find((m) => m.id === s.metro);
+  if (s.radiusMiles == null || (city?.lat === s.nearLat && city?.lng === s.nearLng)) p.set("metro", s.metro);
+  p.set("radius", s.radiusMiles == null ? "all" : String(s.radiusMiles));
   p.set("ss", s.id);
   return `/?${p}`;
 }

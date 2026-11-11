@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { RADII, describeSearch, parseFilters, searchQueryString } from "@/lib/browse-params";
+import { listingSearchRadius, describeSearch, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
-import { isMetro, metroName } from "@/lib/metros";
+import { metroName } from "@/lib/metros";
 import { MAX_SAVED_SEARCHES, isAlertOption, sameLocation } from "@/lib/saved-searches";
-import { resolveLocation } from "@/lib/user-location";
+import { listingSearchCenter, resolveLocation } from "@/lib/user-location";
 
 export type SaveSearchResult = { ok: true; id: string } | { ok: false; error: string };
 
@@ -20,14 +20,16 @@ export async function saveSearch(query: string): Promise<SaveSearchResult> {
   const params = searchQueryString(raw);
   if (!params) return { ok: false, error: "Pick a category or search for something first." };
 
-  const { place, metro } = await resolveLocation(raw.metro);
-  const nearMode = !!place && !isMetro(raw.metro);
-  const radius = RADII.includes(Number(raw.radius)) ? Number(raw.radius) : 25;
+  const resolved = await resolveLocation(raw.metro);
+  const { metro, overridden } = resolved;
+  const center = listingSearchCenter(resolved);
+  const radius = listingSearchRadius({ ...raw, metro: overridden ? metro : undefined });
+  const nearMode = radius != null;
   const location = {
     metro,
-    nearLat: nearMode ? place!.lat : null,
-    nearLng: nearMode ? place!.lng : null,
-    radiusMiles: nearMode ? radius : null,
+    nearLat: nearMode ? center.lat : null,
+    nearLng: nearMode ? center.lng : null,
+    radiusMiles: radius,
   };
 
   const mine = await db.savedSearch.findMany({ where: { userId: user.id } });
@@ -36,14 +38,14 @@ export async function saveSearch(query: string): Promise<SaveSearchResult> {
   if (mine.length >= MAX_SAVED_SEARCHES) {
     return { ok: false, error: `You can keep up to ${MAX_SAVED_SEARCHES} saved searches. Delete one on your Saved page first.` };
   }
-  const where = nearMode ? `within ${radius} mi of ${place!.city}` : `in ${metroName(metro)}`;
+  const where = nearMode ? `within ${radius} mi of ${center.city}` : `in ${metroName(metro)}`;
   const saved = await db.savedSearch.create({
     data: {
       userId: user.id,
       name: describeSearch(parseFilters(raw), where),
       params,
       ...location,
-      nearCity: nearMode ? `${place!.city}, ${place!.state}` : "",
+      nearCity: nearMode ? `${center.city}, ${center.state}` : "",
     },
   });
   revalidatePath("/saved");
