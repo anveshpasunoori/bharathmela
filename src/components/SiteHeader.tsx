@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/app/actions/auth";
 import { NAV_GROUPS } from "@/lib/nav";
-import { CategoryIcon } from "./CategoryIcon";
+import { CategoryThumbnail } from "./CategoryThumbnail";
 import { HeartIcon } from "./HeartIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
@@ -64,19 +64,19 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
             <summary className={`${dropLink} group-open:text-forest`}>
               {t(lang, "categories")} <Chevron />
             </summary>
-            <div className="dropdown-panel absolute inset-x-0 top-full z-30 border-y border-line bg-white shadow-xl">
-              <div className="mx-auto grid max-w-7xl grid-cols-3 gap-x-6 gap-y-5 px-6 py-6 xl:grid-cols-6">
+            <nav aria-label={t(lang, "categories")} className="dropdown-panel absolute inset-x-0 top-full z-30 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain border-y border-line bg-white shadow-xl">
+              <div className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-6 py-5 xl:grid-cols-6 xl:px-8">
                 {NAV_GROUPS.map((g) => (
-                  <div key={g.title}>
-                    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-muted">{g.title}</p>
+                  <div key={g.title} className="rounded-xl border border-line bg-ivory/45 p-2">
+                    <p className="mb-1 px-2 pt-1 text-xs font-semibold leading-tight text-forest xl:min-h-8">{g.title}</p>
                     <ul className="space-y-0.5">
                       {g.items.map((c) => (
                         <li key={c.id}>
-                          <Link href={c.href} className="flex gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-ivory">
-                            <CategoryIcon id={c.id} size={36} className="h-9 w-9" />
-                            <span>
-                              <span className="block font-medium text-ink">{c.label}</span>
-                              <span className="block text-xs text-muted">{c.blurb}</span>
+                          <Link href={c.href} className="flex min-h-14 items-center gap-2 rounded-lg px-1.5 py-2 transition-colors hover:bg-white focus-visible:bg-white">
+                            <CategoryThumbnail id={c.id} size={40} className="size-10" />
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold leading-tight text-ink">{c.label}</span>
+                              <span className="mt-1 block text-xs leading-tight text-muted">{c.blurb}</span>
                             </span>
                           </Link>
                         </li>
@@ -92,7 +92,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                   <Link href="/vendor/signup" className="ml-auto font-semibold text-saffron-dark">List your business free →</Link>
                 </div>
               </div>
-            </div>
+            </nav>
           </details>
           <NavLink href="/events">{t(lang, "events")}</NavLink>
           <NavLink href="/requests/new" match="/requests">{t(lang, "postRequest")}</NavLink>
@@ -191,10 +191,10 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
               </div>
             )}
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">Browse</p>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid gap-2 min-[400px]:grid-cols-2">
               {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
-                <Link key={c.id} href={c.href} className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm hover:bg-stone-100">
-                  <CategoryIcon id={c.id} size={32} className="h-8 w-8" />
+                <Link key={c.id} href={c.href} className="flex min-h-14 items-center gap-2 rounded-xl border border-line bg-ivory/45 p-2 text-sm font-medium hover:border-brand focus-visible:border-brand">
+                  <CategoryThumbnail id={c.id} size={40} className="size-10" />
                   <span className="leading-tight">{c.label}</span>
                 </Link>
               ))}
