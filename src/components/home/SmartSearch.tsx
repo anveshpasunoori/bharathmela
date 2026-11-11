@@ -1,5 +1,6 @@
 "use client";
 
+import { VoiceSearchButton } from "../VoiceSearchButton";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState } from "react";
 
@@ -28,6 +29,7 @@ export function SmartSearch({
   const [loc, setLoc] = useState(defaultLocation);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
+  const input = useRef<HTMLInputElement>(null);
   const blurTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const term = q.trim().toLowerCase();
@@ -76,8 +78,10 @@ export function SmartSearch({
         </svg>
         <label htmlFor={`${id}-q`} className="sr-only">What are you looking for?</label>
         <input
+          ref={input}
           id={`${id}-q`}
           type="search"
+          maxLength={100}
           autoComplete="off"
           enterKeyHint="search"
           placeholder="What are you looking for?"
@@ -112,6 +116,11 @@ export function SmartSearch({
           }}
           className="h-12 w-full min-w-0 rounded-full bg-transparent pl-12 pr-3 text-base text-ink outline-none placeholder:text-muted focus-visible:outline-none"
         />
+        <VoiceSearchButton onTranscript={(text) => {
+          setQ(text);
+          setActive(-1);
+          input.current?.focus();
+        }} />
       </div>
 
       <div className="flex items-center gap-2 sm:contents">

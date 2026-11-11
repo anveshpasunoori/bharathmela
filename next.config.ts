@@ -34,7 +34,14 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "50mb" } },
   images: photoOrigin ? { remotePatterns: [{ protocol: photoOrigin.protocol.replace(":", "") as "https" | "http", hostname: photoOrigin.hostname, pathname: "/**" }] } : undefined,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    const voiceSearchHeaders = [
+      { key: "Permissions-Policy", value: "geolocation=(self), camera=(), microphone=(self), payment=()" },
+    ];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/", headers: voiceSearchHeaders },
+      { source: "/in/:path*", headers: voiceSearchHeaders },
+    ];
   },
 };
 

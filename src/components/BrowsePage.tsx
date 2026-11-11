@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { EventCard } from "@/components/EventCard";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { FilterBar, type FilterDef } from "@/components/FilterBar";
+import { VoiceSearchInput } from "@/components/VoiceSearchInput";
 import { ListingCard } from "@/components/ListingCard";
 import { RentalTabs } from "@/components/RentalTabs";
 import { SaveSearchButton } from "@/components/SaveSearchButton";
@@ -435,7 +436,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             {category && <input type="hidden" name="category" value={category} />}
             {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
             {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
-            <input
+            <VoiceSearchInput
               type="search"
               name="q"
               defaultValue={q}
