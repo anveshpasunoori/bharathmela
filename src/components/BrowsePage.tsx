@@ -517,8 +517,8 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             </div>
           )}
           <h2 className="mb-4 text-2xl font-semibold sm:text-3xl">{t(lang, "lookingFor")}</h2>
-          {/* Phones show the 9 busiest categories first, three across; "See all" reveals the rest. */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-4">
+          {/* Phones show the 8 busiest categories first, two across; "See all" reveals the rest. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {tileOrder.map((c, i) => {
               const n = counts.get(c.id) ?? 0;
               const photo = HOME_CATEGORY_PHOTOS[c.id];
@@ -526,16 +526,16 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <Link
                   key={c.id}
                   href={href(c.id)}
-                  className={`market-tile group/tile flex-col overflow-hidden rounded-xl border border-stone-200 bg-white text-center shadow-soft sm:flex ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
+                  className={`market-tile group/tile flex-col overflow-hidden rounded-xl border border-stone-200 bg-white text-center shadow-soft sm:flex ${i < 8 ? "flex" : "hidden group-data-[all=true]:flex"}`}
                 >
                   <span className="relative block aspect-[3/2] w-full overflow-hidden bg-brand-soft">
                     {photo && <Image src={photo} alt="" fill sizes="(min-width: 1024px) 245px, 33vw" className="object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover/tile:scale-105" />}
                   </span>
-                  <span className="relative flex flex-1 flex-col items-center bg-[#fff5e2] px-1.5 pb-3 pt-5 dark:bg-white">
-                    <span className="absolute -top-4 grid size-8 place-items-center rounded-full bg-[#fff5e2] shadow-sm">
+                  <span className="relative flex flex-1 flex-col items-center bg-[#fffbf3] px-3 pb-3 pt-6 dark:bg-white">
+                    <span className="absolute -top-5 grid size-10 place-items-center rounded-full border-2 border-white bg-[#fffbf3] shadow-sm dark:bg-white">
                       <CategoryIcon id={c.id} size={24} className="size-6" />
                     </span>
-                    <span className="block text-xs font-semibold leading-snug sm:text-base sm:leading-tight">{catName(c)}</span>
+                    <span className="block text-sm font-semibold leading-snug sm:text-base sm:leading-tight">{catName(c)}</span>
                     <span className="hidden text-xs text-stone-500 sm:inline">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
                   </span>
                 </Link>

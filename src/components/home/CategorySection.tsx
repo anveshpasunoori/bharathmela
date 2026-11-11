@@ -23,7 +23,7 @@ export const HOME_CATEGORIES: { id: string; name: string; tint: string; badge: R
     id: "HOME_SERVICES",
     name: "Home Services",
     tint: "from-[#E6F2EA] to-[#CDE6D6]",
-    badge: <path d="M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6" />,
+    badge: <path d="M14 6l4-4 4 4-4 4-3-1-8 8-2 3-3-3 3-2 8-8z" />,
   },
   {
     id: "EVENT_SERVICES",
@@ -45,9 +45,9 @@ export const HOME_CATEGORIES: { id: string; name: string; tint: string; badge: R
   },
   {
     id: "ROOM_RENTAL",
-    name: "Rentals & Real Estate",
+    name: "Room Rentals",
     tint: "from-[#E9EEF7] to-[#D5DEEE]",
-    badge: <path d="M3 11l9-7 9 7M5 10v10h14V10M9 20v-5h6v5M9 12h6" />,
+    badge: <path d="M3 6v14m18-2v2M3 17h18v-5a2 2 0 0 0-2-2H9v7m-6-7h3a3 3 0 0 1 3 3" />,
   },
 ];
 
@@ -63,11 +63,11 @@ export function CategorySection({ hrefFor, allHref, counts }: { hrefFor: (id: st
             <li key={c.id} data-reveal-item>
               <Link
                 href={hrefFor(c.id)}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_40px_-18px_rgba(32,41,35,0.35)]"
+                className="market-tile group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-soft"
               >
                 <div className={`relative aspect-[3/2] overflow-hidden bg-gradient-to-br ${c.tint}`}>
                   {photo ? (
-                    <Image src={photo} alt="" fill sizes="(min-width: 1280px) 220px, (min-width: 640px) 33vw, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
+                    <Image src={photo} alt="" fill sizes="(min-width: 1280px) 220px, (min-width: 640px) 33vw, 50vw" className="object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.04]" />
                   ) : (
                     <div className="absolute inset-0 grid place-items-center">
                       {/* Soft rangoli rings behind the drawing */}
@@ -79,13 +79,13 @@ export function CategorySection({ hrefFor, allHref, counts }: { hrefFor: (id: st
                     </div>
                   )}
                 </div>
-                <div className="relative flex flex-1 flex-col items-center bg-[#fff5e2] px-3 pb-4 pt-8 text-center dark:bg-white">
-                  <span className="absolute -top-6 grid h-12 w-12 place-items-center rounded-full border-4 border-white bg-[#fff5e2] text-forest-dark shadow-md transition-colors duration-300 group-hover:text-saffron-dark dark:bg-white dark:text-forest">
+                <div className="relative flex flex-1 flex-col items-center bg-[#fffbf3] px-3 pb-4 pt-6 text-center dark:bg-white">
+                  <span className="absolute -top-5 grid size-10 place-items-center rounded-full border-2 border-white bg-[#fffbf3] text-forest-dark shadow-md transition-colors duration-300 group-hover:text-saffron-dark dark:bg-white dark:text-forest">
                     <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
                       {c.badge}
                     </svg>
                   </span>
-                  <span className="font-semibold leading-snug text-ink transition-colors group-hover:text-forest">{c.name}</span>
+                  <span className="text-sm font-semibold leading-snug text-ink transition-colors group-hover:text-forest">{c.name}</span>
                   {n > 0 && <span className="mt-0.5 text-xs text-muted">{n} {n === 1 ? "listing" : "listings"}</span>}
                 </div>
               </Link>
