@@ -7,6 +7,11 @@ export const BUSINESS_COVERS = [
     alt: "A music teacher showing a student how to play tabla",
   },
   {
+    label: "Bharatanatyam lessons",
+    src: "/home/covers/bharatanatyam.webp",
+    alt: "A Bharatanatyam instructor demonstrating a hand gesture to her students",
+  },
+  {
     label: "Food businesses",
     src: "/home/covers/food.webp",
     alt: "A local food business owner preparing a meal",

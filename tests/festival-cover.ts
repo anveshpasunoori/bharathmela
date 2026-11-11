@@ -28,7 +28,7 @@ for (const day of ["2026-11-11", "2026-11-15", "2026-11-24", "2026-12-17", "2027
   assert.equal(cover(day), null, day);
 }
 
-assert.deepEqual(BUSINESS_COVERS.map((slide) => slide.label), ["Music lessons", "Food businesses", "Room rentals", "Cleaning services", "Clothing & jewelry"]);
+assert.deepEqual(BUSINESS_COVERS.map((slide) => slide.label), ["Music lessons", "Bharatanatyam lessons", "Food businesses", "Room rentals", "Cleaning services", "Clothing & jewelry"]);
 assert.ok(BUSINESS_COVERS.every(({ src }) => existsSync(`public${src}`)));
 assert.equal(BUSINESS_COVER_INTERVAL_MS, 6_000);
 
