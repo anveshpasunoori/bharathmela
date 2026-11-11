@@ -435,7 +435,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             </div>
           )}
           {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
-          <form className={showingListings ? "flex gap-2" : "market-search relative flex max-w-xl gap-2 rounded-xl p-1"} role="search">
+          <form className={showingListings ? "flex gap-2" : "market-search relative flex max-w-xl gap-2 rounded-xl p-1"} role="search" data-market-search>
             {locationInputs}
             {category && <input type="hidden" name="category" value={category} />}
             {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}

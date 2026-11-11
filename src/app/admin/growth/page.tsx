@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { marketplaceIntentReport } from "@/lib/market-intent-data";
+import { intentDestination, INTENT_WINDOW_DAYS } from "@/lib/market-intents";
 import { FOUNDING_SELLERS_PER_CITY } from "@/lib/growth";
 import { publicListing } from "@/lib/listings";
 import { metroName } from "@/lib/metros";
@@ -35,8 +37,8 @@ function growthStats() {
 }
 
 export default async function GrowthPage() {
-  const [week, month, quarter, bySource, liveByCity, foundersByCity, referred, rewarded, topReferrers, subscribers, requests, reviews] =
-    await growthStats();
+  const [week, month, quarter, bySource, liveByCity, foundersByCity, referred, rewarded, topReferrers, subscribers, requests, reviews, intentReport] =
+    await Promise.all([growthStats(), marketplaceIntentReport()]).then(([stats, report]) => [...stats, report] as const);
 
   const split = (rows: { role: string; _count: number }[]) => ({
     sellers: rows.filter((r) => r.role === "VENDOR").reduce((n, r) => n + r._count, 0),
@@ -65,6 +67,21 @@ export default async function GrowthPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Marketplace growth</h1>
+      <section>
+        <h2 className="mb-1 font-semibold">Marketplace actions · last {INTENT_WINDOW_DAYS} days</h2>
+        <p className="mb-2 text-sm text-stone-500">Searches, category visits and workflow starts. Repeat interactions are counted once per day for each action and interaction type.</p>
+        {intentReport.length ? (
+          <ol className="divide-y divide-stone-100 rounded-xl bg-white px-4 text-sm ring-1 ring-stone-200">
+            {intentReport.slice(0, 10).map((row) => (
+              <li key={row.action} className="flex justify-between gap-3 py-2">
+                <span>{intentDestination(row.action).label}</span>
+                <span className="text-stone-600">{row.signals} {row.signals === 1 ? "interaction" : "interactions"}</span>
+              </li>
+            ))}
+          </ol>
+        ) : <p className="text-sm text-stone-600">No marketplace actions recorded yet.</p>}
+      </section>
+
       <section>
         <h2 className="mb-2 font-semibold">New accounts</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

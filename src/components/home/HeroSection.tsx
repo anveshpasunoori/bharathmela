@@ -7,6 +7,8 @@ import { SmartSearch, type SearchLocation, type SearchSuggestion } from "./Smart
 // The top of the home page: headline, search and the two main actions alongside storefront or seasonal photography.
 // On phones the scene sits above the text as a banner; on wide screens it fills the right side.
 export function HeroSection({
+  shortcuts,
+  shortcutLabel,
   suggestions,
   popular,
   locations,
@@ -15,6 +17,8 @@ export function HeroSection({
   festivalCover,
   everydayCover,
 }: {
+  shortcuts: { label: string; href: string }[];
+  shortcutLabel: string;
   suggestions: SearchSuggestion[];
   popular: SearchSuggestion[];
   locations: SearchLocation[];
@@ -52,13 +56,25 @@ export function HeroSection({
           <div className="anim-scale relative z-10 mt-7 [animation-delay:180ms] lg:w-[46rem] lg:max-w-[calc(100vw-4rem)]">
             <SmartSearch translateVoice={!!process.env.OPENAI_API_KEY} key={defaultLocation} suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />
           </div>
+          {shortcuts.length > 0 && (
+            <nav aria-label={shortcutLabel} data-skip-market-intent className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium text-ink/75">{shortcutLabel}</span>
+              {shortcuts.map(({ label, href }) => (
+                <Link key={href} href={href} className="inline-flex min-h-9 items-center rounded-full border border-line bg-white px-3 font-semibold text-forest hover:border-forest">
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          )}
           <div className="anim-rise mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold text-forest [animation-delay:260ms]">
             <Link href={exploreHref} className="py-2 underline underline-offset-4 hover:text-forest-dark">
               Browse businesses <span aria-hidden>→</span>
             </Link>
-            <Link href="/requests/new" className="py-2 underline underline-offset-4 hover:text-forest-dark">
-              Post what you need <span aria-hidden>→</span>
-            </Link>
+            {!shortcuts.some(({ href }) => href === "/requests/new") && (
+              <Link href="/requests/new" className="py-2 underline underline-offset-4 hover:text-forest-dark">
+                Post what you need <span aria-hidden>→</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

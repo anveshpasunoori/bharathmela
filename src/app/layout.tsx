@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { MarketIntentTracker } from "@/components/MarketIntentTracker";
 import { BottomNav } from "@/components/BottomNav";
 import { t } from "@/lib/i18n";
 import { getLang } from "@/lib/lang";
@@ -95,6 +96,7 @@ export default async function RootLayout({
         </Suspense>
         <SiteHeader user={user} savedCount={savedCount} unread={unread} lang={lang} />
         <DropdownCloser />
+        <MarketIntentTracker />
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">{children}</main>
         <BottomNav
           loggedIn={!!user}

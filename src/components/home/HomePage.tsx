@@ -7,6 +7,8 @@ import { publicEventWhere, upcomingEvents } from "@/lib/event-data";
 import { browseListings, categoryCounts, publicListing, savedListingIds } from "@/lib/listings";
 import { everydayHomeCover } from "@/lib/home-cover";
 import { localFestivalCover, selectFestivalCover } from "@/lib/festival-cover";
+import { popularMarketIntents } from "@/lib/market-intent-data";
+import { intentDestination } from "@/lib/market-intents";
 import { METROS, metroName, metroTimeZone } from "@/lib/metros";
 import { listingSubcategories, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
 import { listingSearchCenter, resolveLocation } from "@/lib/user-location";
@@ -98,12 +100,15 @@ export async function HomePage() {
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
   ];
   const now = new Date();
-  const [popular, counts, festivalCover] = await Promise.all([popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro, now)]);
+  const [popular, counts, festivalCover, activity] = await Promise.all([
+    popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro, now), popularMarketIntents(metro),
+  ]);
+  const shortcuts = activity.rows.map(({ action }) => intentDestination(action, metro));
 
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
+      <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />

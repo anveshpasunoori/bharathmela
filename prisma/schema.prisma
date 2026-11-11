@@ -593,3 +593,15 @@ model CreatorCheck {
   @@unique([listingId, platform])
   @@index([status])
 }
+
+// Short-lived, daily deduplicated interactions for aggregate marketplace navigation.
+model MarketIntent {
+  day        DateTime @db.Date
+  metro      String
+  action     String
+  kind       String
+  visitorKey String
+
+  @@id([day, metro, action, kind, visitorKey])
+  @@index([metro, day])
+}

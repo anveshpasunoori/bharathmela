@@ -22,6 +22,8 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
+      <p>We count category visits, searches by category, and actions such as opening the business listing form. We use the approximate metro and a daily rotating identifier to count repeat interactions once per day. This feature keeps records for 30 days and does not store search text.</p>
+
       <h2>What is public</h2>
       <p>Listings, business names, phone numbers, city and ZIP are shown publicly so buyers can contact sellers.</p>
 

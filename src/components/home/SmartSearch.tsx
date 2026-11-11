@@ -1,5 +1,6 @@
 "use client";
 
+import { recordMarketIntent } from "../MarketIntentTracker";
 import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
 import { TranslatedVoiceSearch } from "../TranslatedVoiceSearch";
 import { VoiceSearchButton } from "../VoiceSearchButton";
@@ -59,10 +60,14 @@ export function SmartSearch({
   function go(s?: SearchSuggestion, query = q) {
     setOpen(false);
     if (s) {
+      recordMarketIntent("search", s.category, loc === "near" ? undefined : loc);
       return router.push(`/?${new URLSearchParams({ ...where(), ...s.params })}`);
     }
     const p = new URLSearchParams(where());
-    if (query.trim()) p.set("q", query.trim());
+    if (query.trim()) {
+      p.set("q", query.trim());
+      recordMarketIntent("search", null, loc === "near" ? undefined : loc, query);
+    }
     router.push(`/?${p}`);
   }
 
