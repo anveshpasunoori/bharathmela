@@ -2,9 +2,10 @@ import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
 import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { upcomingEvents } from "@/lib/event-data";
+import { publicEventWhere, upcomingEvents } from "@/lib/event-data";
 import { browseListings, categoryCounts, publicListing, savedListingIds } from "@/lib/listings";
-import { METROS, metroName } from "@/lib/metros";
+import { localFestivalCover, selectFestivalCover } from "@/lib/festival-cover";
+import { METROS, metroName, metroTimeZone } from "@/lib/metros";
 import { cityCategoryPath, cityPath } from "@/lib/seo";
 import { listingSubcategories, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
 import { resolveLocation } from "@/lib/user-location";
@@ -60,6 +61,25 @@ async function Events({ metro, label }: { metro: string; label: string }) {
   return <CommunityEvents events={events} allHref="/events" where={label} />;
 }
 
+async function homepageFestivalCover(metro: string, now = new Date()) {
+  const timeZone = metroTimeZone(metro);
+  const scheduled = selectFestivalCover(now, timeZone);
+  if (scheduled) return scheduled;
+
+  const event = await db.event.findFirst({
+    where: {
+      ...publicEventWhere(now),
+      metro,
+      OR: [{ type: "FESTIVAL" }, { festival: { not: "" } }],
+      // Eight elapsed days is a coarse query bound. The cover helper uses local calendar days.
+      startsAt: { lte: new Date(now.getTime() + 8 * 86_400_000) },
+    },
+    select: { festival: true, startsAt: true },
+    orderBy: { startsAt: "asc" },
+  });
+  return event ? localFestivalCover(event, now, timeZone) : null;
+}
+
 // The home page for visitors who haven't searched yet. Searches, categories and cities open the existing
 // browse pages, so their URLs, filters and SEO stay as they were.
 export async function HomePage() {
@@ -73,12 +93,12 @@ export async function HomePage() {
     ...(place ? [{ value: "near", label: `Near ${place.city}, ${place.state}` }] : []),
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
   ];
-  const [popular, counts] = await Promise.all([popularSuggestions(metro), categoryCounts(metro, near)]);
+  const [popular, counts, festivalCover] = await Promise.all([popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro)]);
 
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={place ? "near" : metro} exploreHref={allHref} />
+      <HeroSection suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={place ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />

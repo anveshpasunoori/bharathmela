@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { FestivalCover } from "@/lib/festival-cover";
 import { HeroWave } from "./HeroScene";
 import { Parallax } from "./Parallax";
 import { SmartSearch, type SearchLocation, type SearchSuggestion } from "./SmartSearch";
@@ -12,20 +13,22 @@ export function HeroSection({
   locations,
   defaultLocation,
   exploreHref,
+  festivalCover,
 }: {
   suggestions: SearchSuggestion[];
   popular: SearchSuggestion[];
   locations: SearchLocation[];
   defaultLocation: string;
   exploreHref: string;
+  festivalCover: FestivalCover | null;
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#FFF8EC] via-[#FFF3E2] to-[#FDE7CC]" aria-labelledby="home-hero">
       <div className="relative aspect-[3/2] max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_86%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_32%)]">
         <Parallax className="absolute inset-0">
           <Image
-            src="/home/kerala-dance-hero.webp"
-            alt="A Bharatanatyam dancer by the Kerala backwaters at sunset"
+            src={festivalCover?.src ?? "/home/kerala-dance-hero.webp"}
+            alt={festivalCover?.alt ?? "A Bharatanatyam dancer by the Kerala backwaters at sunset"}
             fill
             preload
             sizes="(min-width: 1024px) 58vw, 100vw"
@@ -40,6 +43,7 @@ export function HeroSection({
 
       <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 sm:pb-24 lg:px-8 lg:pb-24 lg:pt-16 2xl:min-h-[31rem]">
         <div className="max-w-xl lg:max-w-[37rem]">
+          {festivalCover && <p className="mb-2 text-sm font-semibold text-forest">{festivalCover.festival}</p>}
           <h1 id="home-hero" className="anim-rise text-[2.4rem] font-semibold leading-[1.08] text-ink sm:text-5xl lg:text-[3.15rem]">
             Discover the best of your <span className="relative whitespace-nowrap text-saffron">Indian</span> community.
           </h1>
