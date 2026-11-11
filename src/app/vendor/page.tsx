@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { homeEventPhoto, listingPlaceholderPhoto } from "@/lib/home-art";
 import { eventPath, sellerPath } from "@/lib/seo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -45,7 +47,7 @@ export default async function VendorDashboard({
 
   const [{ plan, subscription }, listings, payments, ratings, events, proUntil] = await Promise.all([
     getVendorPlan(vendor.id),
-    db.listing.findMany({ where: { vendorId: vendor.id }, include: { _count: { select: { photos: true } } }, orderBy: { createdAt: "desc" } }),
+    db.listing.findMany({ where: { vendorId: vendor.id }, include: { _count: { select: { photos: true } }, photos: { select: { thumbUrl: true }, orderBy: { position: "asc" }, take: 1 } }, orderBy: { createdAt: "desc" } }),
     db.payment.findMany({
       where: { vendorId: vendor.id },
       include: { subscription: true, adBoost: { include: { listing: { select: { title: true } } } } },
@@ -115,63 +117,68 @@ export default async function VendorDashboard({
     ...(expiringCount ? [{ text: `Renew ${expiringCount} listing${expiringCount === 1 ? "" : "s"} expiring soon`, href: "/vendor?tab=listings", action: "Review" }] : []),
     ...(!listings.length ? [{ text: "Post your first listing", href: "/vendor/listings/new", action: "Start" }] : []),
   ];
-  const tabClass = (t: string) =>
-    `-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t ? "border-brand text-brand" : "border-transparent text-stone-600 hover:text-stone-900"}`;
+  const tabs = [
+    { id: "listings", href: "/vendor", label: "Listings", count: listings.length },
+    { id: "events", href: "/vendor?tab=events", label: "Events", count: events.length },
+    { id: "billing", href: "/vendor?tab=billing", label: "Plan & payments" },
+  ];
 
   return (
-    <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-bold">{vendor.businessName}</h1>
-        <p className="text-sm text-stone-600">
-          {activeCount} live · {totalViews.toLocaleString()} views ·{" "}
-          {rating ? <>★ {rating.average.toFixed(1)} ({rating.count})</> : "no ratings yet"} · {plan.name} plan
-        </p>
-        <p className="mt-1 flex flex-wrap gap-x-4 text-sm font-semibold text-brand">
-          <Link href={sellerPath(vendor)}>Public page</Link>
-          <Link href="/vendor/profile">Edit profile</Link>
-          <Link href="/vendor/reviews">Reviews</Link>
-          <Link href="/requests?tab=near">Requests near you</Link>
-          <Link href="/vendor/promote">Share &amp; earn free Pro</Link>
-        </p>
-        {vendor.foundingSeller && proUntil && (
-          <p className="mt-2 inline-block rounded-md bg-amber-50 px-3 py-1.5 text-sm text-amber-900 ring-1 ring-amber-200">
-            ★ Founding seller: Pro is free for you until {fmtDate(proUntil)}.
-          </p>
-        )}
+    <div className="space-y-6">
+      <header className="overflow-hidden rounded-3xl border border-line bg-white shadow-soft">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line bg-gradient-to-br from-brand-soft to-white p-5 sm:p-7">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-forest">My business</p>
+            <h1 className="mt-1 break-words text-3xl font-semibold text-ink sm:text-4xl">{vendor.businessName}</h1>
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
+              <span>{plan.name} plan</span>
+              <span>{activeCount} live {activeCount === 1 ? "listing" : "listings"}</span>
+              <span>{rating ? `★ ${rating.average.toFixed(1)} (${rating.count})` : "No ratings yet"}</span>
+            </p>
+            {vendor.foundingSeller && proUntil && (
+              <p className="mt-3 text-sm font-medium text-amber-900 dark:text-amber-200">
+                Founding seller · Free Pro through {fmtDate(proUntil)}
+              </p>
+            )}
+          </div>
+          <Link href={sellerPath(vendor)} className="btn-outline min-h-11 rounded-full px-4">View public page <span aria-hidden className="ml-2">↗</span></Link>
+        </div>
+        <nav aria-label="Business tools" className="flex flex-wrap gap-x-5 gap-y-1 px-5 py-2 text-sm font-medium text-forest sm:px-7">
+          <Link className="py-2 hover:underline" href="/vendor/profile">Edit profile</Link>
+          <Link className="py-2 hover:underline" href="/vendor/reviews">Reviews</Link>
+          <Link className="py-2 hover:underline" href="/requests?tab=near">Requests near you</Link>
+          <Link className="py-2 hover:underline" href="/vendor/promote">Share &amp; earn free Pro</Link>
+        </nav>
       </header>
 
       {flash && <p className={`rounded-md px-4 py-3 text-sm ${flashTone[flash[1]]}`}>{flash[0]}</p>}
 
-      <section className="card py-4" aria-label="Leads this month">
+      <section className="rounded-2xl border border-line bg-white p-5 shadow-soft" aria-labelledby="business-activity">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold">This month</h2>
-          <p className="text-xs text-stone-500">People who tapped to contact you, counted once a day each</p>
+          <h2 id="business-activity" className="text-xl font-semibold">Business activity</h2>
+          <span className="text-sm text-muted">{totalViews.toLocaleString()} lifetime listing views</span>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
-          {[
-            ["📞", "Calls", leadsByKind.CALL],
-            ["💬", "Texts", leadsByKind.TEXT],
-            ["🟢", "WhatsApp", leadsByKind.WHATSAPP],
-            ["✉️", "Messages", messagesThisMonth],
-            ["👁", "Listing views", totalViews],
-          ].map(([icon, label, n]) => (
-            <div key={label as string} className="rounded-lg bg-stone-50 px-2 py-2.5">
-              <p className="text-xl font-bold">{(n as number).toLocaleString()}</p>
-              <p className="text-xs text-stone-600"><span aria-hidden>{icon}</span> {label}</p>
+        <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {([
+            ["Calls", leadsByKind.CALL],
+            ["Texts", leadsByKind.TEXT],
+            ["WhatsApp", leadsByKind.WHATSAPP],
+            ["Messages", messagesThisMonth],
+          ] as const).map(([label, count]) => (
+            <div key={label} className="rounded-xl border border-line bg-stone-50 px-3 py-3 sm:px-4">
+              <dt className="text-sm text-muted">{label}</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink">{count.toLocaleString()}</dd>
             </div>
           ))}
-        </div>
-        {leadTotal === 0 && (
-          <p className="mt-3 text-sm text-stone-600">
-            No contacts yet this month. Listings with photos get far more calls, and sharing your page brings people in:{" "}
-            <Link href="/vendor/promote" className="font-semibold text-brand">share your page</Link>.
-          </p>
-        )}
+        </dl>
+        <p className="mt-3 text-sm text-muted">
+          {leadTotal === 0 ? <>No contacts this month. <Link href="/vendor/promote" className="font-semibold text-forest hover:underline">Share your business page</Link> to help buyers find you.</> : "This month. Contact taps are counted once per person per day."}
+        </p>
       </section>
 
       {todos.length > 0 && (
-        <section className="card space-y-2 py-4">
-          <h2 className="text-sm font-semibold">To do</h2>
+        <section className="space-y-2 rounded-2xl border border-line bg-white p-5 shadow-soft">
+          <h2 className="text-xl font-semibold">Needs attention</h2>
           <ul className="divide-y divide-stone-100 text-sm">
             {todos.map((t) => (
               <li key={t.text} className="flex items-center justify-between gap-3 py-2">
@@ -184,10 +191,17 @@ export default async function VendorDashboard({
         </section>
       )}
 
-      <nav className="flex gap-1 border-b border-stone-200" aria-label="Dashboard">
-        <Link href="/vendor" className={tabClass("listings")}>Listings ({listings.length})</Link>
-        <Link href="/vendor?tab=events" className={tabClass("events")}>Events ({events.length})</Link>
-        <Link href="/vendor?tab=billing" className={tabClass("billing")}>Plan & payments</Link>
+      <nav className="flex flex-wrap gap-1 rounded-xl border border-line bg-white p-1.5" aria-label="Dashboard">
+        {tabs.map(({ id, href, label, count }) => (
+          <Link
+            key={id}
+            href={href}
+            aria-current={tab === id ? "page" : undefined}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted hover:bg-brand-soft hover:text-forest aria-[current=page]:bg-forest aria-[current=page]:text-snow"
+          >
+            {label}{count != null && <span className="text-xs tabular-nums opacity-85">{count}</span>}
+          </Link>
+        ))}
       </nav>
 
       {tab === "billing" && (
@@ -231,8 +245,8 @@ export default async function VendorDashboard({
 
       {tab === "listings" && (
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Your listings</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-semibold">Your listings</h2>
           {canAdd ? (
             <Link href="/vendor/listings/new" className="btn">
               + New listing
@@ -245,37 +259,41 @@ export default async function VendorDashboard({
         <ul className="space-y-3">
           {listings.map((l) => {
             const featured = l.featuredUntil && l.featuredUntil > now;
+            const photo = l.photos[0]?.thumbUrl ?? listingPlaceholderPhoto(l.category);
             return (
-              <li key={l.id} className="card flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">{l.title}</span>
-                    <ListingStatus status={l.status} />
-                    {featured && <span className="badge bg-brand text-snow">Featured until {fmtDate(l.featuredUntil!)}</span>}
-                  </div>
-                  <p className="text-sm text-stone-500">
-                    {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
-                    {leadsByListing.get(l.id) ? <> · <b className="text-stone-800">{leadsByListing.get(l.id)} contact{leadsByListing.get(l.id) === 1 ? "" : "s"}</b> this month</> : null}
-                    {l.expiresAt && (l.status === "ACTIVE" || l.status === "HIDDEN") && (
-                      <>
-                        {" · "}
-                        {l.expiresAt <= now ? (
-                          <span className="font-semibold text-red-700">Expired – not showing to buyers</span>
-                        ) : daysUntil(l.expiresAt) <= 7 ? (
-                          <span className="font-semibold text-amber-700">Expires in {daysUntil(l.expiresAt)} days</span>
-                        ) : (
-                          <>Showing until {l.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>
-                        )}
-                      </>
+              <li key={l.id} className="rounded-2xl border border-line bg-white p-4 shadow-soft sm:p-5">
+                <div className="flex items-start gap-4">
+                  {photo && <Image src={photo} alt="" width={96} height={80} className="h-16 w-20 shrink-0 rounded-lg object-cover sm:h-20 sm:w-24" />}
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{l.title}</span>
+                      <ListingStatus status={l.status} />
+                      {featured && <span className="badge bg-brand text-snow">Featured until {fmtDate(l.featuredUntil!)}</span>}
+                    </div>
+                    <p className="text-sm text-stone-500">
+                      {categoryLabel(l.category)} · {l.views.toLocaleString()} view{l.views === 1 ? "" : "s"}
+                      {leadsByListing.get(l.id) ? <> · <b className="text-stone-800">{leadsByListing.get(l.id)} contact{leadsByListing.get(l.id) === 1 ? "" : "s"}</b> this month</> : null}
+                      {l.expiresAt && (l.status === "ACTIVE" || l.status === "HIDDEN") && (
+                        <>
+                          {" · "}
+                          {l.expiresAt <= now ? (
+                            <span className="font-semibold text-red-700">Expired – not showing to buyers</span>
+                          ) : daysUntil(l.expiresAt) <= 7 ? (
+                            <span className="font-semibold text-amber-700">Expires in {daysUntil(l.expiresAt)} days</span>
+                          ) : (
+                            <>Showing until {l.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>
+                          )}
+                        </>
+                      )}
+                    </p>
+                    {(l.status === "REJECTED" || l.status === "REMOVED") && l.moderationNote && (
+                      <p className="mt-1 text-sm text-red-700">Reason: {l.moderationNote}</p>
                     )}
-                  </p>
-                  {(l.status === "REJECTED" || l.status === "REMOVED") && l.moderationNote && (
-                    <p className="mt-1 text-sm text-red-700">Reason: {l.moderationNote}</p>
-                  )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 text-sm">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-sm">
                   {l.status === "ACTIVE" && (!l.expiresAt || l.expiresAt > now) && (
-                    <Link href={`/vendor/listings/${l.id}/boost`} className="btn py-1.5">
+                    <Link href={`/vendor/listings/${l.id}/boost`} className="btn-outline py-1.5">
                       {featured ? "Extend promotion" : "Promote"}
                     </Link>
                   )}
@@ -313,9 +331,9 @@ export default async function VendorDashboard({
 
       {tab === "events" && (
       <section id="events" className="scroll-mt-20">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Your events</h2>
+            <h2 className="text-2xl font-semibold">Your events</h2>
             <p className="text-sm text-stone-500">
               {upcomingEventCount} of {plan.maxEvents} upcoming events used
             </p>
@@ -333,20 +351,23 @@ export default async function VendorDashboard({
           {events.map((e) => {
             const past = e.endsAt <= now;
             return (
-              <li key={e.id} className={`card flex flex-wrap items-center justify-between gap-3 ${past ? "opacity-60" : ""}`}>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">{e.title}</span>
-                    {past ? <span className="badge bg-stone-200 text-stone-700">Ended</span> : <ListingStatus status={e.status} />}
+              <li key={e.id} className="rounded-2xl border border-line bg-white p-4 shadow-soft sm:p-5">
+                <div className="flex items-start gap-4">
+                  <Image src={homeEventPhoto(e)} alt="" width={96} height={80} className="h-16 w-20 shrink-0 rounded-lg object-cover sm:h-20 sm:w-24" />
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{e.title}</span>
+                      {past ? <span className="badge bg-stone-200 text-stone-700">Ended</span> : <ListingStatus status={e.status} />}
+                    </div>
+                    <p className="text-sm text-stone-500">
+                      {formatEventTime(e.startsAt, e.endsAt, tz)} · {e.views.toLocaleString()} view{e.views === 1 ? "" : "s"}
+                    </p>
+                    {(e.status === "REJECTED" || e.status === "REMOVED") && e.moderationNote && (
+                      <p className="mt-1 text-sm text-red-700">Reason: {e.moderationNote}</p>
+                    )}
                   </div>
-                  <p className="text-sm text-stone-500">
-                    {formatEventTime(e.startsAt, e.endsAt, tz)} · {e.views.toLocaleString()} view{e.views === 1 ? "" : "s"}
-                  </p>
-                  {(e.status === "REJECTED" || e.status === "REMOVED") && e.moderationNote && (
-                    <p className="mt-1 text-sm text-red-700">Reason: {e.moderationNote}</p>
-                  )}
                 </div>
-                <div className="flex flex-wrap gap-2 text-sm">
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-sm">
                   {e.status === "ACTIVE" && !past && (
                     <Link href={eventPath(e)} className="btn-outline py-1.5">View</Link>
                   )}
