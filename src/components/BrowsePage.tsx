@@ -353,6 +353,13 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     );
   }
 
+  const suggestedSearches = [
+    { label: "Homemade tiffin", query: "tiffin", category: "FOOD" },
+    { label: "Mehndi artists", query: "mehndi", category: "BEAUTY" },
+    { label: "Dance classes", query: "dance", category: "DANCE_MUSIC" },
+    { label: "Wedding décor", query: "decor", category: "EVENT_SERVICES" },
+  ];
+
   return (
     <div className="space-y-6">
       {params.deleted && (
@@ -360,7 +367,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       )}
       <section
         className={
-          showingListings ? "space-y-3" : "relative isolate space-y-3 overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 via-brand-soft to-white p-5 ring-1 ring-orange-100 sm:p-8"
+          showingListings ? "space-y-3" : "market-hero relative isolate space-y-4 overflow-hidden rounded-3xl p-5 sm:p-8 lg:py-10"
         }
       >
         {!showingListings && <HeroArt />}
@@ -398,14 +405,18 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           </div>
         ) : (
           <div>
-            <h1 className="relative text-2xl font-bold sm:text-4xl sm:tracking-tight">
-              {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : t(lang, "localBusinessesNear")}
+            <h1 className="relative max-w-xl text-3xl font-semibold leading-tight sm:text-5xl">
+              {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : lang === "en" ? "Find a little India near you" : t(lang, "localBusinessesNear")}
             </h1>
-            {cityIntro && <p className="relative mt-2 max-w-2xl text-sm text-stone-700">{cityIntro}</p>}
+            {(cityIntro || lang === "en") && (
+              <p className="relative mt-2 max-w-xl text-sm text-stone-700 sm:text-base">
+                {cityIntro || "Discover home cooks, local businesses, and Indian community events in your area."}
+              </p>
+            )}
           </div>
         )}
         {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
-        <form className="flex gap-2" role="search">
+        <form className={showingListings ? "flex gap-2" : "market-search relative flex max-w-xl gap-2 rounded-2xl p-1.5"} role="search">
           {locationInputs}
           {category && <input type="hidden" name="category" value={category} />}
           {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
@@ -415,12 +426,21 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             name="q"
             defaultValue={q}
             maxLength={100}
-            className="input flex-1"
+            className={showingListings ? "input min-w-0 flex-1" : "input min-w-0 flex-1 border-transparent bg-transparent"}
             placeholder={categoryInfo ? (lang === "en" ? `Search ${categoryInfo.label.toLowerCase()}…` : `${t(lang, "search")}: ${catName(categoryInfo)}…`) : t(lang, "searchPlaceholder")}
             aria-label="Search listings"
           />
-          <button className="btn">{t(lang, "search")}</button>
+          <button className={showingListings ? "btn" : "btn min-h-11 rounded-xl"}>{t(lang, "search")}</button>
         </form>
+        {!showingListings && lang === "en" && (
+          <nav aria-label="Suggested searches" className="relative flex max-w-xl flex-wrap gap-2">
+            {suggestedSearches.map(({ label, query, category }) => (
+              <Link key={query} href={href(category, [], query)} className="market-suggestion">
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
         {subs && (
           <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
             {/* The picked one right after "All", so it's visible without scrolling the row. */}
@@ -494,7 +514,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               </p>
             </div>
           )}
-          <h2 className="mb-3 text-lg font-semibold">{t(lang, "lookingFor")}</h2>
+          <h2 className="mb-4 text-2xl font-semibold sm:text-3xl">{t(lang, "lookingFor")}</h2>
           {/* Phones show the 9 busiest categories first, three across; "See all" reveals the rest. */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-4">
             {tileOrder.map((c, i) => {
@@ -503,9 +523,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 <Link
                   key={c.id}
                   href={href(c.id)}
-                  className={`card group/tile flex-col items-center gap-2 p-2.5 text-center transition hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-brand/30 sm:flex sm:flex-row sm:gap-3 sm:p-4 sm:text-left ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
+                  className={`card market-tile group/tile flex-col items-center gap-2 p-2.5 text-center sm:flex sm:flex-row sm:gap-3 sm:p-4 sm:text-left ${i < 9 ? "flex" : "hidden group-data-[all=true]:flex"}`}
                 >
-                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 transition duration-200 group-hover/tile:-rotate-3 group-hover/tile:scale-110 sm:h-14 sm:w-14" />
+                  <CategoryIcon id={c.id} size={56} className="h-12 w-12 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover/tile:scale-105 motion-safe:group-focus-visible/tile:scale-105 sm:h-14 sm:w-14" />
                   <span className="min-w-0">
                     <span className="block text-xs font-semibold leading-snug sm:text-base sm:leading-tight">{catName(c)}</span>
                     <span className="hidden text-xs text-stone-500 sm:inline">{n ? (n === 1 ? t(lang, "listingCount") : t(lang, "listingsCount", { n })) : t(lang, "beFirst")}</span>
