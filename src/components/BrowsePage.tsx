@@ -369,148 +369,147 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       )}
       <section
         className={
-          showingListings ? "space-y-3" : "market-hero relative isolate space-y-4 overflow-hidden rounded-3xl p-5 sm:p-8 lg:py-10"
+          showingListings ? undefined : "market-hero flex gap-8 rounded-3xl p-5 sm:p-7 lg:p-8"
         }
       >
-        {!showingListings && <HeroArt />}
-        {showingListings ? (
-          <div>
-            <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
-              <Link href={home} className="hover:text-brand">{t(lang, "allCategories")}</Link>
-              {categoryInfo && (
-                <>
-                  <span aria-hidden>›</span>
-                  {picked ? <Link href={subHref()} className="hover:text-brand">{catName(categoryInfo)}</Link> : <span className="text-stone-700">{catName(categoryInfo)}</span>}
-                </>
+        <div className={showingListings ? "space-y-3" : "min-w-0 flex-1 space-y-4"}>
+          {showingListings ? (
+            <div>
+              <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
+                <Link href={home} className="hover:text-brand">{t(lang, "allCategories")}</Link>
+                {categoryInfo && (
+                  <>
+                    <span aria-hidden>›</span>
+                    {picked ? <Link href={subHref()} className="hover:text-brand">{catName(categoryInfo)}</Link> : <span className="text-stone-700">{catName(categoryInfo)}</span>}
+                  </>
+                )}
+                {picked && (
+                  <>
+                    <span aria-hidden>›</span>
+                    <span className="text-stone-700">{picked.label}</span>
+                  </>
+                )}
+              </nav>
+              <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
+                {categoryInfo ? (
+                  <>
+                    <CategoryIcon id={categoryInfo.id} sub={picked?.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
+                    <span>
+                      {picked?.label ?? catName(categoryInfo)}{" "}
+                      <span className="font-semibold text-stone-500">{nearMode ? t(lang, "nearPlace", { place: place!.city }) : t(lang, "inCity", { city: metroName(metro) })}</span>
+                    </span>
+                  </>
+                ) : (
+                  <>Results for &ldquo;{q}&rdquo;</>
+                )}
+              </h1>
+              {intro && <p className="mt-1.5 max-w-3xl text-sm text-stone-600">{intro}</p>}
+            </div>
+          ) : (
+            <div>
+              <h1 className="max-w-xl text-3xl font-semibold leading-tight sm:text-4xl">
+                {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : lang === "en" ? "Find a little India near you" : t(lang, "localBusinessesNear")}
+              </h1>
+              {(cityIntro || lang === "en") && (
+                <p className="relative mt-2 max-w-xl text-sm text-stone-700 sm:text-base">
+                  {cityIntro || "Discover home cooks, local businesses, and Indian community events in your area."}
+                </p>
               )}
-              {picked && (
-                <>
-                  <span aria-hidden>›</span>
-                  <span className="text-stone-700">{picked.label}</span>
-                </>
+            </div>
+          )}
+          {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
+          <form className={showingListings ? "flex gap-2" : "market-search relative flex max-w-xl gap-2 rounded-xl p-1"} role="search">
+            {locationInputs}
+            {category && <input type="hidden" name="category" value={category} />}
+            {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
+            {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              maxLength={100}
+              className={showingListings ? "input min-w-0 flex-1" : "input min-w-0 flex-1 border-transparent bg-transparent"}
+              placeholder={categoryInfo ? (lang === "en" ? `Search ${categoryInfo.label.toLowerCase()}…` : `${t(lang, "search")}: ${catName(categoryInfo)}…`) : t(lang, "searchPlaceholder")}
+              aria-label="Search listings"
+            />
+            <button className={showingListings ? "btn" : "btn min-h-11 rounded-xl"}>{t(lang, "search")}</button>
+          </form>
+          {!showingListings && lang === "en" && (
+            <nav aria-label="Suggested searches" className="relative flex max-w-xl flex-wrap gap-2">
+              {suggestedSearches.map(({ label, query, category }) => (
+                <Link key={query} href={href(category, [], query)} className="market-suggestion">
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          )}
+          {subs && (
+            <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
+              {/* The picked one right after "All", so it's visible without scrolling the row. */}
+              {[{ id: undefined, label: t(lang, "all") }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
+                const on = (picked?.id ?? undefined) === o.id;
+                return (
+                  <Link
+                    key={o.id ?? "all"}
+                    href={subHref(o.id)}
+                    aria-current={on ? "page" : undefined}
+                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-stone-50 ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
+                  >
+                    <CategoryIcon id={category!} sub={o.id} size={24} className="h-6 w-6" />
+                    {o.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+          {showingListings && !category && (
+            // One scrollable row on phones instead of a wall of wrapped chips.
+            <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Narrow to a category">
+              {CATEGORIES.map((c) => (
+                <Link key={c.id} href={href(c.id)} className="badge shrink-0 whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
+                  {c.icon} {catName(c)}
+                </Link>
+              ))}
+            </nav>
+          )}
+          {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
+          {place && !showingListings && (
+            // Distance from the visitor's location (set in the top bar).
+            <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Distance">
+              <span className="shrink-0 text-stone-500">{t(lang, "within")}</span>
+              {RADII.map((r) => {
+                const p = new URLSearchParams();
+                p.set("radius", String(r));
+                if (category) p.set("category", category);
+                if (q) p.set("q", q);
+                const on = nearMode && radius === r;
+                return (
+                  <Link key={r} href={`/?${p}`} aria-current={on ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center rounded-full px-3 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                    {r} mi
+                  </Link>
+                );
+              })}
+              {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
+              {!far && (
+                <Link href={href(category, diet, q, metro)} aria-current={!nearMode ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-3 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                  {t(lang, "allOf", { city: metroName(metro) })}
+                </Link>
               )}
             </nav>
-            <h1 className="mt-1 flex items-center gap-3 text-xl font-bold sm:text-2xl">
-              {categoryInfo ? (
-                <>
-                  <CategoryIcon id={categoryInfo.id} sub={picked?.id} size={44} className="h-10 w-10 sm:h-11 sm:w-11" />
-                  <span>
-                    {picked?.label ?? catName(categoryInfo)}{" "}
-                    <span className="font-semibold text-stone-500">{nearMode ? t(lang, "nearPlace", { place: place!.city }) : t(lang, "inCity", { city: metroName(metro) })}</span>
-                  </span>
-                </>
-              ) : (
-                <>Results for &ldquo;{q}&rdquo;</>
-              )}
-            </h1>
-            {intro && <p className="mt-1.5 max-w-3xl text-sm text-stone-600">{intro}</p>}
-          </div>
-        ) : (
-          <div>
-            <h1 className="relative max-w-xl text-3xl font-semibold leading-tight sm:text-5xl">
-              {isMetro(params.metro) ? t(lang, "localBusinessesIn", { city: metroName(metro) }) : lang === "en" ? "Find a little India near you" : t(lang, "localBusinessesNear")}
-            </h1>
-            {(cityIntro || lang === "en") && (
-              <p className="relative mt-2 max-w-xl text-sm text-stone-700 sm:text-base">
-                {cityIntro || "Discover home cooks, local businesses, and Indian community events in your area."}
-              </p>
-            )}
-          </div>
-        )}
-        {category === "ROOM_RENTAL" && <RentalTabs metro={metro} active="offered" />}
-        <form className={showingListings ? "flex gap-2" : "market-search relative flex max-w-xl gap-2 rounded-2xl p-1.5"} role="search">
-          {locationInputs}
-          {category && <input type="hidden" name="category" value={category} />}
-          {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
-          {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
-          <input
-            type="search"
-            name="q"
-            defaultValue={q}
-            maxLength={100}
-            className={showingListings ? "input min-w-0 flex-1" : "input min-w-0 flex-1 border-transparent bg-transparent"}
-            placeholder={categoryInfo ? (lang === "en" ? `Search ${categoryInfo.label.toLowerCase()}…` : `${t(lang, "search")}: ${catName(categoryInfo)}…`) : t(lang, "searchPlaceholder")}
-            aria-label="Search listings"
-          />
-          <button className={showingListings ? "btn" : "btn min-h-11 rounded-xl"}>{t(lang, "search")}</button>
-        </form>
-        {!showingListings && lang === "en" && (
-          <nav aria-label="Suggested searches" className="relative flex max-w-xl flex-wrap gap-2">
-            {suggestedSearches.map(({ label, query, category }) => (
-              <Link key={query} href={href(category, [], query)} className="market-suggestion">
-                {label}
-              </Link>
-            ))}
-          </nav>
-        )}
-        {subs && (
-          <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
-            {/* The picked one right after "All", so it's visible without scrolling the row. */}
-            {[{ id: undefined, label: t(lang, "all") }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
-              const on = (picked?.id ?? undefined) === o.id;
-              return (
-                <Link
-                  key={o.id ?? "all"}
-                  href={subHref(o.id)}
-                  aria-current={on ? "page" : undefined}
-                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-stone-50 ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
-                >
-                  <CategoryIcon id={category!} sub={o.id} size={24} className="h-6 w-6" />
-                  {o.label}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
-        {showingListings && !category && (
-          // One scrollable row on phones instead of a wall of wrapped chips.
-          <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label="Narrow to a category">
-            {CATEGORIES.map((c) => (
-              <Link key={c.id} href={href(c.id)} className="badge shrink-0 whitespace-nowrap bg-white px-3 py-1.5 ring-1 ring-stone-200 hover:text-brand">
-                {c.icon} {catName(c)}
-              </Link>
-            ))}
-          </nav>
-        )}
-        {showingListings && <FilterBar filters={filterBar} clearHref={href(category, [], q)} />}
-        {place && !showingListings && (
-          // Distance from the visitor's location (set in the top bar).
-          <nav className="scrollbar-none -mx-1 flex items-center gap-2 overflow-x-auto px-1 text-sm" aria-label="Distance">
-            <span className="shrink-0 text-stone-500">{t(lang, "within")}</span>
-            {RADII.map((r) => {
-              const p = new URLSearchParams();
-              p.set("radius", String(r));
-              if (category) p.set("category", category);
-              if (q) p.set("q", q);
-              const on = nearMode && radius === r;
-              return (
-                <Link key={r} href={`/?${p}`} className={`shrink-0 rounded-full px-3 py-1 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                  {r} mi
-                </Link>
-              );
-            })}
-            {/* A whole metro only counts as local when it's nearby; a far one stays in the top-bar picker. */}
-            {!far && (
-              <Link href={href(category, diet, q, metro)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 ring-1 ${!nearMode ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
-                {t(lang, "allOf", { city: metroName(metro) })}
-              </Link>
-            )}
-          </nav>
-        )}
-        {!nearMode && <FarNote far={far} metro={metro} />}
-        {!place && !showingListings && <NearMePrompt city={metroName(metro)} />}
-        {!showingListings && <TrustStrip items={[t(lang, "trustVerified"), t(lang, "trustReviews"), t(lang, "trustFree")]} />}
+          )}
+          {!nearMode && <FarNote far={far} metro={metro} />}
+          {!place && !showingListings && <NearMePrompt city={metroName(metro)} />}
+          {!showingListings && <TrustStrip items={[t(lang, "trustVerified"), t(lang, "trustReviews"), t(lang, "trustFree")]} />}
+        </div>
+        {!showingListings && <HeroArt />}
       </section>
 
       {!showingListings && (
         <section className="group">
           {totalListings < 5 && (
-            <div className="mb-4 rounded-xl bg-sky-50 px-5 py-4 text-sm ring-1 ring-sky-100">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-line bg-white px-4 py-3 text-sm">
               <p className="font-semibold text-stone-800">BharathMela is just getting started {where}.</p>
-              <p className="mt-1 text-stone-600">
-                Tell us what you need and sellers here will get your request as they join, or be one of the first businesses listed.
-              </p>
-              <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 font-semibold">
+              <p className="flex flex-wrap gap-x-5 gap-y-1 font-semibold">
                 <Link href="/requests/new" className="text-brand">Post what you need →</Link>
                 <Link href="/vendor/signup" className="text-brand">List your business free →</Link>
               </p>
