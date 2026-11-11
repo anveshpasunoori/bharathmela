@@ -8,6 +8,8 @@ import { db } from "./db";
 
 export const MAX_PHOTOS = 6;
 const MAX_BYTES = 8 * 1024 * 1024;
+export const photoBatchLimit = process.env.VERCEL === "1" ? 4_000_000 : undefined;
+const MAX_PIXELS = 50_000_000;
 const FORMATS = new Set(["jpeg", "png", "webp"]);
 
 // Where photos live. With S3_BUCKET set, any S3-compatible store (Cloudflare R2, AWS S3, Backblaze B2):
@@ -48,13 +50,17 @@ async function remove(url: string) {
 
 // Checks uploads before anything is saved. Returns an error message or null.
 export async function checkPhotos(files: File[], existingCount: number): Promise<string | null> {
+  if (photoBatchLimit && files.reduce((sum, file) => sum + file.size, 0) > photoBatchLimit) {
+    return "Choose photos totaling 4 MB or less per submission. You can add more photos by editing the listing.";
+  }
   if (existingCount + files.length > MAX_PHOTOS) return `You can add up to ${MAX_PHOTOS} photos.`;
   for (const f of files) {
     if (f.size > MAX_BYTES) return `"${f.name}" is over 8 MB. Choose a smaller photo.`;
     // Trust the image data, not the file name or browser-reported type.
     try {
-      const meta = await sharp(Buffer.from(await f.arrayBuffer())).metadata();
+      const meta = await sharp(Buffer.from(await f.arrayBuffer()), { limitInputPixels: MAX_PIXELS }).metadata();
       if (!meta.format || !FORMATS.has(meta.format)) return `"${f.name}" isn't a JPEG, PNG or WebP photo.`;
+      if ((meta.width ?? 0) * (meta.height ?? 0) > MAX_PIXELS) return `“${f.name}” is over 50 megapixels. Resize it and try again.`;
       if ((meta.width ?? 0) < 300 || (meta.height ?? 0) < 300) return `"${f.name}" is too small. Use photos at least 300 pixels wide.`;
     } catch {
       return `"${f.name}" couldn't be read as a photo.`;
@@ -67,7 +73,7 @@ export async function checkPhotos(files: File[], existingCount: number): Promise
 export async function savePhotos(listingId: string, files: File[]) {
   const start = await db.listingPhoto.count({ where: { listingId } });
   for (const [i, f] of files.entries()) {
-    const input = sharp(Buffer.from(await f.arrayBuffer())).rotate();
+    const input = sharp(Buffer.from(await f.arrayBuffer()), { limitInputPixels: MAX_PIXELS }).rotate();
     const full = await input.clone().resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true }).webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
     const thumb = await input.clone().resize({ width: 600, height: 450, fit: "cover" }).webp({ quality: 75 }).toBuffer();
     const name = randomBytes(8).toString("hex");

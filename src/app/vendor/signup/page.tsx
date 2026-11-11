@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/return-path";
 import Link from "next/link";
 import { SocialLogin } from "@/components/SocialLogin";
 import { redirect } from "next/navigation";
@@ -16,7 +17,7 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
   const user = await getCurrentUser();
   if (user?.vendor) redirect("/vendor");
   const kind = params.kind === "individual" ? "individual" : "business";
-  const next = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/vendor";
+  const next = safeNextPath(params.next, "/vendor");
   return (
     <div className="mx-auto max-w-md">
       <h1 className="text-2xl font-bold">{kind === "individual" ? "List something on BharathMela" : "Sell on BharathMela"}</h1>

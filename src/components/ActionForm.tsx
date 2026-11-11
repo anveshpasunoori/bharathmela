@@ -29,8 +29,8 @@ export function ActionForm({
   return (
     <form action={formAction} onSubmit={onSubmit} className={className}>
       {children}
-      {state?.error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state?.message && <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">{state.message}</p>}
+      {state?.error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
+      {state?.message && <p role="status" className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">{state.message}</p>}
       <button type="submit" className={`${secondary ? "btn-outline" : "btn"} w-full`} disabled={pending}>
         {pending ? "Please wait…" : submitLabel}
       </button>

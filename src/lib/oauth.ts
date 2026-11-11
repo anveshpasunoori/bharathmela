@@ -57,5 +57,4 @@ export async function userForProviderLogin(email: string, name: string) {
   });
 }
 
-// Where to go afterwards: a same-site path only.
-export const safeNextPath = (next: string | undefined) => (next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
+export { safeNextPath } from "./return-path";

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
-import { DIET_TAGS, normalizeTags } from "@/lib/constants";
+import { categoryLabel, DIET_TAGS, normalizeTags } from "@/lib/constants";
 import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
 import type { CreatorDetails } from "@/lib/creators";
 import type { EventServiceDetails } from "@/lib/event-services";
@@ -66,48 +66,62 @@ export function ListingFields({
     <>
       <CategorySelect value={category} onChange={setCategory} />
 
-      <div className="rounded-md border border-brand/30 bg-brand-soft p-4">
-        <p className="font-semibold">✨ AI ad writer</p>
-        {canUseAI ? (
-          <>
-            <p className="mb-2 text-sm text-stone-600">
-              Describe what you offer in your own words, in any language mix. We&apos;ll write the ad; you can edit it before publishing.
+      <details className="rounded-xl border border-line bg-white p-4">
+        <summary className="cursor-pointer font-semibold text-forest">Help me write my listing</summary>
+        <div className="mt-3">
+          {canUseAI ? (
+            <>
+              <p className="mb-2 text-sm text-stone-600">
+                Describe what you offer in your own words, in any language mix. We&apos;ll write the ad; you can edit it before publishing.
+              </p>
+              <textarea
+                className="input min-h-20"
+                value={idea}
+                onChange={(e) => setIdea(e.target.value)}
+                maxLength={2000}
+                placeholder="e.g. I make Andhra style pickles at home – mango, gongura, tomato. $12 a jar, pickup in Plano or ship anywhere in Texas"
+                aria-label="Your idea"
+              />
+              {aiError && <p role="alert" className="mt-2 text-sm text-red-700">{aiError}</p>}
+              <button type="button" onClick={writeAd} disabled={writing} className="btn-outline mt-2">
+                {writing ? "Writing your ad…" : title ? "Rewrite my ad" : "Write my ad"}
+              </button>
+              <p className="mt-2 text-xs text-stone-500">AI can make mistakes. Check every detail; you are responsible for what you publish.</p>
+            </>
+          ) : (
+            <p className="text-sm text-stone-600">
+              Turn a rough idea into a polished ad in seconds.{" "}
+              <Link href="/vendor/upgrade?plan=PRO" className="font-semibold text-brand underline">
+                Included with Pro
+              </Link>
             </p>
-            <textarea
-              className="input min-h-20"
-              value={idea}
-              onChange={(e) => setIdea(e.target.value)}
-              maxLength={2000}
-              placeholder="e.g. I make Andhra style pickles at home – mango, gongura, tomato. $12 a jar, pickup in Plano or ship anywhere in Texas"
-              aria-label="Your idea"
-            />
-            {aiError && <p className="mt-2 text-sm text-red-700">{aiError}</p>}
-            <button type="button" onClick={writeAd} disabled={writing} className="btn-outline mt-2">
-              {writing ? "Writing your ad…" : title ? "Rewrite my ad" : "Write my ad"}
-            </button>
-            <p className="mt-2 text-xs text-stone-500">AI can make mistakes. Check every detail; you are responsible for what you publish.</p>
-          </>
-        ) : (
-          <p className="text-sm text-stone-600">
-            Turn a rough idea into a polished ad in seconds.{" "}
-            <Link href="/vendor/upgrade?plan=PRO" className="font-semibold text-brand underline">
-              Included with Pro
-            </Link>
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+      </details>
 
       <div>
         <label className="label" htmlFor="title">Title</label>
         <input className="input" id="title" name="title" required minLength={5} maxLength={100}
           value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekly Gujarati thali tiffin" />
+        <p className="mt-1 text-xs text-muted">Name what you offer in words customers would search for.</p>
       </div>
       <div>
         <label className="label" htmlFor="description">Description</label>
         <textarea className="input min-h-40" id="description" name="description" required minLength={20} maxLength={2000}
-          value={description} onChange={(e) => setDescription(e.target.value)}
+          aria-describedby="description-count" value={description} onChange={(e) => setDescription(e.target.value)}
           placeholder="What you offer, pickup/delivery area, how to order, languages spoken…" />
+        <p id="description-count" className="mt-1 text-xs text-muted">{description.length} / 2,000 characters</p>
       </div>
+      {(title.trim() || description.trim()) && (
+        <details className="rounded-xl border border-line bg-ivory p-4">
+          <summary className="cursor-pointer font-semibold text-forest">Preview listing text</summary>
+          <div className="mt-3 space-y-1 break-words">
+            {category && <p className="text-xs font-medium text-muted">{categoryLabel(category)}</p>}
+            <p className="font-semibold text-ink">{title.trim() || "Your listing title"}</p>
+            {description.trim() && <p className="whitespace-pre-line text-sm text-muted">{description}</p>}
+          </div>
+        </details>
+      )}
       {category === "FOOD" && (
         <fieldset>
           <legend className="label">Dietary markers (tick only what&apos;s true for everything in this listing)</legend>
@@ -117,7 +131,7 @@ export function ListingFields({
               return (
                 <label
                   key={t.id}
-                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-300"}`}
+                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand ${on ? "bg-green-50 text-green-800 ring-green-600" : "bg-white text-stone-700 ring-stone-300"}`}
                 >
                   <input
                     type="checkbox"
@@ -146,7 +160,7 @@ export function ListingFields({
               return (
                 <label
                   key={t.id}
-                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 ${on ? "bg-brand-soft text-brand ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}
+                  className={`relative cursor-pointer rounded-full px-3 py-1 text-sm ring-1 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand ${on ? "bg-brand-soft text-brand ring-brand" : "bg-white text-stone-700 ring-stone-300"}`}
                 >
                   <input
                     type="checkbox"

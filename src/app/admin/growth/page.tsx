@@ -64,6 +64,7 @@ export default async function GrowthPage() {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-2xl font-semibold">Marketplace growth</h1>
       <section>
         <h2 className="mb-2 font-semibold">New accounts</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

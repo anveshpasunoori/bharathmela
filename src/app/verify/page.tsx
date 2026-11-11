@@ -1,3 +1,4 @@
+import { safeNextPath } from "@/lib/return-path";
 import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { getCurrentUser } from "@/lib/auth";
@@ -7,7 +8,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const { next = "/", unsent } = await searchParams;
-  if (user.emailVerifiedAt) redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/");
+  if (user.emailVerifiedAt) redirect(safeNextPath(next));
 
   return (
     <div className="mx-auto max-w-sm space-y-4">

@@ -1,5 +1,6 @@
 "use server";
 
+import { safeNextPath } from "@/lib/return-path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/ActionForm";
@@ -17,7 +18,7 @@ const MIN_ACCOUNT_AGE_MS = 10 * 60_000;
 export async function toggleSaved(listingId: string, back?: string | FormData) {
   const user = await getCurrentUser();
   if (!user) {
-    const returnTo = typeof back === "string" && back.startsWith("/") && !back.startsWith("//") ? back : `/listing/${listingId}`;
+    const returnTo = safeNextPath(back, `/listing/${encodeURIComponent(listingId)}`);
     redirect(`/login?next=${encodeURIComponent(`/saved/add?id=${listingId}&back=${encodeURIComponent(returnTo)}`)}`);
   }
   const key = { userId_listingId: { userId: user.id, listingId } };

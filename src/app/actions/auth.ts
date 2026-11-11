@@ -1,5 +1,6 @@
 "use server";
 
+import { safeNextPath } from "@/lib/return-path";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { redirect } from "next/navigation";
@@ -25,7 +26,7 @@ function field(form: FormData, name: string) {
 // Only allow same-site relative paths, so `next` can't send people off-site.
 function safeNext(form: FormData, fallback = "/") {
   const next = field(form, "next");
-  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+  return safeNextPath(next, fallback);
 }
 
 // The monthly "new in your city" email is opt-in, for the city they sign up in.
@@ -191,7 +192,7 @@ async function saveAfterLogin(userId: string, params: URLSearchParams) {
   if (/^[a-z0-9]+$/i.test(id) && (await db.listing.findFirst({ where: { id, ...publicListing() }, select: { id: true } }))) {
     await db.favorite.upsert({ where: { userId_listingId: { userId, listingId: id } }, create: { userId, listingId: id }, update: {} });
   }
-  return back.startsWith("/") && !back.startsWith("//") ? back : "/saved";
+  return safeNextPath(back, "/saved");
 }
 
 export async function logout() {

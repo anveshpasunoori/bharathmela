@@ -1,3 +1,4 @@
+import { photoBatchLimit } from "@/lib/photos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
@@ -61,7 +62,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
               types: parseServiceTypes(listing.category, listing.tags),
             }}
           />
-          <PhotoField existing={listing.photos} />
+          <PhotoField batchLimit={photoBatchLimit} existing={listing.photos} />
           <label className="flex gap-2 text-sm text-stone-700">
             <input type="checkbox" name="confirm" required className="mt-0.5" />
             <span>

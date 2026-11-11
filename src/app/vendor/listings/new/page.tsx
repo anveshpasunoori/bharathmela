@@ -1,3 +1,4 @@
+import { photoBatchLimit } from "@/lib/photos";
 import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import { ListingFields } from "@/components/ListingFields";
@@ -17,15 +18,19 @@ export default async function NewListingPage({ searchParams }: { searchParams: P
   const initialCategory = CATEGORIES.some((c) => c.id === category) ? category! : "";
   const { plan } = await getVendorPlan(vendor.id);
   return (
-    <div className="mx-auto max-w-lg">
-      <h1 className="mb-4 text-2xl font-bold">New listing</h1>
+    <div className="mx-auto max-w-2xl">
+      <Link href="/vendor" className="text-sm font-medium text-forest hover:underline">← My business</Link>
+      <h1 className="mt-2 text-3xl font-semibold text-ink">Create a listing</h1>
+      <p className="mb-5 mt-2 text-sm text-muted">
+        Choose a category, describe what you offer, and add photos. Some listings go through review before they appear to buyers.
+      </p>
       <div className="card">
-        <ActionForm action={createListing} submitLabel="Publish listing">
+        <ActionForm action={createListing} submitLabel="Submit listing">
           <ListingFields
             canUseAI={AI_WRITER_PLANS.includes(plan.id)}
             initial={initialCategory ? { category: initialCategory, title: "", description: "", price: "", priceUnit: "", tags: [] } : undefined}
           />
-          <PhotoField />
+          <PhotoField batchLimit={photoBatchLimit} />
           <label className="flex gap-2 text-sm text-stone-700">
             <input type="checkbox" name="confirm" required className="mt-0.5" />
             <span>

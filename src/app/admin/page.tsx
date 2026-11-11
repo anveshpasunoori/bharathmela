@@ -86,6 +86,7 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
+      <h1 className="text-2xl font-semibold">Admin overview</h1>
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Revenue this month" value={formatUSD(revenue._sum.amountCents ?? 0)} />
