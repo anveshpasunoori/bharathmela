@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { listingDescriptionPrompt } from "@/lib/listing-coach";
 import { writeAdWithAI } from "@/app/actions/vendor";
 import { nationwideOption } from "@/lib/nationwide";
 import { categoryLabel, DIET_TAGS, normalizeTags } from "@/lib/constants";
@@ -117,8 +118,9 @@ export function ListingFields({
       <div>
         <label className="label" htmlFor="description">Description</label>
         <textarea className="input min-h-40" id="description" name="description" required minLength={20} maxLength={2000}
-          aria-describedby="description-count" value={description} onChange={(e) => setDescription(e.target.value)}
+          aria-describedby="description-tip description-count" value={description} onChange={(e) => setDescription(e.target.value)}
           placeholder={freshFood ? "What’s available, price per unit, pickup or delivery days, and how to order…" : "What you offer, pickup/delivery area, how to order, languages spoken…"} />
+        <p id="description-tip" className="mt-1 text-sm text-muted">{listingDescriptionPrompt(category)}</p>
         <p id="description-count" className="mt-1 text-xs text-muted">{description.length} / 2,000 characters</p>
       </div>
       {(title.trim() || description.trim()) && (

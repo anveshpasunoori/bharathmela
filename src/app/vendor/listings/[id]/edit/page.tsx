@@ -1,3 +1,5 @@
+import { listingSuggestions } from "@/lib/listing-coach";
+import { listingPath } from "@/lib/seo";
 import { isNationwideListing } from "@/lib/nationwide";
 import { photoBatchLimit } from "@/lib/photos";
 import Link from "next/link";
@@ -35,14 +37,34 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
     );
   }
 
+  const suggestions = listingSuggestions(listing, listing.photos.length);
+  const isPublic = listing.status === "ACTIVE" && (!listing.expiresAt || listing.expiresAt > new Date());
+
   return (
-    <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-bold">Edit listing</h1>
+    <div className="mx-auto max-w-2xl">
+      <Link href="/vendor" className="text-sm font-semibold text-forest hover:underline">← My business</Link>
+      <h1 className="mt-2 text-3xl font-semibold text-ink">Edit listing</h1>
+      {isPublic && <Link href={listingPath(listing)} className="mt-2 inline-block text-sm font-semibold text-forest hover:underline">View live listing ↗</Link>}
       {listing.status === "REJECTED" && (
         <p className="mt-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
           Not approved: {listing.moderationNote}. Fix this and save to send it for review again.
         </p>
       )}
+      <section aria-labelledby="listing-coach" className="mt-4 rounded-2xl border border-line bg-brand-soft p-5">
+        <h2 id="listing-coach" className="text-xl font-semibold text-ink">Listing coach</h2>
+        {suggestions.length ? (
+          <ul className="mt-3 space-y-3">
+            {suggestions.map(({ field, label, detail }) => (
+              <li key={field}>
+                <a href={`#${field}`} className="font-semibold text-forest underline underline-offset-4">{label}</a>
+                <p className="mt-1 text-sm text-muted">{detail}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted">Review your photos, pricing, and availability regularly so buyers know what to expect.</p>
+        )}
+      </section>
       <div className="card mt-4">
         <ActionForm action={updateListing} submitLabel="Save changes">
           <input type="hidden" name="listingId" value={listing.id} />

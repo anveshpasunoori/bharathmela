@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { homeEventPhoto, listingPlaceholderPhoto } from "@/lib/home-art";
+import { listingSuggestions } from "@/lib/listing-coach";
 import { eventPath, sellerPath } from "@/lib/seo";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -113,12 +114,7 @@ export default async function VendorDashboard({
 
   // Everything that needs the seller's attention, in one checklist.
   const toAnswer = (await requestsForVendor(vendor.id, user.id)).filter((r) => !r.quoted).length;
-  // Cards without a photo all look alike, so nudge sellers to add one.
-  const noPhotos = listings.filter((l) => (l.status === "ACTIVE" || l.status === "PENDING_REVIEW") && l._count.photos === 0);
   const todos: { text: string; href: string; action: string }[] = [
-    ...(noPhotos.length
-      ? [{ text: `Add a photo to ${noPhotos.length === 1 ? `"${noPhotos[0].title}"` : `${noPhotos.length} listings`}: listings with real photos get far more calls`, href: `/vendor/listings/${noPhotos[0].id}/edit`, action: "Add photo" }]
-      : []),
     ...(toAnswer ? [{ text: `${toAnswer} buyer${toAnswer === 1 ? "" : "s"} near you posted what they need`, href: "/requests?tab=near", action: "Send quotes" }] : []),
     ...(!user.phoneVerifiedAt ? [{ text: "Verify your phone to get a ✓ badge buyers trust", href: "/vendor/verify-phone", action: "Verify" }] : []),
     ...(expiringCount ? [{ text: `Renew ${expiringCount} listing${expiringCount === 1 ? "" : "s"} expiring soon`, href: "/vendor?tab=listings", action: "Review" }] : []),
@@ -297,6 +293,7 @@ export default async function VendorDashboard({
         )}
         <ul className="space-y-3">
           {listings.map((l) => {
+            const suggestion = l.status !== "REMOVED" ? listingSuggestions(l, l._count.photos)[0] : undefined;
             const featured = l.featuredUntil && l.featuredUntil > now;
             const photo = l.photos[0]?.thumbUrl ?? listingPlaceholderPhoto(l.category);
             return (
@@ -337,6 +334,11 @@ export default async function VendorDashboard({
                     )}
                   </div>
                 </div>
+                {suggestion && (
+                  <Link href={`/vendor/listings/${l.id}/edit#listing-coach`} className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-xl bg-brand-soft px-3 py-2 text-sm font-semibold text-forest hover:underline">
+                    {suggestion.label} <span aria-hidden>→</span>
+                  </Link>
+                )}
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-sm">
                   {l.status === "ACTIVE" && (!l.expiresAt || l.expiresAt > now) && (
                     <Link href={`/vendor/listings/${l.id}/boost`} className="btn-outline py-1.5">

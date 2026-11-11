@@ -30,10 +30,10 @@ export function PhotoField({ existing = [], batchLimit }: { existing?: { id: str
   }
 
   return (
-    <fieldset className="space-y-2">
+    <fieldset id="listing-photos" className="scroll-mt-24 space-y-2">
       <legend className="label">Photos (up to {MAX})</legend>
       <p className="-mt-1 text-xs text-stone-500">
-        Use JPG, PNG, or WebP, {batchLimit ? "up to 4 MB total per submission" : "up to 8 MB each"}. The first photo is the cover. We strip hidden location data on upload.
+        Use JPG, PNG, or WebP, {batchLimit ? "up to 4 MB total per submission" : "up to 8 MB each"}. The first photo is the cover. Lead with a clear, well-lit photo of what buyers will get. We strip hidden location data on upload.
       </p>
       {existing.length > 0 && (
         <div className="flex flex-wrap gap-2">
