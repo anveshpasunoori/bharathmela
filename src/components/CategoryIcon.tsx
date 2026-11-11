@@ -8,14 +8,14 @@ const ILLUSTRATED = new Set<string>(CATEGORIES.map((c) => c.id));
 
 // Decorative: the category name is always shown next to it. With `sub`, shows that subcategory's drawing
 // (an illustrated .png where there is one, else the .svg made by scripts/subcategory-icons.mjs).
-export function CategoryIcon({ id, sub, size, className = "" }: { id: string; sub?: string; size: number; className?: string }) {
+export function CategoryIcon({ id, sub, size, vector = false, className = "" }: { id: string; sub?: string; size: number; vector?: boolean; className?: string }) {
   if (sub) {
-    const ext = ILLUSTRATED_SUBCATEGORIES.has(`${id}/${sub}`) ? "png" : "svg";
+    const ext = !vector && ILLUSTRATED_SUBCATEGORIES.has(`${id}/${sub}`) ? "png" : "svg";
     return <Image src={`/subcategories/${id}/${sub}.${ext}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 object-contain ${className}`} />;
   }
   if (ILLUSTRATED.has(id)) {
     // Square tiles: the class sets the width and the height follows.
-    return <Image src={`/categories/${id}.${ILLUSTRATED_CATEGORIES.has(id) ? "png" : "svg"}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 object-contain ${className}`} />;
+    return <Image src={`/categories/${id}.${!vector && ILLUSTRATED_CATEGORIES.has(id) ? "png" : "svg"}`} alt="" width={size} height={size} unoptimized style={{ height: "auto" }} className={`shrink-0 object-contain ${className}`} />;
   }
   return (
     <span

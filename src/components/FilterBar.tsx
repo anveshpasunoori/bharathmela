@@ -1,5 +1,6 @@
 "use client";
 
+import { CategoryIcon } from "./CategoryIcon";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useNavigate } from "./NavProgress";
 import { useEffect, useRef, useState } from "react";
@@ -10,7 +11,7 @@ type Changes = Record<string, string | null>;
 
 export type FilterDef =
   // Pick one; applies straight away. `params` says what each option sets (null removes a param).
-  | { kind: "choice"; key: string; label: string; options: { label: string; params: Changes }[]; selected: number | null; defaultIndex?: number }
+  | { kind: "choice"; key: string; label: string; options: { label: string; params: Changes; icon?: { category: string; sub?: string } }[]; selected: number | null; defaultIndex?: number }
   // Pick several, stored comma-separated in one param.
   | { kind: "multi"; key: string; param: string; label: string; options: readonly { id: string; label: string }[]; selected: string[] }
   // A dollar amount, by default an upper limit ("Up to $1,500"); `prefix` and `fieldLabel` reword it.
@@ -159,7 +160,7 @@ function FilterPanelBody({ filter: f, onApply }: { filter: Exclude<FilterDef, { 
 
   if (f.kind === "choice") {
     return (
-      <ul className="-mx-1 space-y-0.5" role="listbox" aria-label={f.label}>
+      <ul className={f.options.some((o) => o.icon) ? "grid grid-cols-3 gap-2" : "-mx-1 space-y-0.5"} role="listbox" aria-label={f.label}>
         {f.options.map((o, i) => {
           const on = f.selected === i;
           return (
@@ -168,11 +169,12 @@ function FilterPanelBody({ filter: f, onApply }: { filter: Exclude<FilterDef, { 
                 type="button"
                 role="option"
                 aria-selected={on}
-                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-stone-100 ${on ? "font-semibold text-brand" : ""}`}
+                className={`flex w-full items-center rounded-md hover:bg-stone-100 ${o.icon ? "min-h-24 flex-col justify-center gap-1 border border-stone-200 px-1 py-2 text-center text-xs leading-tight" : "justify-between px-3 py-2 text-left text-sm"} ${on ? "bg-brand-soft font-semibold text-brand" : ""}`}
                 onClick={() => onApply(o.params)}
               >
+                {o.icon && <CategoryIcon id={o.icon.category} sub={o.icon.sub} size={36} vector className="size-9 rounded-full" />}
                 {o.label}
-                {on && <span aria-hidden>✓</span>}
+                {on && !o.icon && <span aria-hidden>✓</span>}
               </button>
             </li>
           );

@@ -444,7 +444,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             </nav>
           )}
           {subs && (
-            <nav className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm" aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
+            <nav className={category === "ROOM_RENTAL" ? "grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-9" : "scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm"} aria-label={`Kinds of ${categoryInfo!.label.toLowerCase()}`}>
               {/* The picked one right after "All", so it's visible without scrolling the row. */}
               {[{ id: undefined, label: t(lang, "all") }, ...(picked ? [picked] : []), ...subs.options.filter((o) => o.id !== picked?.id)].map((o) => {
                 const on = (picked?.id ?? undefined) === o.id;
@@ -453,9 +453,9 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                     key={o.id ?? "all"}
                     href={subHref(o.id)}
                     aria-current={on ? "page" : undefined}
-                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-1 pl-1 pr-3 ring-1 ${on ? "bg-stone-900 text-stone-50 ring-stone-900" : "bg-white text-stone-700 ring-stone-200 hover:ring-brand/40 hover:text-brand"}`}
+                    className={`flex items-center gap-1.5 border text-sm font-medium ${category === "ROOM_RENTAL" ? "min-h-24 flex-col justify-center rounded-xl px-1.5 py-2 text-center text-xs leading-tight" : "shrink-0 whitespace-nowrap rounded-full py-1 pl-1 pr-3"} ${on ? "border-brand bg-brand-soft text-brand" : "border-stone-200 bg-white text-stone-700 hover:border-brand hover:text-brand"}`}
                   >
-                    <CategoryIcon id={category!} sub={o.id} size={24} className="h-6 w-6" />
+                    <CategoryIcon id={category!} sub={o.id} vector size={category === "ROOM_RENTAL" ? 40 : 24} className={category === "ROOM_RENTAL" ? "size-10 rounded-full" : "size-6 rounded-full"} />
                     {o.label}
                   </Link>
                 );
@@ -821,7 +821,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
           <nav className="flex flex-wrap gap-2 text-sm" aria-label={`Popular in ${metroName(metro)}`}>
             {popularSubs.map((p) => (
               <Link key={`${p.category}/${p.id}`} href={citySubcategoryPath(metro, p.category, p.id)} className="flex items-center gap-1.5 rounded-full bg-white py-1 pl-1 pr-3 ring-1 ring-stone-200 hover:text-brand">
-                <CategoryIcon id={p.category} sub={p.id} size={24} className="h-6 w-6" />
+                <CategoryIcon id={p.category} sub={p.id} vector size={24} className="h-6 w-6" />
                 {subcategoryLabel(p.category, p.id)}
               </Link>
             ))}

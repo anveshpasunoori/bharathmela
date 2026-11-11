@@ -35,7 +35,7 @@ export default async function RoomsWantedPage({
     },
     {
       kind: "choice", key: "space", label: "My space",
-      options: [{ label: "Any space", params: { space: null } }, ...SPACE_TYPES.map((t) => ({ label: t.label, params: { space: t.id } }))],
+      options: [{ label: "Any space", params: { space: null }, icon: { category: "ROOM_RENTAL" } }, ...SPACE_TYPES.map((t) => ({ label: t.label, params: { space: t.id }, icon: { category: "ROOM_RENTAL", sub: t.id } }))],
       selected: space ? SPACE_TYPES.findIndex((t) => t.id === space) + 1 : null,
     },
     { kind: "date", key: "by", param: "by", label: "Available by", prefix: "Available", value: by ?? null },

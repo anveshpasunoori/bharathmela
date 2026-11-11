@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { logout } from "@/app/actions/auth";
 import { NAV_GROUPS } from "@/lib/nav";
-import { CategoryThumbnail } from "./CategoryThumbnail";
+import { CategoryIcon } from "./CategoryIcon";
 import { HeartIcon } from "./HeartIcon";
 import { HeaderLocation } from "./HeaderLocation";
 import { MobileMenu } from "./MobileMenu";
@@ -73,7 +73,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                       {g.items.map((c) => (
                         <li key={c.id}>
                           <Link href={c.href} className="flex min-h-14 items-center gap-2 rounded-lg px-1.5 py-2 transition-colors hover:bg-white focus-visible:bg-white">
-                            <CategoryThumbnail id={c.id} size={40} className="size-10" />
+                            <CategoryIcon id={c.id} size={40} vector className="size-10 rounded-full" />
                             <span className="min-w-0">
                               <span className="block text-sm font-semibold leading-tight text-ink">{c.label}</span>
                               <span className="mt-1 block text-xs leading-tight text-muted">{c.blurb}</span>
@@ -194,7 +194,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
             <div className="grid gap-2 min-[400px]:grid-cols-2">
               {NAV_GROUPS.flatMap((g) => g.items).map((c) => (
                 <Link key={c.id} href={c.href} className="flex min-h-14 items-center gap-2 rounded-xl border border-line bg-ivory/45 p-2 text-sm font-medium hover:border-brand focus-visible:border-brand">
-                  <CategoryThumbnail id={c.id} size={40} className="size-10" />
+                  <CategoryIcon id={c.id} size={40} vector className="size-10 rounded-full" />
                   <span className="leading-tight">{c.label}</span>
                 </Link>
               ))}
