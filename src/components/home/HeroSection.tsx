@@ -4,7 +4,7 @@ import { HeroWave } from "./HeroScene";
 import { Parallax } from "./Parallax";
 import { SmartSearch, type SearchLocation, type SearchSuggestion } from "./SmartSearch";
 
-// The top of the home page: headline, search and the two main actions over a backwater sunrise.
+// The top of the home page: headline, search and the two main actions alongside a Kerala backwaters scene.
 // On phones the scene sits above the text as a banner; on wide screens it fills the right side.
 export function HeroSection({
   suggestions,
@@ -21,15 +21,15 @@ export function HeroSection({
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#FFF8EC] via-[#FFF3E2] to-[#FDE7CC]" aria-labelledby="home-hero">
-      <div className="relative aspect-[3/2] max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_86%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_24%)]">
+      <div className="relative aspect-[3/2] max-h-80 overflow-hidden [mask-image:linear-gradient(to_bottom,black_86%,transparent)] lg:absolute lg:inset-y-0 lg:right-0 lg:aspect-auto lg:max-h-none lg:w-[58%] lg:max-w-[68rem] lg:[mask-image:linear-gradient(to_right,transparent,black_32%)]">
         <Parallax className="absolute inset-0">
           <Image
-            src="/home/dance-and-food-hero.webp"
-            alt="A Bharatanatyam dancer beside a spread of Indian food on the Kerala backwaters"
+            src="/home/kerala-dance-hero.webp"
+            alt="A Bharatanatyam dancer by the Kerala backwaters at sunset"
             fill
             preload
             sizes="(min-width: 1024px) 58vw, 100vw"
-            className="object-cover object-[65%_56%]"
+            className="object-cover object-[65%_43%]"
           />
         </Parallax>
       </div>
