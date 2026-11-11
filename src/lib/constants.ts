@@ -1,5 +1,5 @@
 export const CATEGORIES = [
-  { id: "FOOD", label: "Home Food & Cloud Kitchens", priceHint: "per plate", icon: "🍛" },
+  { id: "FOOD", label: "Home Food & Fresh Produce", priceHint: "per plate", icon: "🍛" },
   { id: "TUTORING", label: "Tutoring & Classes", priceHint: "per hour", icon: "📚" },
   { id: "DANCE_MUSIC", label: "Dance, Music & Sangeetham", priceHint: "per month", icon: "💃" },
   { id: "PUJARI", label: "Pujari & Religious Services", priceHint: "per puja", icon: "🪔" },

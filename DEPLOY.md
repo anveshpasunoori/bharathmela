@@ -144,3 +144,7 @@ domain later means people add their passkeys again.
 - [ ] Fill in the legal entity name and address placeholders on the Terms and Privacy pages.
 - [ ] Decide who reviews the admin queue (held listings, reports, payments) and how often.
 - [ ] Payments are confirmed by hand (Zelle/Venmo) until Stripe is added.
+
+## Translated voice search
+
+Set the server-only `OPENAI_API_KEY` in Vercel Production and redeploy. Use an OpenAI API project with billing and access to `gpt-transcribe` and `gpt-5-mini`. Without the key, the search microphone uses browser dictation when available.

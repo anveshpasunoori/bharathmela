@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { writeAdWithAI } from "@/app/actions/vendor";
+import { nationwideOption } from "@/lib/nationwide";
 import { categoryLabel, DIET_TAGS, normalizeTags } from "@/lib/constants";
 import { SERVICE_TYPES, hasServiceTypes, typeWording } from "@/lib/service-types";
 import type { CreatorDetails } from "@/lib/creators";
@@ -18,7 +19,7 @@ import { RentalFields } from "./RentalFields";
 
 // Listing inputs plus the AI ad writer, which fills them in from the seller's rough idea.
 // `types` are the services offered, for categories with service types (Home Services, Auto, Beauty…).
-export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[]; types?: string[] };
+export type ListingValues = { category: string; title: string; description: string; price: string; priceUnit: string; tags: string[]; types?: string[]; nationwide?: boolean };
 
 export function ListingFields({
   canUseAI,
@@ -47,6 +48,8 @@ export function ListingFields({
   const [idea, setIdea] = useState("");
   const [aiError, setAiError] = useState("");
   const [writing, startWriting] = useTransition();
+  const nationwide = nationwideOption(category);
+  const freshFood = category === "FOOD" && (types.includes("FRESH_PRODUCE") || types.includes("MILK_DAIRY"));
   const rental = category === "ROOM_RENTAL";
 
   function writeAd() {
@@ -65,6 +68,12 @@ export function ListingFields({
   return (
     <>
       <CategorySelect value={category} onChange={setCategory} />
+      {nationwide && (
+        <label className="flex gap-2 rounded-xl border border-line bg-white p-3 text-sm" key={category}>
+          <input type="checkbox" name="nationwide" className="mt-0.5" defaultChecked={initial?.category === category && initial?.nationwide} />
+          <span>{nationwide}<span className="mt-1 block text-xs text-muted">Buyers can find this listing outside your local area.</span></span>
+        </label>
+      )}
 
       <details className="rounded-xl border border-line bg-white p-4">
         <summary className="cursor-pointer font-semibold text-forest">Help me write my listing</summary>
@@ -109,7 +118,7 @@ export function ListingFields({
         <label className="label" htmlFor="description">Description</label>
         <textarea className="input min-h-40" id="description" name="description" required minLength={20} maxLength={2000}
           aria-describedby="description-count" value={description} onChange={(e) => setDescription(e.target.value)}
-          placeholder="What you offer, pickup/delivery area, how to order, languages spoken…" />
+          placeholder={freshFood ? "What’s available, price per unit, pickup or delivery days, and how to order…" : "What you offer, pickup/delivery area, how to order, languages spoken…"} />
         <p id="description-count" className="mt-1 text-xs text-muted">{description.length} / 2,000 characters</p>
       </div>
       {(title.trim() || description.trim()) && (
@@ -232,7 +241,7 @@ export function ListingFields({
           </div>
           <div>
             <label className="label" htmlFor="priceUnit">Price unit</label>
-            <input className="input" id="priceUnit" name="priceUnit" maxLength={40} placeholder="per plate, per hour…"
+            <input className="input" id="priceUnit" name="priceUnit" maxLength={40} placeholder={freshFood ? "per lb, per basket, per gallon…" : "per plate, per hour…"}
               value={priceUnit} onChange={(e) => setPriceUnit(e.target.value)} />
           </div>
         </div>

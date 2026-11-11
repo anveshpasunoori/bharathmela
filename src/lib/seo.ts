@@ -42,7 +42,7 @@ export const CATEGORY_SLUGS: Record<string, string> = {
 
 // One line per category for page intros and descriptions.
 export const CATEGORY_PITCH: Record<string, string> = {
-  FOOD: "Home-cooked tiffins, meal boxes, biryani trays, snacks and festival sweets from Indian home kitchens",
+  FOOD: "Home-cooked tiffins, biryani trays, snacks, fresh fruits and vegetables, milk and dairy from local sellers",
   TUTORING: "Math, science, coding, SAT prep and Telugu, Hindi or Tamil classes from local tutors",
   DANCE_MUSIC: "Bharatanatyam, Kuchipudi, Kathak, Bollywood dance and Carnatic or Hindustani music classes",
   PUJARI: "Pujaris and priests for griha pravesh, Satyanarayana vratam, weddings, homams and naming ceremonies",
@@ -66,7 +66,7 @@ export const CATEGORY_PITCH: Record<string, string> = {
 // Page titles in the words people search with ("Indian tiffin service Jacksonville"); the page heading keeps
 // the category's own name.
 export const CATEGORY_SEO_TITLE: Record<string, string> = {
-  FOOD: "Indian Home Food & Tiffin Services",
+  FOOD: "Indian Home Food, Tiffin & Fresh Produce",
   TUTORING: "Indian Tutors & Classes",
   DANCE_MUSIC: "Indian Dance & Music Classes",
   PUJARI: "Hindu Pujaris & Priests",

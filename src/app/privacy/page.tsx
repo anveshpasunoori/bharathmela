@@ -29,6 +29,7 @@ export default function PrivacyPage() {
       <p>To run the service, confirm payments, handle reports, prevent fraud and meet legal obligations. We do not sell personal information.</p>
 
       <h2>Your choices</h2>
+      <p>When you use translated voice search, we send your recording to OpenAI to turn it into an English search query. BharathMela does not save the recording.</p>
       <p>You can ask to see, correct or delete your data by emailing [PRIVACY EMAIL]. Deleting your account removes your listings.</p>
 
       <h2>Contact</h2>

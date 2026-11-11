@@ -141,6 +141,14 @@ const I = {
     SNACKS: at(80, 86, 1, P("M-40 24 L-20 -32 L0 24 Z", C.gold) + P("M-4 26 L20 -26 L44 26 Z", C.goldLight) + L("M-28 0 L-12 0 M10 4 L30 4", C.main, 3)),
     SWEETS: at(80, 86, 1, E(0, 22, 46, 10, C.stone) + O(-22, 4, 14, C.gold) + O(6, 4, 14, C.goldLight) + O(-8, -18, 14, C.main) + O(26, -10, 10, C.pale) + `<circle cx="-22" cy="0" r="2.5" fill="${C.white}"/><circle cx="-8" cy="-22" r="2.5" fill="${C.white}"/>`),
     BAKERY: at(80, 92, 1, cake()),
+    FRESH_PRODUCE: at(80, 80, 1,
+      O(-25, -7, 19, C.main) + P("M-25 -27 Q-42 -46 -52 -28 Q-38 -19 -25 -27 Z", C.leafLight) +
+      P("M11 -13 Q20 -39 39 -40 Q42 -22 25 -9 Z", C.leafLight) + P("M4 -13 Q20 -28 32 -8 L13 28 Q9 34 5 27 Z", C.mid) +
+      P("M-49 10 L49 10 L36 45 L-36 45 Z", C.goldLight) + L("M-29 25 L29 25 M-23 35 L23 35", C.brand, 4)),
+    MILK_DAIRY: at(80, 83, 1,
+      P("M-30 -38 L-4 -38 L12 -16 L12 43 L-42 43 L-42 -16 Z", C.white) +
+      P("M-42 -16 L12 -16 L-4 -38 L-30 -38 Z", C.sky) + R(-42, 2, 54, 21, 1, C.sky) +
+      P("M20 11 L43 -1 L57 15 L57 40 L20 40 Z", C.goldLight) + O(44, 23, 4, C.gold)),
   },
   TUTORING: {
     MATH: at(80, 80, 1, R(-40, -40, 80, 80, 12, C.white) + T(-18, -6, "+", 36, C.brand) + T(20, -6, "−", 36, C.main) + T(-18, 34, "×", 36, C.main) + T(20, 34, "÷", 36, C.brand)),

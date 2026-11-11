@@ -7,6 +7,7 @@ import { aiConfigured, draftListing, type ListingDraft } from "@/lib/ai";
 import { requireVendor } from "@/lib/auth";
 import { getVendorPlan } from "@/lib/billing";
 import { rewardReferrer } from "@/lib/growth";
+import { nationwideOption, withNationwideTag } from "@/lib/nationwide";
 import { CATEGORIES, PAYMENT_METHODS, normalizeTags, serializeTags } from "@/lib/constants";
 import { hasServiceTypes, serializeServiceTypes } from "@/lib/service-types";
 import { db } from "@/lib/db";
@@ -98,7 +99,8 @@ function parseListing(form: FormData): ListingInput | { error: string } {
   const types = hasServiceTypes(category) ? serializeServiceTypes(category, form.getAll("types").map(String)) : "";
   if (hasServiceTypes(category) && !types) return { error: "Pick at least one option under what you offer, so buyers can find you." };
   const diet = category === "FOOD" ? serializeTags(normalizeTags(form.getAll("tags").map(String))) : "";
-  const tags = diet && types ? `${diet}${types.slice(1)}` : diet || types;
+  const serviceTags = diet && types ? `${diet}${types.slice(1)}` : diet || types;
+  const tags = nationwideOption(category) && form.get("nationwide") === "on" ? withNationwideTag(serviceTags) : serviceTags;
   if (category === "ROOM_RENTAL") {
     const rental = parseRentalForm(form);
     if ("error" in rental) return rental;

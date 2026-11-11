@@ -1,3 +1,4 @@
+import { isNationwideListing } from "@/lib/nationwide";
 import { photoBatchLimit } from "@/lib/photos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -59,6 +60,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
               price: listing.priceCents != null ? (listing.priceCents / 100).toFixed(2) : "",
               priceUnit: listing.priceUnit,
               tags: parseTags(listing.tags),
+              nationwide: isNationwideListing(listing),
               types: parseServiceTypes(listing.category, listing.tags),
             }}
           />

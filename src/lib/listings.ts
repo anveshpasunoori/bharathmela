@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { isNewListing } from "./time";
 import { milesBetween, zipCoords } from "./geo";
+import { isNationwideListing, NATIONWIDE_CATEGORIES, NATIONWIDE_TAG } from "./nationwide";
 import { ratingsFor } from "./reviews";
 import { type CreatorFilters, creatorSearchText, matchesCreatorFilters, readCreator } from "./creators";
 import { type EventServiceFilters, eventServiceSearchText, matchesEventServiceFilters, readEventService } from "./event-services";
@@ -96,9 +97,8 @@ export async function browseListings({
   const searching = parsed.terms.length > 0 || parsed.maxPriceCents != null || parsed.minPriceCents != null;
 
   const filteringRentals = category === "ROOM_RENTAL" && Object.values(rentalFilters).some((v) => v != null && v !== false);
-  // Creators who work nationwide (online audience anywhere) show in every city and every radius.
-  const nationwide = category === "CREATORS" ? { tags: { contains: ",NATIONWIDE," } } : null;
-  const place: Prisma.ListingWhereInput = byRadius || anywhere ? {} : nationwide ? { OR: [{ metro }, nationwide] } : { metro };
+  const nationwide: Prisma.ListingWhereInput = { category: { in: NATIONWIDE_CATEGORIES }, tags: { contains: NATIONWIDE_TAG } };
+  const place: Prisma.ListingWhereInput = byRadius || anywhere ? {} : { OR: [{ metro }, nationwide] };
   const fetched = await db.listing.findMany({
     where: { ...filters, ...place },
     include: withPlans(now),
@@ -112,11 +112,10 @@ export async function browseListings({
   const filteringPros = !!category && isProfessional(category) && Object.values(proFilters).some(Boolean);
   const filteringEvents = category === "EVENT_SERVICES" && Object.values(eventFilters).some(Boolean);
   const filteringCreators = category === "CREATORS" && Object.values(creatorFilters).some(Boolean);
-  const isNationwide = (l: { category: string; tags: string }) => l.category === "CREATORS" && l.tags.includes(",NATIONWIDE,");
   const candidates = fetched.filter(
     (l) =>
       // Rounded the same way the "N mi away" label is, so a listing labelled 10 mi shows under "10 mi".
-      (!byRadius || isNationwide(l) || Math.round(distanceTo(l.zip) ?? Infinity) <= near!.radiusMiles!) &&
+      (!byRadius || isNationwideListing(l) || Math.round(distanceTo(l.zip) ?? Infinity) <= near!.radiusMiles!) &&
       (!filteringCreators || matchesCreatorFilters(readCreator(l.details), creatorFilters)) &&
       (!filteringRentals || matchesRentalFilters(readRental(l.details), l.priceCents, rentalFilters)) &&
       (!filteringPros || matchesProfessionalFilters(readProfessional(l.details), proFilters)) &&
@@ -141,7 +140,7 @@ export async function browseListings({
   const listings = scored.map(({ item, score }) => {
     const isFeatured = !!item.featuredUntil && item.featuredUntil > now;
     const isPro = item.vendor.subscriptions.some((s) => s.plan === "PRO");
-    const distanceMiles = distanceTo(item.zip);
+    const distanceMiles = isNationwideListing(item) ? null : distanceTo(item.zip);
     // Nearby listings get a gentle lift in search results (about 30% less at 50 miles).
     const nearby = distanceMiles == null ? 1 : 1 / (1 + distanceMiles / 120);
     return {
@@ -220,13 +219,13 @@ export type BrowseListing = Awaited<ReturnType<typeof browseListings>>["listings
 export async function categoryCounts(metro: string, near?: { lat: number; lng: number; radiusMiles: number | null }) {
   const byRadius = near?.radiusMiles != null;
   const rows = await db.listing.findMany({
-    where: { ...publicListing(), ...(byRadius ? {} : { metro }) },
-    select: { category: true, zip: true },
+    where: { ...publicListing(), ...(byRadius ? {} : { OR: [{ metro }, { category: { in: NATIONWIDE_CATEGORIES }, tags: { contains: NATIONWIDE_TAG } }] }) },
+    select: { category: true, zip: true, tags: true },
     take: 20000,
   });
   const counts = new Map<string, number>();
   for (const r of rows) {
-    if (byRadius) {
+    if (byRadius && !isNationwideListing(r)) {
       const c = zipCoords(r.zip);
       if (!c || Math.round(milesBetween(near!, c)) > near!.radiusMiles!) continue;
     }

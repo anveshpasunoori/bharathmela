@@ -5,7 +5,7 @@ const GROUPS: { title: string; items: [id: string, blurb: string][] }[] = [
   {
     title: "Food & home",
     items: [
-      ["FOOD", "Tiffins, meal boxes, party trays"],
+      ["FOOD", "Tiffins, fresh produce, milk & dairy"],
       ["DOMESTIC_HELP", "Nannies, cooks, elder care"],
       ["HOME_SERVICES", "Electrician, plumber, AC, movers"],
       ["AUTO", "Mechanic, tires, driving lessons"],

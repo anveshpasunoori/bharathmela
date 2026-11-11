@@ -1,3 +1,4 @@
+import { isNationwideListing } from "@/lib/nationwide";
 import Image from "next/image";
 import Link from "next/link";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -102,7 +103,7 @@ export function BusinessCard({ listing, saved }: { listing: BrowseListing; saved
           </p>
         )}
         <p className="mt-1 text-xs font-medium text-muted">
-          {categoryLabel(listing.category)}{!listing.photos[0] && stockPhoto && " · Illustrative photo"}
+          {categoryLabel(listing.category)}{isNationwideListing(listing) && " · Nationwide"}{!listing.photos[0] && stockPhoto && " · Illustrative photo"}
         </p>
         <p className="mt-1.5 line-clamp-2 text-sm text-ink/75">{about}</p>
         <div className="relative z-10 mt-auto flex items-center justify-between gap-3 pt-4">

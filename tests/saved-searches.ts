@@ -23,9 +23,9 @@ check(
   name({ category: "ROOM_RENTAL", space: "PRIVATE_ROOM", maxRent: "1000", pbath: "1" }, "within 25 mi of Saint Johns"),
   "Room Rentals · Private room · up to $1,000 · private bath · within 25 mi of Saint Johns",
 );
-check("food with diet", name({ category: "FOOD", diet: "VEGAN,GLUTEN_FREE", q: "dosa" }, "in Jacksonville, FL"), "Home Food & Cloud Kitchens · “dosa” · Vegan, Gluten-free · in Jacksonville, FL");
+check("food with diet", name({ category: "FOOD", diet: "VEGAN,GLUTEN_FREE", q: "dosa" }, "in Jacksonville, FL"), "Home Food & Fresh Produce · “dosa” · Vegan, Gluten-free · in Jacksonville, FL");
 check("lawyer filters", name({ category: "LEGAL", spec: "IMMIGRATION", lang: "Telugu", free: "1" }, "in Dallas–Fort Worth, TX"), "Lawyers & Legal Services · Immigration (H-1B, green card, citizenship) · speaks Telugu · free consultation · in Dallas–Fort Worth, TX");
-check("filters for another category are ignored", name({ category: "FOOD", maxRent: "900", svc: "DJ" }, "in Atlanta, GA"), "Home Food & Cloud Kitchens · in Atlanta, GA");
+check("filters for another category are ignored", name({ category: "FOOD", maxRent: "900", svc: "DJ" }, "in Atlanta, GA"), "Home Food & Fresh Produce · in Atlanta, GA");
 check("keyword only", name({ q: "pujari" }, "in Jacksonville, FL"), "“pujari” · in Jacksonville, FL");
 
 console.log(fail ? `${fail} failed` : "all passed");

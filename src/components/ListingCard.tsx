@@ -1,3 +1,4 @@
+import { isNationwideListing } from "@/lib/nationwide";
 import Image from "next/image";
 import Link from "next/link";
 import { listingPlaceholderPhoto } from "@/lib/home-art";
@@ -49,8 +50,8 @@ function keyFacts(listing: BrowseListing) {
 // `saved` puts a save heart on the photo (true when already saved); leave it out on the seller's own listings.
 export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?: boolean }) {
   const price = listing.priceCents != null ? priceLabel(listing.priceCents, listing.priceUnit) : null;
-  // Distance means nothing for a creator who works nationwide.
-  const miles = listing.category === "CREATORS" && listing.tags.includes(",NATIONWIDE,") ? null : listing.distanceMiles;
+  const nationwide = isNationwideListing(listing);
+  const miles = nationwide ? null : listing.distanceMiles;
   const professional = isProfessional(listing.category) ? readProfessional(listing.details) : null;
   const sub = listingSubcategories(listing)[0];
   const stockPhoto = listingPlaceholderPhoto(listing.category);
@@ -104,6 +105,7 @@ export function ListingCard({ listing, saved }: { listing: BrowseListing; saved?
           <div className="flex items-center justify-between gap-2 pt-1 text-xs text-stone-500">
             <span className="truncate">
               {listing.vendor.businessName}
+              {nationwide && " · Nationwide"}
               {miles != null && <> · {miles < 1 ? "<1" : Math.round(miles)} mi</>}
             </span>
             {listing.rating && (

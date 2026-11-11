@@ -1,6 +1,8 @@
 // Run with `npm test`. Each case: query, listing ids that must appear (first = top result), ids that must not.
 import { strict as assert } from "node:assert";
-import { listingSearchRadius } from "../src/lib/browse-params";
+import { isNationwideListing, nationwideOption, withNationwideTag } from "../src/lib/nationwide";
+import { subcategoryFromSlug } from "../src/lib/subcategories";
+import { listingSearchRadius, parseFilters } from "../src/lib/browse-params";
 import { betterCategories, parseQuery, rankListings, suggestQuery, type Searchable } from "../src/lib/search";
 const L = (id: string, category: string, title: string, description: string, priceCents: number | null, priceUnit = "", tags = "", biz = "Seller"): Searchable =>
   ({ id, title, description, category, priceCents, priceUnit, tags, vendor: { businessName: biz } });
@@ -114,5 +116,17 @@ assert.equal(listingSearchRadius({ q: "tiffin" }), 25);
 assert.equal(listingSearchRadius({ q: "tiffin", radius: "50" }), 50);
 assert.equal(listingSearchRadius({ q: "tiffin", radius: "all", metro: "jacksonville" }), null);
 assert.equal(listingSearchRadius({ metro: "jacksonville" }), null);
+assert.equal(subcategoryFromSlug("FOOD", "fresh-produce")?.id, "FRESH_PRODUCE");
+assert.equal(parseFilters({ category: "FOOD", type: "MILK_DAIRY" }).serviceType, "MILK_DAIRY");
+assert.equal(parseQuery("fresh vegetables").hintedCategory, "FOOD");
+assert.equal(parseQuery("milk").hintedCategory, "FOOD");
+const nationwideTags = withNationwideTag(",MATH,");
+assert.equal(nationwideTags, ",MATH,NATIONWIDE,");
+for (const category of ["CLOTHING", "TUTORING", "DANCE_MUSIC", "ART", "GOODS", "CREATORS"]) {
+  assert.equal(isNationwideListing({ category, tags: nationwideTags }), true);
+  assert.equal(isNationwideListing({ category, tags: ",MATH," }), false);
+}
+assert.equal(nationwideOption("FOOD"), undefined);
+assert.equal(isNationwideListing({ category: "FOOD", tags: nationwideTags }), false);
 console.log(fail ? `${fail} failed` : "all passed");
 if (fail) process.exit(1);

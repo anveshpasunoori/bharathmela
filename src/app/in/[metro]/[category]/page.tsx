@@ -7,7 +7,7 @@ import { publicListing } from "@/lib/listings";
 import { isMetro, metroName } from "@/lib/metros";
 import { CATEGORY_PITCH, CATEGORY_SEO_TITLE, categoryFromSlug, cityCategoryPath } from "@/lib/seo";
 
-// One indexable page per city and category: "Home Food & Cloud Kitchens in Jacksonville, FL".
+// One indexable page per city and category: "Home Food & Fresh Produce in Jacksonville, FL".
 // Rendered on request (it reads the visitor's location); the sitemap lists every combination.
 
 export async function generateMetadata({ params }: { params: Promise<{ metro: string; category: string }> }): Promise<Metadata> {

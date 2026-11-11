@@ -6,7 +6,7 @@ import { Reveal } from "./Reveal";
 import { MobileViewAll, SectionHeading } from "./SectionHeading";
 
 export const HOME_CATEGORIES = [
-  { id: "FOOD", name: "Homemade Food" },
+  { id: "FOOD", name: "Home Food & Produce" },
   { id: "TUTORING", name: "Classes & Tutors" },
   { id: "HOME_SERVICES", name: "Home Services" },
   { id: "EVENT_SERVICES", name: "Weddings & Events" },

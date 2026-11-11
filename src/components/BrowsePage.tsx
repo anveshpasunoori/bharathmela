@@ -16,6 +16,7 @@ import { upcomingEvents } from "@/lib/event-data";
 import { metroFor, placeFromZip } from "@/lib/geo";
 import { getCurrentUser } from "@/lib/auth";
 import { SORTS, type SortId, browseListings, categoryCounts, categoryForSearch, publicListing, savedListingIds } from "@/lib/listings";
+import { isNationwideListing } from "@/lib/nationwide";
 import { isMetro, metroName } from "@/lib/metros";
 import { formatUSD, priceLabel } from "@/lib/plans";
 import { OCCASIONS, RENTAL_ITEMS } from "@/lib/event-services";
@@ -143,6 +144,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const mapView = showingListings && params.view === "map";
   const mapPoints: MapPoint[] = mapView
     ? listings.flatMap((l) => {
+        if (isNationwideListing(l)) return [];
         const c = zipCoords(l.zip);
         if (!c) return [];
         const h = [...l.id].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
@@ -439,6 +441,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             {picked && subs && <input type="hidden" name={subs.param} value={picked.id} />}
             {diet.length > 0 && <input type="hidden" name="diet" value={diet.join(",")} />}
             <VoiceSearchInput
+              translateVoice={!!process.env.OPENAI_API_KEY}
               type="search"
               name="q"
               defaultValue={q}
@@ -635,7 +638,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
               )}
             </p>
             <div className="flex flex-wrap items-center gap-2 whitespace-nowrap">
-              {listings.length > 0 && (
+              {listings.some((listing) => !isNationwideListing(listing)) && (
                 <span className="inline-flex shrink-0 overflow-hidden rounded-full text-sm ring-1 ring-stone-300" role="group" aria-label="View">
                   <Link href={viewHref("list")} aria-current={!mapView ? "page" : undefined} className={`px-3 py-1.5 ${!mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>{t(lang, "list")}</Link>
                   <Link href={viewHref("map")} aria-current={mapView ? "page" : undefined} className={`px-3 py-1.5 ${mapView ? "bg-stone-900 text-stone-50" : "bg-white text-stone-700 hover:text-brand"}`}>{t(lang, "map")}</Link>
@@ -674,7 +677,12 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       )}
 
       {mapView && mapPoints.length > 0 ? (
-        <ListingsMap points={mapPoints} />
+        <>
+          {listings.some(isNationwideListing) && (
+            <p className="mb-3 text-sm text-muted">The map shows local listings. <Link href={viewHref("list")} className="font-semibold text-brand">Switch to list view</Link> to see nationwide offers too.</p>
+          )}
+          <ListingsMap points={mapPoints} />
+        </>
       ) : !showingListings ? null : listings.length ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
+import { TranslatedVoiceSearch } from "../TranslatedVoiceSearch";
 import { VoiceSearchButton } from "../VoiceSearchButton";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState } from "react";
@@ -13,11 +14,13 @@ export type SearchLocation = { value: string; label: string };
 // and Enter work), a location picker limited to the cities BharathMela covers, and the search button.
 // Results open on the existing browse page, so search, ranking and filters stay exactly as they are.
 export function SmartSearch({
+  translateVoice,
   suggestions,
   popular,
   locations,
   defaultLocation,
 }: {
+  translateVoice: boolean;
   suggestions: SearchSuggestion[];
   popular: SearchSuggestion[];
   locations: SearchLocation[];
@@ -53,15 +56,21 @@ export function SmartSearch({
   // Where the location picker points: "near" keeps the visitor's own saved place (radius search).
   const where = (): Record<string, string> => ({ radius: String(DEFAULT_SEARCH_RADIUS), ...(loc === "near" ? {} : { metro: loc }) });
 
-  function go(s?: SearchSuggestion) {
+  function go(s?: SearchSuggestion, query = q) {
     setOpen(false);
     if (s) {
       return router.push(`/?${new URLSearchParams({ ...where(), ...s.params })}`);
     }
     const p = new URLSearchParams(where());
-    if (q.trim()) p.set("q", q.trim());
+    if (query.trim()) p.set("q", query.trim());
     router.push(`/?${p}`);
   }
+
+  const voiceInput = <VoiceSearchButton onTranscript={(text) => {
+    setQ(text);
+    setActive(-1);
+    input.current?.focus();
+  }} />;
 
   return (
     <form
@@ -117,11 +126,9 @@ export function SmartSearch({
           }}
           className="h-12 w-full min-w-0 rounded-full bg-transparent pl-12 pr-3 text-base text-ink outline-none placeholder:text-muted focus-visible:outline-none"
         />
-        <VoiceSearchButton onTranscript={(text) => {
-          setQ(text);
-          setActive(-1);
-          input.current?.focus();
-        }} />
+        {translateVoice ? (
+          <TranslatedVoiceSearch onQuery={(text) => { setQ(text); go(undefined, text); }} fallback={voiceInput} />
+        ) : voiceInput}
       </div>
 
       <div className="flex items-center gap-2 sm:contents">

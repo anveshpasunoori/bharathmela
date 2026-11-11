@@ -50,7 +50,7 @@ export function HeroSection({
             Discover local home cooks, shops, tutors, and services.
           </p>
           <div className="anim-scale relative z-10 mt-7 [animation-delay:180ms] lg:w-[46rem] lg:max-w-[calc(100vw-4rem)]">
-            <SmartSearch key={defaultLocation} suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />
+            <SmartSearch translateVoice={!!process.env.OPENAI_API_KEY} key={defaultLocation} suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />
           </div>
           <div className="anim-rise mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold text-forest [animation-delay:260ms]">
             <Link href={exploreHref} className="py-2 underline underline-offset-4 hover:text-forest-dark">

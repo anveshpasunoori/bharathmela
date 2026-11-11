@@ -136,7 +136,7 @@ const SYNONYMS: string[][] = [
 // Words that hint at a category: they rank that category higher, and a search that clearly belongs to
 // another category moves the visitor there. A word can hint at several ("wedding": pujaris and event vendors).
 const CATEGORY_HINTS: Record<string, string[]> = {
-  FOOD: ["food", "cook", "tiffin", "biryani", "dosa", "idli", "pickle", "sweets", "laddu", "snacks", "catering", "curry", "roti", "chai", "samosa", "paneer", "meal", "kitchen", "home food"],
+  FOOD: ["food", "cook", "tiffin", "biryani", "dosa", "idli", "pickle", "sweets", "laddu", "snacks", "catering", "curry", "roti", "chai", "samosa", "paneer", "meal", "kitchen", "home food", "produce", "fruit", "vegetable", "milk", "dairy"],
   TUTORING: ["tutor", "math", "coding", "sat", "science", "english", "homework", "reading", "physics", "chemistry"],
   DANCE_MUSIC: ["dance", "music", "bharatanatyam", "kuchipudi", "kathak", "carnatic", "hindustani", "bollywood", "veena", "mridangam", "tabla", "violin", "flute", "harmonium", "keyboard", "guitar"],
   PUJARI: ["puja", "pujari", "homam", "griha pravesh", "satyanarayan", "wedding", "temple", "astrology", "jathakam", "muhurtham"],

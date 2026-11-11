@@ -23,6 +23,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { milesBetween, zipCoords } from "@/lib/geo";
 import { timeAgo } from "@/lib/time";
 import { getUserLocation } from "@/lib/user-location";
+import { isNationwideListing } from "@/lib/nationwide";
 import { categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { replyTimeLabel } from "@/lib/reply-time";
@@ -114,7 +115,7 @@ export default async function ListingPage({ params, searchParams }: { params: Pr
   const sale = listing.category === "GARAGE_SALE" ? readGarageSale(listing.details) : null;
   const facts = [
     categoryLabel(listing.category),
-    miles != null ? `${miles < 1 ? "under 1" : miles} mi away` : metroName(listing.metro),
+    isNationwideListing(listing) ? "Available nationwide" : miles != null ? `${miles < 1 ? "under 1" : miles} mi away` : metroName(listing.metro),
     `posted ${timeAgo(listing.createdAt)}`,
   ];
 

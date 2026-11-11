@@ -13,6 +13,8 @@ export const SERVICE_TYPES: Record<string, { id: string; label: string }[]> = {
     ["SNACKS", "Snacks & chaat"],
     ["SWEETS", "Sweets & desserts"],
     ["BAKERY", "Cakes & bakes"],
+    ["FRESH_PRODUCE", "Fresh fruits & vegetables"],
+    ["MILK_DAIRY", "Milk & dairy"],
   ),
   TUTORING: opts(
     ["MATH", "Math"],
@@ -159,7 +161,7 @@ export const SERVICE_TYPES: Record<string, { id: string; label: string }[]> = {
 // What the type picker is called, where "service" doesn't fit.
 export const SERVICE_TYPE_WORDING: Record<string, { filter: string; any: string; legend: string; hint: string }> = {
   GARAGE_SALE: { filter: "Items", any: "Any items", legend: "What's for sale (pick all that apply)", hint: "Buyers filter by these." },
-  FOOD: { filter: "Food", any: "Any food", legend: "What you make (pick all that apply)", hint: "Buyers browse by these, so pick only what you actually sell." },
+  FOOD: { filter: "Food", any: "Any food", legend: "What you sell (pick all that apply)", hint: "Buyers browse by these, so pick only what you actually sell." },
   TUTORING: { filter: "Subject", any: "Any subject", legend: "Subjects you teach (pick all that apply)", hint: "Parents browse by these, so pick only what you actually teach." },
   DANCE_MUSIC: { filter: "Style", any: "Any style", legend: "Styles you teach (pick all that apply)", hint: "Students browse by these, so pick only what you actually teach." },
   ART: { filter: "Kind", any: "Any kind", legend: "What you make or teach (pick all that apply)", hint: "Buyers browse by these." },
