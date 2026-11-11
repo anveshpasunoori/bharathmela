@@ -182,13 +182,20 @@ export default async function VendorDashboard({
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {([
-            ["Calls", leadsByKind.CALL],
-            ["Texts", leadsByKind.TEXT],
-            ["WhatsApp", leadsByKind.WHATSAPP],
-            ["Messages", messagesThisMonth],
-          ] as const).map(([label, count]) => (
+            ["Calls", "M5 4h4l2 5-2.5 1.5a13 13 0 0 0 5 5L15 13l5 2v4c0 .6-.4 1-1 1A16 16 0 0 1 4 5c0-.6.4-1 1-1Z", leadsByKind.CALL],
+            ["Texts", "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 15h2m-4-8h6m-6 3h4", leadsByKind.TEXT],
+            ["WhatsApp", "M5.5 17.5 4 21l4-1.5a8.5 8.5 0 1 0-2.5-2Zm4-9c.1 2.4 2 4.3 4.4 5.1l1.1-1.1 1.3.9c-.3 1-1.2 1.5-2.3 1.3-3.3-.6-5.8-3.3-5.9-5.8 0-.9.5-1.3 1-1.4l.9 1.4Z", leadsByKind.WHATSAPP],
+            ["Messages", "M4 5h16v11H9l-5 4V5Zm4 4h8m-8 3h5", messagesThisMonth],
+          ] as const).map(([label, iconPath, count]) => (
             <div key={label} className="rounded-xl border border-line bg-brand-soft px-3 py-3 sm:px-4">
-              <dt className="text-sm text-muted">{label}</dt>
+              <dt className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-muted">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-[#154b38] ring-1 ring-line">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+                    <path d={iconPath} />
+                  </svg>
+                </span>
+                {label}
+              </dt>
               <dd className="mt-1 text-3xl font-semibold tabular-nums text-forest">{count.toLocaleString()}</dd>
             </div>
           ))}
