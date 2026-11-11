@@ -1,22 +1,29 @@
-import { utcToLocalInput } from "./events";
+export const BUSINESS_COVER_INTERVAL_MS = 6_000;
 
-const covers = [
+export const BUSINESS_COVERS = [
   {
-    src: "/home/neighborhood-storefront.webp",
-    alt: "An Indian shopkeeper welcoming a customer on a neighborhood main street",
-  },
-  {
-    src: "/home/neighborhood-clothing.webp",
-    alt: "A clothing shop owner showing a silk saree to a customer",
-  },
-  {
+    label: "Music lessons",
     src: "/home/neighborhood-music.webp",
     alt: "A music teacher showing a student how to play tabla",
   },
+  {
+    label: "Food businesses",
+    src: "/home/businesses/FOOD.webp",
+    alt: "A local food business owner preparing a meal",
+  },
+  {
+    label: "Room rentals",
+    src: "/home/categories/ROOM_RENTAL.webp",
+    alt: "A furnished bedroom with a sunny window",
+  },
+  {
+    label: "Cleaning services",
+    src: "/home/categories/DOMESTIC_HELP.webp",
+    alt: "A home cleaning professional folding freshly washed towels",
+  },
+  {
+    label: "Clothing & jewelry",
+    src: "/home/neighborhood-clothing.webp",
+    alt: "A boutique owner showing a silk saree to a customer",
+  },
 ] as const;
-
-export function everydayHomeCover(now: Date, timeZone: string) {
-  const localDay = utcToLocalInput(now, timeZone).slice(0, 10);
-  const dayNumber = Math.floor(Date.parse(localDay) / 86_400_000);
-  return covers[((dayNumber % covers.length) + covers.length) % covers.length];
-}

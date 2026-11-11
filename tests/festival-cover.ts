@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { selectFestivalCover } from "../src/lib/festival-cover";
-import { everydayHomeCover } from "../src/lib/home-cover";
+import { BUSINESS_COVERS, BUSINESS_COVER_INTERVAL_MS } from "../src/lib/home-cover";
 
 const east = "America/New_York";
 const cover = (day: string) => selectFestivalCover(new Date(`${day}T17:00:00Z`), east);
@@ -26,8 +26,11 @@ for (const [day, expected] of [
 
 for (const day of ["2026-11-11", "2026-11-15", "2026-11-24", "2026-12-17", "2027-11-01", "2027-11-04"]) {
   assert.equal(cover(day), null, day);
-  assert.ok(everydayHomeCover(new Date(`${day}T17:00:00Z`), east).src.startsWith("/home/neighborhood-"));
 }
+
+assert.deepEqual(BUSINESS_COVERS.map((slide) => slide.label), ["Music lessons", "Food businesses", "Room rentals", "Cleaning services", "Clothing & jewelry"]);
+assert.ok(BUSINESS_COVERS.every(({ src }) => existsSync(`public${src}`)));
+assert.equal(BUSINESS_COVER_INTERVAL_MS, 6_000);
 
 const midnightEast = new Date("2026-12-18T05:00:00Z");
 assert.equal(selectFestivalCover(midnightEast, east)?.festival, "Christmas");

@@ -5,7 +5,6 @@ import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { upcomingEvents } from "@/lib/event-data";
 import { browseListings, categoryCounts, publicListing, savedListingIds } from "@/lib/listings";
-import { everydayHomeCover } from "@/lib/home-cover";
 import { selectFestivalCover } from "@/lib/festival-cover";
 import { popularMarketIntents } from "@/lib/market-intent-data";
 import { intentDestination } from "@/lib/market-intents";
@@ -91,7 +90,7 @@ export async function HomePage() {
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, timeZone)} />
+      <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />
