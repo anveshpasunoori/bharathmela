@@ -8,8 +8,8 @@ export const BUSINESS_COVERS = [
   },
   {
     label: "Bharatanatyam lessons",
-    src: "/home/covers/bharatanatyam.webp",
-    alt: "A Bharatanatyam instructor demonstrating a hand gesture to her students",
+    src: "/home/covers/bharatanatyam-nataraj.webp",
+    alt: "A Bharatanatyam instructor demonstrating a hand gesture to her students, with a bronze Nataraj statue behind them",
   },
   {
     label: "Food businesses",
