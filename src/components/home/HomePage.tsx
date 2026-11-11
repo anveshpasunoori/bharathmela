@@ -3,10 +3,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
 import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { publicEventWhere, upcomingEvents } from "@/lib/event-data";
+import { upcomingEvents } from "@/lib/event-data";
 import { browseListings, categoryCounts, publicListing, savedListingIds } from "@/lib/listings";
 import { everydayHomeCover } from "@/lib/home-cover";
-import { localFestivalCover, selectFestivalCover } from "@/lib/festival-cover";
+import { selectFestivalCover } from "@/lib/festival-cover";
 import { popularMarketIntents } from "@/lib/market-intent-data";
 import { intentDestination } from "@/lib/market-intents";
 import { METROS, metroName, metroTimeZone } from "@/lib/metros";
@@ -65,25 +65,6 @@ async function Events({ metro }: { metro: string }) {
   return <CommunityEvents events={events} allHref={`/events?metro=${metro}`} where={`in ${metroName(metro)}`} />;
 }
 
-async function homepageFestivalCover(metro: string, now = new Date()) {
-  const timeZone = metroTimeZone(metro);
-  const scheduled = selectFestivalCover(now, timeZone);
-  if (scheduled) return scheduled;
-
-  const event = await db.event.findFirst({
-    where: {
-      ...publicEventWhere(now),
-      metro,
-      OR: [{ type: "FESTIVAL" }, { festival: { not: "" } }],
-      // Eight elapsed days is a coarse query bound. The cover helper uses local calendar days.
-      startsAt: { lte: new Date(now.getTime() + 8 * 86_400_000) },
-    },
-    select: { festival: true, startsAt: true },
-    orderBy: { startsAt: "asc" },
-  });
-  return event ? localFestivalCover(event, now, timeZone) : null;
-}
-
 // The home page for visitors who haven't searched yet. Searches, categories and cities open the existing
 // browse pages, so their URLs, filters and SEO stay as they were.
 export async function HomePage() {
@@ -100,15 +81,17 @@ export async function HomePage() {
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
   ];
   const now = new Date();
-  const [popular, counts, festivalCover, activity] = await Promise.all([
-    popularSuggestions(metro), categoryCounts(metro, near), homepageFestivalCover(metro, now), popularMarketIntents(metro),
+  const timeZone = metroTimeZone(metro);
+  const festivalCover = selectFestivalCover(now, timeZone);
+  const [popular, counts, activity] = await Promise.all([
+    popularSuggestions(metro), categoryCounts(metro, near), popularMarketIntents(metro),
   ]);
   const shortcuts = activity.rows.map(({ action }) => intentDestination(action, metro));
 
   return (
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
-      <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, metroTimeZone(metro))} />
+      <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} everydayCover={everydayHomeCover(now, timeZone)} />
       <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />
