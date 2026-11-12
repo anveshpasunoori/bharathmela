@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { RequestFields } from "@/components/RequestFields";
 import { requireUser } from "@/lib/auth";
-import { MAX_NOTIFIED, REQUEST_CATEGORIES, REQUEST_DAYS } from "@/lib/service-requests";
+import { MAX_NOTIFIED, REQUEST_CATEGORIES, REQUEST_DAYS, REQUEST_MIN_ACCOUNT_AGE_MS } from "@/lib/service-requests";
 import { metroFor, placeFromZip } from "@/lib/geo";
 import { isMetro, metroName } from "@/lib/metros";
 import { getUserLocation } from "@/lib/user-location";
@@ -11,7 +11,7 @@ import { createRequest } from "../../actions/service-request";
 
 export const metadata = { title: "Post what you need", robots: { index: false } };
 
-export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ category?: string; metro?: string }> }) {
+export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ category?: string; metro?: string; q?: string }> }) {
   const params = await searchParams;
   const category = REQUEST_CATEGORIES.find((c) => c.id === params.category)?.id;
   const metro = isMetro(params.metro) ? params.metro : undefined;
@@ -19,9 +19,14 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
   if (metro) query.set("metro", metro);
   if (params.category === "ROOM_RENTAL") redirect(`/rooms-wanted/new${query.size ? `?${query}` : ""}`);
   if (category) query.set("category", category);
+  const searchTerm = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
+  if (searchTerm) query.set("q", searchTerm);
+  const initialTitle = searchTerm && searchTerm.length < 8 ? `Looking for ${searchTerm}` : searchTerm;
   const next = `/requests/new${query.size ? `?${query}` : ""}`;
   const user = await requireUser(next);
   if (!user.emailVerifiedAt) redirect(`/verify?next=${encodeURIComponent(next)}`);
+  const canPostAt = new Date(user.createdAt.getTime() + REQUEST_MIN_ACCOUNT_AGE_MS);
+  const isWaitingToPost = new Date() < canPostAt;
   const place = await getUserLocation();
   const zip = place?.zip ?? user.vendor?.zip ?? "";
   const zipPlace = metro && zip ? place ?? placeFromZip(zip) : null;
@@ -41,11 +46,17 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
           for {REQUEST_DAYS} days. Looking for a room? <Link href="/rooms-wanted/new" className="font-semibold text-brand">Post that here</Link>.
         </p>
       )}
+      {isWaitingToPost && (
+        <p className="mb-4 rounded-xl bg-brand-soft p-4 text-sm text-ink">
+          You can fill out the form now. New accounts can submit requests 10 minutes after signup.
+        </p>
+      )}
       <div className="card">
         <ActionForm action={createRequest} submitLabel="Get quotes">
           <RequestFields
             categories={REQUEST_CATEGORIES}
             initialCategory={category ?? ""}
+            initialTitle={initialTitle}
             initialZip={initialZip}
             areaLabel={metro ? metroName(metro) : undefined}
           />

@@ -73,9 +73,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
             ? request.category === "CREATORS"
               ? `Posted. We emailed ${posted} matching creator${posted === "1" ? "" : "s"}; their ideas and prices will show up here and in your inbox.`
               : `Posted. We emailed ${posted} seller${posted === "1" ? "" : "s"} near you; quotes will show up here and in your inbox.`
-            : request.category === "CREATORS"
-              ? "Posted. No matching creators yet; new creators who fit will see your request while it's open."
-              : "Posted. No sellers near you offer this yet; new sellers in this category will see your request while it's open."}
+            : "Posted. Matching sellers can find your request while it is open. Check My requests for replies."}
         </p>
       )}
 

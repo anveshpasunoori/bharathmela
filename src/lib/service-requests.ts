@@ -10,6 +10,7 @@ import { SERVICE_TYPES, serviceTypeLabel } from "./service-types";
 import { NICHES, anyVerified, collabPayLabel, creatorFitsCollab, parseCollabForm, readCollab, readCreator } from "./creators";
 
 export const REQUEST_DAYS = 30;
+export const REQUEST_MIN_ACCOUNT_AGE_MS = 10 * 60_000;
 export const MAX_OPEN_REQUESTS = 5;
 // Sellers emailed per request, and how far away they can be.
 export const MAX_NOTIFIED = 25;
@@ -123,8 +124,9 @@ export async function notifyVendors(r: ServiceRequest) {
   const when = r.neededBy ? ` · needed by ${r.neededBy}` : "";
   const budget = r.budgetCents != null ? ` · budget about $${(r.budgetCents / 100).toLocaleString("en-US")}` : "";
   const collab = r.category === "CREATORS" ? readCollab(r.details) : null;
+  let notifiedCount = 0;
   for (const { vendor } of vendors) {
-    await sendEmail(
+    const sent = await sendEmail(
       vendor.user.email,
       collab ? `New collab request: ${r.title}` : `New request near you: ${r.title}`,
       (collab
@@ -134,10 +136,14 @@ export async function notifyVendors(r: ServiceRequest) {
         `Send them a quote: ${link}\n\n` +
         `You're getting this because you have a listing in ${categoryLabel(r.category)} nearby. Quotes are free. ` +
         `Never ask buyers for payment by wire, gift card or crypto.\n\n– BharathMela`,
-    ).catch((e) => console.error("request notification failed", e));
+    ).catch((error) => {
+      console.error("request notification failed", error);
+      return false;
+    });
+    if (sent) notifiedCount++;
   }
-  await db.serviceRequest.update({ where: { id: r.id }, data: { notifiedCount: vendors.length } });
-  return vendors.length;
+  await db.serviceRequest.update({ where: { id: r.id }, data: { notifiedCount } });
+  return notifiedCount;
 }
 
 // Open requests a seller can quote on: in categories they list in, near their listings, not their own.

@@ -15,9 +15,12 @@ export const metadata = { title: "List your business", alternates: { canonical: 
 export default async function VendorSignupPage({ searchParams }: { searchParams: Promise<{ kind?: string; next?: string }> }) {
   const params = await searchParams;
   const user = await getCurrentUser();
-  if (user?.vendor) redirect("/vendor");
   const kind = params.kind === "individual" ? "individual" : "business";
-  const next = safeNextPath(params.next, "/vendor");
+  const listingStart = "/vendor/listings/new";
+  const next = safeNextPath(params.next, user?.vendor ? "/vendor" : listingStart);
+  if (user?.vendor) redirect(next === "/vendor/signup" || next.startsWith("/vendor/signup?") ? "/vendor" : next);
+  const onboardingQuery = new URLSearchParams({ kind, next });
+  const onboardingPath = `/vendor/signup?${onboardingQuery}`;
   return (
     <div className="mx-auto max-w-md">
       <h1 className="text-2xl font-bold">{kind === "individual" ? "List something on BharathMela" : "List your business"}</h1>
@@ -25,10 +28,10 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
         {user ? `Add a few details to your account, ${user.name.split(" ")[0]}, and you can post right away.` : "Your first listing is free."}
       </p>
       <p className="mb-5 text-sm leading-relaxed text-muted">
-        Set up your seller profile with a contact number and ZIP code. Then create your first listing with a description, pricing if available, and photos.
+        Set up your seller profile and verify your email. Then add a description, pricing if available, and photos to your first listing.
       </p>
       <div className="card space-y-3">
-        {!user && <SocialLogin next="/vendor/signup" label="Sign up" />}
+        {!user && <SocialLogin next={onboardingPath} label="Sign up" />}
         <ActionForm action={user ? becomeSeller : vendorSignup} submitLabel={user ? "Set up seller profile" : "Create seller account"}>
           <input type="hidden" name="next" value={next} />
           <SellerKindFields initialKind={kind} showName={!user} />
@@ -69,7 +72,7 @@ export default async function VendorSignupPage({ searchParams }: { searchParams:
         </ActionForm>
         {!user && (
           <p className="mt-3 text-sm text-stone-600">
-            Already have an account? <Link href="/login?next=/vendor/signup" className="font-semibold text-brand">Log in</Link> to add selling to it.
+            Already have an account? <Link href={`/login?next=${encodeURIComponent(onboardingPath)}`} className="font-semibold text-brand">Log in</Link> to add selling to it.
           </p>
         )}
       </div>

@@ -12,10 +12,9 @@ import { screenListing } from "@/lib/moderation";
 import { REPORT_REASONS } from "@/lib/legal";
 import { TOO_MANY, hit } from "@/lib/rate-limit";
 import { appUrl } from "@/lib/saved-searches";
-import { MAX_OPEN_REQUESTS, REQUEST_DAYS, notifyVendors, openRequest, parseRequestForm } from "@/lib/service-requests";
+import { MAX_OPEN_REQUESTS, REQUEST_DAYS, REQUEST_MIN_ACCOUNT_AGE_MS, notifyVendors, openRequest, parseRequestForm } from "@/lib/service-requests";
 
 const DAY_MS = 86_400_000;
-const MIN_ACCOUNT_AGE_MS = 10 * 60_000;
 
 async function requireVerified(next: string) {
   const user = await requireUser(next);
@@ -25,7 +24,7 @@ async function requireVerified(next: string) {
 
 export async function createRequest(_: FormState, form: FormData): Promise<FormState> {
   const user = await requireVerified("/requests/new");
-  if (Date.now() - user.createdAt.getTime() < MIN_ACCOUNT_AGE_MS) return { error: "New accounts can post 10 minutes after signing up." };
+  if (Date.now() - user.createdAt.getTime() < REQUEST_MIN_ACCOUNT_AGE_MS) return { error: "New accounts can post 10 minutes after signing up." };
   const input = parseRequestForm(form);
   if ("error" in input) return input;
   // Same rules as listings. Requests go straight to sellers' inboxes, so anything flagged has to be

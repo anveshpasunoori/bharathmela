@@ -180,6 +180,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const requestParams = new URLSearchParams();
   if (!nearMode || overridden || !place) requestParams.set("metro", metro);
   if (category) requestParams.set("category", category);
+  if (q?.trim()) requestParams.set("q", q.trim().slice(0, 100));
   const requestHref = `/requests/new${requestParams.size ? `?${requestParams}` : ""}`;
   const widerSearch = (miles?: number) => {
     const p = new URLSearchParams(pageQuery);
@@ -696,8 +697,8 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             Save this search to check for new matches later, or post what you need so matching sellers can respond.
           </p>
           <div className="mt-3 flex flex-wrap items-start justify-center gap-2">
+            <Link href={requestHref} className="btn py-1.5">Post what you need</Link>
             <SaveSearchButton key={pageQuery} query={pageQuery} saved={searchSaved} />
-            <Link href={requestHref} className="btn-outline py-1.5">Post what you need</Link>
           </div>
           {nearMode && (
             <p className="mt-3 text-sm">
@@ -805,7 +806,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
             <p className="font-semibold">{t(lang, "cantFind")}</p>
             <p className="text-sm text-stone-600">{t(lang, "cantFindHint")}</p>
           </div>
-          <Link href={`/requests/new${category ? `?category=${category}` : ""}`} className="btn">{t(lang, "postWhatYouNeed")}</Link>
+          <Link href={requestHref} className="btn">{t(lang, "postWhatYouNeed")}</Link>
         </div>
       )}
 

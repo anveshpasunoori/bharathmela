@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ActionForm } from "@/components/ActionForm";
 import { PasskeyLoginButton } from "@/components/Passkeys";
 import { SocialLogin } from "@/components/SocialLogin";
+import { safeNextPath } from "@/lib/return-path";
 import { login } from "../actions/auth";
 
 const PROVIDER_ERRORS: Record<string, string> = {
@@ -11,10 +12,18 @@ const PROVIDER_ERRORS: Record<string, string> = {
 };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
-  const { next = "/", error } = await searchParams;
+  const { next: requestedNext, error } = await searchParams;
+  const next = safeNextPath(requestedNext);
+  const destination = next.split(/[?#]/, 1)[0];
+  const posting = destination === "/requests/new" || destination === "/rooms-wanted/new";
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="mb-4 text-2xl font-bold">Log in</h1>
+      <h1 className="mb-4 text-2xl font-bold">{posting ? "Log in to post what you need" : "Log in"}</h1>
+      {posting && (
+        <p className="mb-4 text-sm text-muted">
+          Posting is free. After you sign in and verify your email, you can describe what you need and receive replies.
+        </p>
+      )}
       {error && PROVIDER_ERRORS[error] && <p className="mb-3 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{PROVIDER_ERRORS[error]}</p>}
       <div className="card space-y-3">
         <SocialLogin next={next} passkey={<PasskeyLoginButton next={next} />} />
@@ -34,7 +43,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <p className="mt-4 text-center text-sm text-stone-600">
         New here?{" "}
         <Link href={`/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-brand">
-          Create an account to rate sellers
+          Create a free account
         </Link>
         <br />
         Selling something?{" "}

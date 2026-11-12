@@ -60,11 +60,13 @@ function CollabFields() {
 export function RequestFields({
   categories,
   initialCategory,
+  initialTitle = "",
   initialZip,
   areaLabel,
 }: {
   categories: readonly { id: string; label: string }[];
   initialCategory: string;
+  initialTitle?: string;
   initialZip: string;
   areaLabel?: string;
 }) {
@@ -98,7 +100,7 @@ export function RequestFields({
       {creators && <CollabFields />}
       <div>
         <label className="label" htmlFor="title">In one line</label>
-        <input id="title" name="title" required minLength={8} maxLength={100} className="input"
+        <input id="title" name="title" required minLength={8} maxLength={100} className="input" defaultValue={initialTitle}
           placeholder={creators ? "e.g. Food reel for our new biryani pop-up" : "e.g. Pujari for griha pravesh on Dec 12, or AC not cooling"} />
       </div>
       <div>
