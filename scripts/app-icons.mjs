@@ -1,19 +1,39 @@
-// Draws the installable-app icons from the BM logo: public/icons/icon-192.png and icon-512.png (rounded),
-// icon-maskable-512.png (full-bleed, logo inside Android's safe zone) and src/app/apple-icon.png (iOS rounds it).
+// Render platform icons from the same storefront pin used in the site header.
 // Run: node scripts/app-icons.mjs
+import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
 
-const logo = (size, { rounded = true, scale = 1 } = {}) => {
-  const font = Math.round(size * 0.44 * scale);
-  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-<rect width="${size}" height="${size}" rx="${rounded ? size * 0.22 : 0}" fill="#c2410c"/>
-<text x="50%" y="50%" dy="0.35em" font-family="Helvetica, Arial, sans-serif" font-size="${font}" font-weight="700" fill="#ffffff" text-anchor="middle">BM</text>
-</svg>`);
-};
+const root = new URL("../", import.meta.url);
+const mark = await readFile(new URL("src/app/icon.svg", root));
 
-const out = new URL("..", import.meta.url).pathname;
-await sharp(logo(192)).png().toFile(`${out}public/icons/icon-192.png`);
-await sharp(logo(512)).png().toFile(`${out}public/icons/icon-512.png`);
-await sharp(logo(512, { rounded: false, scale: 0.78 })).png().toFile(`${out}public/icons/icon-maskable-512.png`);
-await sharp(logo(180, { rounded: false })).png().toFile(`${out}src/app/apple-icon.png`);
-console.log("Wrote app icons");
+async function appIcon(size, { rounded = false, scale = 0.77 } = {}) {
+  const markSize = Math.round(size * scale);
+  const pin = await sharp(mark, { density: 720 }).resize(markSize, markSize).png().toBuffer();
+  const background = Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${rounded ? size * 0.22 : 0}" fill="#FFF3DA"/></svg>`,
+  );
+  return sharp(background).composite([{ input: pin, gravity: "center" }]).png().toBuffer();
+}
+
+for (const [path, size, options] of [
+  ["public/icons/icon-192.png", 192, { rounded: true }],
+  ["public/icons/icon-512.png", 512, { rounded: true }],
+  ["public/icons/icon-maskable-512.png", 512, { scale: 0.76 }],
+  ["src/app/apple-icon.png", 180, {}],
+]) {
+  await writeFile(new URL(path, root), await appIcon(size, options));
+}
+
+// An ICO directory with a single embedded 32 × 32 PNG for legacy favicon clients.
+const faviconSize = 32;
+const favicon = await sharp(mark).resize(faviconSize, faviconSize).png().toBuffer();
+const directory = Buffer.alloc(22);
+directory.writeUInt16LE(1, 2); // ICO type
+directory.writeUInt16LE(1, 4); // image count
+directory[6] = faviconSize;
+directory[7] = faviconSize;
+directory.writeUInt16LE(1, 10); // planes
+directory.writeUInt16LE(32, 12); // bits per pixel
+directory.writeUInt32LE(favicon.length, 14);
+directory.writeUInt32LE(directory.length, 18);
+await writeFile(new URL("src/app/favicon.ico", root), Buffer.concat([directory, favicon]));
