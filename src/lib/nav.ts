@@ -1,3 +1,4 @@
+import { categoryPath } from "./seo";
 import { CATEGORIES } from "./constants";
 
 // How categories are grouped in the header's Browse menu and the phone menu, with a short line on each.
@@ -55,6 +56,6 @@ export const NAV_GROUPS = GROUPS.map((g) => ({
   title: g.title,
   items: g.items.map(([id, blurb]) => {
     const c = CATEGORIES.find((c) => c.id === id)!;
-    return { id, blurb, label: c.label, icon: c.icon, href: `/?category=${id}` };
+    return { id, blurb, label: c.label, icon: c.icon, href: categoryPath(id) };
   }),
 }));

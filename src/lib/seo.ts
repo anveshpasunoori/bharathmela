@@ -88,6 +88,7 @@ export const CATEGORY_SEO_TITLE: Record<string, string> = {
 };
 
 export const categoryFromSlug = (slug: string) => Object.keys(CATEGORY_SLUGS).find((id) => CATEGORY_SLUGS[id] === slug);
+export const categoryPath = (category: string) => `/categories/${CATEGORY_SLUGS[category]}`;
 export const cityPath = (metro: string) => `/in/${metro}`;
 export const cityCategoryPath = (metro: string, category: string) => `/in/${metro}/${CATEGORY_SLUGS[category]}`;
 

@@ -25,7 +25,7 @@ import { LANGUAGES, isProfessional } from "@/lib/professionals";
 import { DEFAULT_SEARCH_RADIUS, RADII, listingSearchRadius, parseFilters, searchQueryString } from "@/lib/browse-params";
 import { db } from "@/lib/db";
 import { sameLocation } from "@/lib/saved-searches";
-import { CATEGORY_PITCH, RELATED_CATEGORIES, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
+import { CATEGORY_PITCH, RELATED_CATEGORIES, categoryPath, cityCategoryPath, cityPath, listingPath } from "@/lib/seo";
 import { citySubcategoryPath, listingSubcategories, pickedSubcategory, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
 import { cityFaq, joinList, pageFaq, pageIntro } from "@/lib/page-faq";
 import { breadcrumbs, faqSchema, itemListSchema } from "@/lib/structured-data";
@@ -96,7 +96,7 @@ export type BrowseParams = {
 
 // The browse page: category tiles, or listings for a category or search. Rendered by the home page and
 // by the city (/in/[metro]) and city-category (/in/[metro]/[category]) pages search engines index.
-export async function BrowsePage({ params }: { params: BrowseParams }) {
+export async function BrowsePage({ params, categoryLanding = false }: { params: BrowseParams; categoryLanding?: boolean }) {
   const location = await resolveLocation(params.metro);
   const { place, metro, far, overridden } = location;
   const center = listingSearchCenter(location);
@@ -125,7 +125,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
       p.set("q", q);
       if (sort !== "best") p.set("sort", sort);
       p.set("from", category);
-      redirect(`/?${p}`);
+      redirect(categoryLanding ? `${categoryPath(target)}?${p}` : `/?${p}`);
     }
   }
   const movedFrom = CATEGORIES.some((c) => c.id === params.from) && params.from !== category ? params.from : undefined;
@@ -177,6 +177,8 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const searchSaved = mySearches.some((s) => s.params === searchQuery && sameLocation(s, here));
   if (viewer && params.ss) await db.savedSearch.updateMany({ where: { id: params.ss, userId: viewer.id }, data: { viewedAt: new Date() } });
   const pageQuery = new URLSearchParams(Object.entries(params).filter((e): e is [string, string] => typeof e[1] === "string")).toString();
+  const categoryResultsHref = (p: URLSearchParams, cat = category) =>
+    categoryLanding && cat ? `${categoryPath(cat)}?${p}` : `/?${p}`;
   const requestParams = new URLSearchParams();
   if (!nearMode || overridden || !place) requestParams.set("metro", metro);
   if (category) requestParams.set("category", category);
@@ -187,7 +189,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     for (const key of ["metro", "radius", "ss", "from", "deleted", "view"]) p.delete(key);
     if (!miles || overridden) p.set("metro", metro);
     p.set("radius", miles ? String(miles) : "all");
-    return `/?${p}`;
+    return categoryResultsHref(p);
   };
   const nextRadius = RADII.find((miles) => miles > radius);
   // Busiest categories first; the rest keep their usual order.
@@ -200,15 +202,15 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
   const catName = (c: { id: string; label: string }) => categoryName(lang, c.id, c.label);
 
   // Plain browsing in a city uses its clean page (/in/jacksonville/home-food), which search engines index.
-  const home = nearMode ? `/?${locationParams()}` : cityPath(metro);
+  const home = categoryLanding ? "/categories" : nearMode ? `/?${locationParams()}` : cityPath(metro);
   const href = (cat?: string, dietTags: string[] = [], query = q, city?: string) => {
     const cleanCity = city ? undefined : (nearMode ? undefined : metro);
-    if (cat && !query && !dietTags.length && cleanCity) return cityCategoryPath(cleanCity, cat);
+    if (!categoryLanding && cat && !query && !dietTags.length && cleanCity) return cityCategoryPath(cleanCity, cat);
     const p = locationParams(city);
     if (cat) p.set("category", cat);
     if (query) p.set("q", query);
     if (cat === "FOOD" && dietTags.length) p.set("diet", dietTags.join(","));
-    return `/?${p}`;
+    return categoryResultsHref(p, cat ?? "");
   };
   const locationInputs = (
     <>
@@ -246,11 +248,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
     for (const k of ["ss", "from", "stay", "deleted", ...drop]) p.delete(k);
     if (subs) p.delete(subs.param);
     const plain = [...p.keys()].every((k) => k === "category" || k === "metro");
-    if (!nearMode && plain) return id ? citySubcategoryPath(metro, category!, id) : cityCategoryPath(metro, category!);
+    if (!categoryLanding && !nearMode && plain) return id ? citySubcategoryPath(metro, category!, id) : cityCategoryPath(metro, category!);
     p.set("category", category!);
     for (const [key, value] of locationParams()) p.set(key, value);
     if (id && subs) p.set(subs.param, id);
-    return `/?${p}`;
+    return categoryResultsHref(p);
   };
 
   const pageWhat = picked?.label ?? categoryInfo?.label ?? "";
@@ -422,6 +424,11 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 )}
               </h1>
               {intro && <p className="mt-1.5 max-w-3xl text-sm text-stone-600">{intro}</p>}
+              {categoryLanding && category && !q && HOME_CATEGORY_PHOTOS[category] && (
+                <div className="relative mt-4 h-32 overflow-hidden rounded-2xl bg-brand-soft sm:h-48">
+                  <Image src={HOME_CATEGORY_PHOTOS[category]} alt="" fill sizes="(min-width: 1024px) 992px, 100vw" className="object-cover" />
+                </div>
+              )}
             </div>
           ) : (
             <div>
@@ -504,7 +511,7 @@ export async function BrowsePage({ params }: { params: BrowseParams }) {
                 if (q) p.set("q", q);
                 const on = nearMode && radius === r;
                 return (
-                  <Link key={r} href={`/?${p}`} aria-current={on ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center rounded-full px-3 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
+                  <Link key={r} href={categoryResultsHref(p)} aria-current={on ? "true" : undefined} className={`inline-flex min-h-9 shrink-0 items-center rounded-full px-3 ring-1 ${on ? "bg-brand text-snow ring-brand" : "bg-white text-stone-700 ring-stone-200"}`}>
                     {r} mi
                   </Link>
                 );

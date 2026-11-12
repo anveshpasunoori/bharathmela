@@ -64,6 +64,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
               </div>
               <div className="border-t border-line bg-ivory">
                 <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-1 px-8 py-3 text-sm">
+                  <Link href="/categories" className="font-semibold text-forest hover:underline">View all categories →</Link>
                   <Link href="/indian-classifieds" className="font-semibold text-forest hover:underline">Browse all cities →</Link>
                   <Link href="/rooms-wanted" className="text-muted hover:text-forest">People looking for a place</Link>
                   <Link href="/creators" className="text-muted hover:text-forest">Find local creators</Link>
@@ -177,6 +178,7 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                   </Link>
                 ))}
               </div>
+              <Link href="/categories" className={menuLink}>View all categories →</Link>
               <Link href="/indian-classifieds" className={menuLink}>Browse all cities →</Link>
             </details>
             <div className="text-base">

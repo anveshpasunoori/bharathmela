@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
 import { DEFAULT_SEARCH_RADIUS } from "@/lib/browse-params";
+import { categoryPath } from "@/lib/seo";
 import { CATEGORIES, categoryLabel } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { upcomingEvents } from "@/lib/event-data";
@@ -64,8 +65,7 @@ async function Events({ metro }: { metro: string }) {
   return <CommunityEvents events={events} allHref={`/events?metro=${metro}`} where={`in ${metroName(metro)}`} />;
 }
 
-// The home page for visitors who haven't searched yet. Searches, categories and cities open the existing
-// browse pages, so their URLs, filters and SEO stay as they were.
+// The home page for visitors who haven't searched yet.
 export async function HomePage() {
   const where = await resolveLocation();
   const { place, guess, metro } = where;
@@ -74,7 +74,6 @@ export async function HomePage() {
   const near = { lat, lng, radiusMiles: DEFAULT_SEARCH_RADIUS };
   const label = `within ${DEFAULT_SEARCH_RADIUS} mi of ${city}`;
   const allHref = `/?radius=${DEFAULT_SEARCH_RADIUS}`;
-  const hrefFor = (id: string) => `/?category=${id}&radius=${DEFAULT_SEARCH_RADIUS}`;
   const locations: SearchLocation[] = [
     ...(localPlace ? [{ value: "near", label: `Near ${localPlace.city}, ${localPlace.state}` }] : []),
     ...METROS.map((m) => ({ value: m.id, label: `${m.name}, ${m.state}` })),
@@ -91,7 +90,7 @@ export async function HomePage() {
     // Full width, out of the layout's centered column.
     <div className="-mb-6 -mt-6 ml-[calc(50%-50vw)] w-screen sm:-mb-8 sm:-mt-8">
       <HeroSection shortcuts={shortcuts} shortcutLabel={activity.scope === "local" ? "Popular in your area" : "Popular on BharathMela"} suggestions={allSuggestions()} popular={popular} locations={locations} defaultLocation={localPlace ? "near" : metro} exploreHref={allHref} festivalCover={festivalCover} />
-      <CategorySection hrefFor={hrefFor} allHref={allHref} counts={counts} />
+      <CategorySection hrefFor={categoryPath} allHref="/categories" counts={counts} />
       <Suspense fallback={<FeaturedSkeleton />}>
         <Featured where={where} label={label} allHref={allHref} />
       </Suspense>
