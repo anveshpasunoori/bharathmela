@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ metro: st
   const { metro } = await params;
   if (!isMetro(metro)) return {};
   const city = metroName(metro);
-  const title = `Indian home businesses, services and events in ${city}`;
+  const title = `Indian classifieds, home businesses and events in ${city}`;
   const description = `Home food, tutors, pujaris, dance and music classes, wedding vendors, home services, rooms and more from the Indian community in ${city}. Compare prices and reviews and contact sellers directly.`;
   return { title, description, alternates: { canonical: cityPath(metro) }, openGraph: { title, description, url: cityPath(metro) } };
 }

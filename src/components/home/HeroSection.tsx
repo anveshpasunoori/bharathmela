@@ -38,7 +38,7 @@ export function HeroSection({
           </h1>
           <div aria-hidden className="mt-5 h-0.5 w-20 rounded-full bg-saffron" />
           <p className="anim-rise mt-4 text-lg leading-relaxed text-ink/80 [animation-delay:90ms] sm:text-xl">
-            Discover local home cooks, shops, tutors, and services.
+            <span className="font-semibold text-forest">BharathMela</span> helps you discover local home cooks, shops, tutors, and services.
           </p>
           <div className="anim-scale relative z-10 mt-7 [animation-delay:180ms] lg:w-[46rem] lg:max-w-[calc(100vw-4rem)]">
             <SmartSearch translateVoice={!!process.env.OPENAI_API_KEY} key={defaultLocation} suggestions={suggestions} popular={popular} locations={locations} defaultLocation={defaultLocation} />

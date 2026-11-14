@@ -32,11 +32,12 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "sulekha",
     name: "Sulekha",
-    title: "Looking for a Sulekha alternative in the US?",
+    title: "Sulekha alternative: a site like Sulekha for Indians in the US",
     description: `BharathMela is a free marketplace for the Indian community in ${CITIES} US cities: home food, pujaris, tutors, wedding vendors, rooms and more, with checked reviews and free quotes.`,
     intro:
       "Sulekha has served the Indian community for many years. If you're looking for another place to find Indian home businesses, services, rooms and events in your US city, or another place to list your business, here's what BharathMela offers.",
     faq: [
+      { q: "Is there a site like Sulekha for Indians in the US?", a: `Yes. BharathMela (also written Bharat Mela) is a free marketplace for the Indian community in ${CITIES} US cities, with home food, pujaris, tutors, wedding vendors, home services, rooms and events.` },
       { q: "Is BharathMela part of Sulekha?", a: "No. BharathMela is an independent marketplace and isn't affiliated with Sulekha." },
       { q: "Can I list my business on both?", a: "Yes. Many sellers list in several places. Your first BharathMela listing is free, so it costs nothing to add." },
       { q: "Does BharathMela charge buyers or take a cut of payments?", a: "No. Buyers browse, message sellers and post requests for free, and pay the seller directly." },
@@ -45,7 +46,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "craigslist",
     name: "Craigslist",
-    title: "Craigslist for the Indian community: try BharathMela",
+    title: "Indian Craigslist alternative: BharathMela, classifieds for the Indian community",
     description: `Like Craigslist, but made for Indians in the US: tiffins, pujaris, tutors, mehndi, rooms and roommates in ${CITIES} cities, with seller reviews, scam reporting and free quotes.`,
     intro:
       "Craigslist is a general classifieds site for everyone and every kind of ad. BharathMela is built only for the Indian community in the US, so the categories, filters and sellers are the ones you're looking for.",

@@ -13,6 +13,7 @@ import { METROS, metroName, metroTimeZone } from "@/lib/metros";
 import { listingSubcategories, subcategoriesFor, subcategoryLabel } from "@/lib/subcategories";
 import { listingSearchCenter, resolveLocation } from "@/lib/user-location";
 import { CategorySection, HOME_CATEGORIES } from "./CategorySection";
+import { CityDirectory } from "./CityDirectory";
 import { CommunityEvents, EventsSkeleton } from "./CommunityEvents";
 import { FeaturedBusinesses, FeaturedSkeleton, pickFeatured } from "./FeaturedBusinesses";
 import { HeroSection } from "./HeroSection";
@@ -98,6 +99,7 @@ export async function HomePage() {
       <Suspense fallback={<EventsSkeleton />}>
         <Events metro={metro} />
       </Suspense>
+      <CityDirectory />
       <TrustIndicators />
     </div>
   );

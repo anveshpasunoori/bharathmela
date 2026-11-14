@@ -6,7 +6,8 @@ import { METROS } from "@/lib/metros";
 import { SITE_DESCRIPTION, absoluteUrl, cityPath, siteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "About BharathMela (Bharat Mela): Indian marketplace in the US" },
+  // Kept plain so the home page, not this one, is the best match for a search on the brand name.
+  title: "About us",
   description: `BharathMela, also written Bharat Mela, is a marketplace for the Indian community in the US. ${SITE_DESCRIPTION}`,
   alternates: { canonical: "/about" },
 };

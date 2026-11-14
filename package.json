@@ -16,6 +16,7 @@
     "test:db": "tsx tests/db/rate-limit.ts",
     "daily": "curl -s http://localhost:3000/api/cron/daily && echo",
     "create-admin": "tsx scripts/create-admin.ts",
+    "indexnow": "node scripts/indexnow.mjs",
     "db:deploy": "prisma migrate deploy",
     "db:backfill-seller-urls": "tsx scripts/backfill-seller-urls.ts",
     "test:seller-urls": "tsx tests/seller-urls.ts"
