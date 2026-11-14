@@ -7,9 +7,11 @@
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const URL_RE = /(https?:\/\/[^\s<]+[^\s<.,;:!?)"'])/g;
-const linkify = (s: string) => esc(s).replace(URL_RE, (u) => `<a href="${u}" style="color:#c2410c;text-decoration:underline;">${u}</a>`);
+const linkify = (s: string) => esc(s).replace(URL_RE, (u) => `<a href="${u}" style="color:${BRAND};text-decoration:underline;">${u}</a>`);
 
-const BRAND = "#c2410c";
+// The site's forest green (buttons, links, the name) and its storefront pin logo.
+const BRAND = "#145638";
+const LOGO_URL = `${(process.env.APP_URL ?? "https://www.bharathmela.com").replace(/\/$/, "")}/apple-icon.png`;
 const button = (label: string, url: string) =>
   `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;"><tr><td style="background:${BRAND};border-radius:8px;">` +
   `<a href="${esc(url)}" style="display:inline-block;padding:11px 20px;color:#ffffff;font-weight:600;text-decoration:none;font-size:15px;">${esc(label)}</a>` +
@@ -58,12 +60,12 @@ export function renderEmailHtml(subject: string, text: string, footer = "") {
     .join("");
 
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:0;background:#fafaf9;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf9;padding:24px 12px;"><tr><td align="center">
+<body style="margin:0;padding:0;background:#faf8f2;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#faf8f2;padding:24px 12px;"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 <tr><td style="padding:0 4px 16px;">
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:${BRAND};color:#ffffff;font:700 14px/32px Helvetica,Arial,sans-serif;width:32px;height:32px;text-align:center;border-radius:7px;">BM</td>
+<td style="width:32px;height:32px;"><img src="${LOGO_URL}" width="32" height="32" alt="" style="display:block;border:0;border-radius:7px;"></td>
 <td style="padding-left:10px;font:700 18px Helvetica,Arial,sans-serif;color:${BRAND};">BharathMela</td>
 </tr></table></td></tr>
 <tr><td style="background:#ffffff;border:1px solid #e7e5e4;border-radius:14px;padding:28px 24px;font:15px/1.55 Helvetica,Arial,sans-serif;color:#1c1917;">${html}</td></tr>
