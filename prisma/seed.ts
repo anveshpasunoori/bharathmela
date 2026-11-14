@@ -2,6 +2,7 @@
 // Sample vendor logins all use the password "vendor-dev-password"; buyers use "buyer-dev-password".
 // Safe to re-run: anything that already exists is left alone.
 import { PrismaClient } from "@prisma/client";
+import { allocateSellerPath } from "../src/lib/seller-urls";
 import bcrypt from "bcryptjs";
 import { localToUtc } from "../src/lib/events";
 import { readGarageSale, saleExpiry } from "../src/lib/garage-sales";
@@ -35,7 +36,7 @@ async function main() {
 
   for (const s of SAMPLE_VENDORS) {
     if (await db.user.findUnique({ where: { email: s.email } })) continue;
-    const user = await db.user.create({
+    const user = await db.$transaction(async (tx) => tx.user.create({
       data: {
         email: s.email,
         name: s.name,
@@ -44,11 +45,11 @@ async function main() {
         phoneVerifiedAt: s.phoneVerified ? new Date(now) : null,
         createdAt: new Date(now - 120 * DAY_MS),
         vendor: {
-          create: { businessName: s.businessName, phone: s.phone, whatsapp: !!s.whatsapp, about: s.about ?? "", metro: s.metro, zip: s.zip },
+          create: { businessName: s.businessName, phone: s.phone, whatsapp: !!s.whatsapp, about: s.about ?? "", metro: s.metro, zip: s.zip, publicPath: await allocateSellerPath(tx, { businessName: s.businessName, city: "", metro: s.metro, zip: s.zip }) },
         },
       },
       include: { vendor: true },
-    });
+    }));
     const vendorId = user.vendor!.id;
 
     if (s.plan !== "FREE") {

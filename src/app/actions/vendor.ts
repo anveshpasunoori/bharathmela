@@ -380,6 +380,7 @@ export async function updateProfile(_: FormState, form: FormData): Promise<FormS
     await db.user.update({ where: { id: vendor.userId }, data: { phoneVerifiedAt: null } });
   }
   revalidatePath("/seller/[id]", "page");
+  revalidatePath("/[cityState]/[businessName]", "page");
   if (metro !== vendor.metro) {
     revalidatePath("/", "layout");
     return { message: `Profile saved. Your listings now appear under ${metroName(metro)}.` };

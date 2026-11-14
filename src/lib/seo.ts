@@ -99,7 +99,8 @@ export const cityCategoryTitle = (metro: string, category: string) => `${categor
 export const slugify = (text: string) =>
   text.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/, "");
 export const listingPath = (l: { id: string; title: string }) => `/listing/${l.id}${slugify(l.title) ? `-${slugify(l.title)}` : ""}`;
-export const sellerPath = (s: { id: string; businessName: string }) => `/seller/${s.id}${slugify(s.businessName) ? `-${slugify(s.businessName)}` : ""}`;
+// Legacy links remain valid while existing profiles are being backfilled.
+export const sellerPath = (s: { id: string; businessName: string; publicPath: string | null }) => s.publicPath ?? `/seller/${s.id}${slugify(s.businessName) ? `-${slugify(s.businessName)}` : ""}`;
 export const eventPath = (e: { id: string; title: string }) => `/events/${e.id}${slugify(e.title) ? `-${slugify(e.title)}` : ""}`;
 export const idFromSlugParam = (param: string) => param.split("-")[0];
 

@@ -11,7 +11,7 @@ export const metadata = { title: "Report a business", robots: { index: false } }
 export default async function ReportSellerPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ sent?: string }> }) {
   const { id } = await params;
   const { sent } = await searchParams;
-  const seller = await db.vendorProfile.findUnique({ where: { id: idFromSlugParam(id) }, select: { id: true, businessName: true } });
+  const seller = await db.vendorProfile.findUnique({ where: { id: idFromSlugParam(id) }, select: { id: true, businessName: true, publicPath: true } });
   if (!seller) notFound();
 
   if (sent) {

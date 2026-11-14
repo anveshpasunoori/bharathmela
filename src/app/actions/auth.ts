@@ -18,6 +18,7 @@ import { checkVerificationCode, sendVerificationCode } from "@/lib/verification"
 import { readAttribution, referringVendorId, welcomeVerifiedSeller } from "@/lib/growth";
 import { resolveLocation } from "@/lib/user-location";
 import { sellerPlace } from "@/lib/geo";
+import { allocateSellerPath } from "@/lib/seller-urls";
 
 function field(form: FormData, name: string) {
   return String(form.get(name) ?? "").trim();
@@ -75,19 +76,20 @@ export async function vendorSignup(_: FormState, form: FormData): Promise<FormSt
 
   const from = await readAttribution();
   const referredById = await referringVendorId(from.ref);
-  const user = await db.user.create({
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await db.$transaction(async (tx) => tx.user.create({
     data: {
       name,
       email,
-      passwordHash: await bcrypt.hash(password, 10),
+      passwordHash,
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
       signupSource: from.source || (referredById ? "referral" : ""),
       signupCampaign: from.campaign,
       ...cityEmailChoice(form, seller.metro),
-      vendor: { create: { ...seller, referredById } },
+      vendor: { create: { ...seller, referredById, publicPath: await allocateSellerPath(tx, seller) } },
     },
-  });
+  }));
   const { error: notSent } = await sendVerificationCode(user);
   await createSession(user.id);
   redirect(`/verify?next=${encodeURIComponent(next)}${notSent ? "&unsent=1" : ""}`);
@@ -101,15 +103,16 @@ export async function becomeSeller(_: FormState, form: FormData): Promise<FormSt
   if (form.get("terms") !== "on") return { error: "Please agree to the Terms of Service." };
   const seller = sellerDetails(form, user.name);
   if ("error" in seller) return seller;
-  await db.user.update({
+  const referredById = await referringVendorId((await readAttribution()).ref, user.id);
+  await db.$transaction(async (tx) => tx.user.update({
     where: { id: user.id },
     data: {
       role: user.role === "ADMIN" ? "ADMIN" : "VENDOR",
       termsVersion: TERMS_VERSION,
       termsAcceptedAt: new Date(),
-      vendor: { create: { ...seller, referredById: await referringVendorId((await readAttribution()).ref, user.id) } },
+      vendor: { create: { ...seller, referredById, publicPath: await allocateSellerPath(tx, seller) } },
     },
-  });
+  }));
   if (user.emailVerifiedAt) await welcomeVerifiedSeller(user.id);
   const next = safeNext(form, "/vendor");
   redirect(user.emailVerifiedAt ? next : `/verify?next=${encodeURIComponent(next)}`);

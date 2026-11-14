@@ -68,6 +68,8 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
                   <Link href="/indian-classifieds" className="font-semibold text-forest hover:underline">Browse all cities →</Link>
                   <Link href="/rooms-wanted" className="text-muted hover:text-forest">People looking for a place</Link>
                   <Link href="/creators" className="text-muted hover:text-forest">Find local creators</Link>
+                  <Link href="/hire-influencers" className="text-muted hover:text-forest">Hire influencers</Link>
+                  <Link href="/influencers" className="text-muted hover:text-forest">For influencers</Link>
                 </div>
               </div>
             </nav>
@@ -183,6 +185,8 @@ export function SiteHeader({ user, savedCount = 0, unread = 0, lang = "en" }: { 
             </details>
             <div className="text-base">
               <Link href="/events" className={menuLink}>Events near you</Link>
+              <Link href="/hire-influencers" className={menuLink}>Hire influencers</Link>
+              <Link href="/influencers" className={menuLink}>For influencers</Link>
               <Link href="/requests/new" className={menuLink}>Post what you need</Link>
               <Link href="/rooms-wanted" className={menuLink}>People looking for a place</Link>
               <Link href="/creators" className={menuLink}>Find local creators</Link>

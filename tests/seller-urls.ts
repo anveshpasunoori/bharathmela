@@ -1,0 +1,21 @@
+import assert from "node:assert/strict";
+import { sellerPathBase, sellerPathCandidate } from "../src/lib/seller-slugs";
+import { idFromSlugParam, sellerPath } from "../src/lib/seo";
+
+const seller = { businessName: "Capscale Technologies LLC", city: "Saint Johns, FL", metro: "jacksonville", zip: "32259" };
+const base = sellerPathBase(seller);
+assert.equal(base, "/saint-johns-fl/capscale-technologies-llc");
+assert.equal(sellerPathBase({ ...seller, city: "Saint Johns" }), base);
+assert.equal(sellerPathBase({ ...seller, city: "", zip: "10001", metro: "new-jersey" }), "/new-york-ny/capscale-technologies-llc", "ZIP city and state take precedence over the nearby metro");
+assert.equal(sellerPathBase({ ...seller, city: "", zip: "" }), "/jacksonville-fl/capscale-technologies-llc");
+assert.equal(sellerPathBase({ ...seller, businessName: "Tea & Chai / Cafe!" }), "/saint-johns-fl/tea-chai-cafe");
+assert.equal(sellerPathBase({ ...seller, businessName: "!!!" }), "/saint-johns-fl/business");
+assert.match(sellerPathBase({ ...seller, city: `${"Long Town ".repeat(10)}, FL` }), /-fl\/capscale-technologies-llc$/, "state survives long city names");
+assert.equal(sellerPathCandidate(base, 1), base);
+assert.equal(sellerPathCandidate(base, 2), `${base}-2`);
+const id = "cmweb6qti0001lb08uynuaw2r";
+assert.equal(sellerPath({ id, businessName: seller.businessName, publicPath: base }), base);
+assert.equal(sellerPath({ id, businessName: "Renamed business", publicPath: base }), base, "assigned URLs survive a rename");
+assert.equal(idFromSlugParam(`${id}-capscale-technologies-llc`), id);
+assert.equal(sellerPath({ id, businessName: seller.businessName, publicPath: null }), `/seller/${id}-capscale-technologies-llc`, "unmigrated links keep working through the legacy redirect");
+console.log("Seller URL tests passed.");
