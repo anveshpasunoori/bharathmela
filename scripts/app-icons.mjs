@@ -24,16 +24,24 @@ for (const [path, size, options] of [
   await writeFile(new URL(path, root), await appIcon(size, options));
 }
 
-// An ICO directory with a single embedded 32 × 32 PNG for legacy favicon clients.
-const faviconSize = 32;
-const favicon = await sharp(mark).resize(faviconSize, faviconSize).png().toBuffer();
-const directory = Buffer.alloc(22);
-directory.writeUInt16LE(1, 2); // ICO type
-directory.writeUInt16LE(1, 4); // image count
-directory[6] = faviconSize;
-directory[7] = faviconSize;
-directory.writeUInt16LE(1, 10); // planes
-directory.writeUInt16LE(32, 12); // bits per pixel
-directory.writeUInt32LE(favicon.length, 14);
-directory.writeUInt32LE(directory.length, 18);
-await writeFile(new URL("src/app/favicon.ico", root), Buffer.concat([directory, favicon]));
+// A 192 × 192 PNG favicon: Google's search results use a square icon in a multiple of 48 px.
+await writeFile(new URL("src/app/icon1.png", root), await appIcon(192, { rounded: true }));
+
+// An ICO with 16, 32 and 48 px PNGs inside, for browsers and crawlers that only fetch /favicon.ico.
+const sizes = [16, 32, 48];
+const images = await Promise.all(sizes.map((size) => sharp(mark, { density: 720 }).resize(size, size).png().toBuffer()));
+const header = Buffer.alloc(6 + 16 * sizes.length);
+header.writeUInt16LE(1, 2); // ICO type
+header.writeUInt16LE(sizes.length, 4); // image count
+let offset = header.length;
+sizes.forEach((size, i) => {
+  const entry = 6 + 16 * i;
+  header[entry] = size;
+  header[entry + 1] = size;
+  header.writeUInt16LE(1, entry + 4); // planes
+  header.writeUInt16LE(32, entry + 6); // bits per pixel
+  header.writeUInt32LE(images[i].length, entry + 8);
+  header.writeUInt32LE(offset, entry + 12);
+  offset += images[i].length;
+});
+await writeFile(new URL("src/app/favicon.ico", root), Buffer.concat([header, ...images]));
