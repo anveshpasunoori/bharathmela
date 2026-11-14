@@ -23,7 +23,10 @@ import { PUBLIC_REVIEW, ratingsFor } from "@/lib/reviews";
 
 export async function getPublicSeller(where: { id: string } | { publicPath: string }) {
   return db.vendorProfile.findFirst({
-    where: { ...where, user: { suspendedAt: null, deletedAt: null } },
+    where: {
+      ...("id" in where ? where : { OR: [{ publicPath: where.publicPath }, { previousPublicPath: where.publicPath }] }),
+      user: { suspendedAt: null, deletedAt: null },
+    },
     include: { user: { select: { createdAt: true, lastSeenAt: true, emailVerifiedAt: true, phoneVerifiedAt: true } } },
   });
 }

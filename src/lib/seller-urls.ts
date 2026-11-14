@@ -9,7 +9,7 @@ export async function allocateSellerPath(tx: Prisma.TransactionClient, seller: S
   const base = sellerPathBase(seller);
   for (let number = 1; ; number++) {
     const publicPath = sellerPathCandidate(base, number);
-    if (!await tx.vendorProfile.findUnique({ where: { publicPath }, select: { id: true } })) return publicPath;
+    if (!await tx.vendorProfile.findFirst({ where: { OR: [{ publicPath }, { previousPublicPath: publicPath }] }, select: { id: true } })) return publicPath;
   }
 }
 

@@ -74,7 +74,8 @@ model VendorProfile {
   userId               String          @unique
   user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessName         String
-  publicPath           String?         @unique // Stable /city-state/business-name; backfilled for existing sellers.
+  publicPath           String?         @unique // Stable /city/business-name; backfilled for existing sellers.
+  previousPublicPath   String?         @unique // Original city-state URL retained for permanent redirects.
   phone                String
   whatsapp             Boolean         @default(false) // phone number also takes WhatsApp messages
   metro                String // metro slug, see src/lib/metros.ts
