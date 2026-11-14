@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.event.findMany({ where: publicEventWhere(now), select: { id: true, title: true, updatedAt: true }, take: 5_000 }),
     db.vendorProfile.findMany({
       where: { user: { suspendedAt: null, deletedAt: null }, listings: { some: publicListing() } },
-      select: { id: true, businessName: true },
+      select: { id: true, businessName: true, publicPath: true },
       take: 20_000,
     }),
     db.listing.groupBy({ by: ["metro", "category"], where: publicListing(), _count: true, _max: { updatedAt: true } }),
@@ -52,6 +52,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/compare"), changeFrequency: "monthly", priority: 0.5 },
     ...COMPARISONS.map((c) => ({ url: absoluteUrl(comparePath(c)), changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: absoluteUrl(CREATORS_PATH), changeFrequency: "daily", priority: 0.8 },
+    { url: absoluteUrl("/influencers"), changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/hire-influencers"), changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/free-instagram-influencer"), changeFrequency: "monthly", priority: 0.7 },
+    { url: absoluteUrl("/free-youtube-influencer"), changeFrequency: "monthly", priority: 0.7 },
     ...creatorPages.map((p) => ({ url: absoluteUrl(creatorPagePath(p)), changeFrequency: "daily" as const, priority: 0.7 })),
     ...METROS.map((m) => ({ url: absoluteUrl(cityPath(m.id)), changeFrequency: "daily" as const, priority: 0.8 })),
     // Only pages with something listed: empty ones ask search engines not to index them.

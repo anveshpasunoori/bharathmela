@@ -16,7 +16,9 @@
     "test:db": "tsx tests/db/rate-limit.ts",
     "daily": "curl -s http://localhost:3000/api/cron/daily && echo",
     "create-admin": "tsx scripts/create-admin.ts",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "db:backfill-seller-urls": "tsx scripts/backfill-seller-urls.ts",
+    "test:seller-urls": "tsx tests/seller-urls.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

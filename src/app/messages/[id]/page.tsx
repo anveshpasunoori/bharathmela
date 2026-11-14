@@ -22,8 +22,8 @@ export default async function ConversationPage({ params, searchParams }: { param
     where: { id, OR: [{ startedById: user.id }, { otherId: user.id }] },
     include: {
       messages: { orderBy: { createdAt: "asc" }, take: 500 },
-      startedBy: { select: { id: true, name: true, vendor: { select: { id: true, businessName: true } } } },
-      other: { select: { id: true, name: true, vendor: { select: { id: true, businessName: true } } } },
+      startedBy: { select: { id: true, name: true, vendor: { select: { id: true, businessName: true, publicPath: true } } } },
+      other: { select: { id: true, name: true, vendor: { select: { id: true, businessName: true, publicPath: true } } } },
       listing: { select: { id: true, title: true, vendor: { select: { userId: true } } } },
       roomWanted: { select: { id: true, title: true } },
     },
@@ -46,7 +46,7 @@ export default async function ConversationPage({ params, searchParams }: { param
         <Link href="/messages" className="text-sm text-stone-500 hover:text-brand">← Messages</Link>
         <h1 className="mt-1 text-xl font-bold">
           {them.vendor ? (
-            <Link href={sellerPath({ id: them.vendor.id, businessName: them.vendor.businessName })} className="hover:text-brand">{theirName}</Link>
+            <Link href={sellerPath(them.vendor)} className="hover:text-brand">{theirName}</Link>
           ) : (
             theirName
           )}

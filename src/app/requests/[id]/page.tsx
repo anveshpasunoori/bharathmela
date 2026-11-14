@@ -126,7 +126,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
                 <article key={q.id} className="card space-y-2">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <Link href={sellerPath({ id: q.vendorId, businessName: q.vendor.businessName })} className="font-semibold hover:text-brand">{q.vendor.businessName}</Link>
+                      <Link href={sellerPath(q.vendor)} className="font-semibold hover:text-brand">{q.vendor.businessName}</Link>
                       <p className="text-xs text-stone-500">
                         {rating ? <Stars rating={rating.average} count={rating.count} /> : "No reviews yet"} · {timeAgo(q.createdAt)}
                       </p>
@@ -137,7 +137,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
                   </div>
                   <p className="whitespace-pre-line text-sm text-stone-700">{q.message}</p>
                   <p className="text-xs text-stone-500">
-                    To answer, reply to the email we sent you, or see their <Link href={sellerPath({ id: q.vendorId, businessName: q.vendor.businessName })} className="font-medium text-brand">profile and listings</Link>.
+                    To answer, reply to the email we sent you, or see their <Link href={sellerPath(q.vendor)} className="font-medium text-brand">profile and listings</Link>.
                   </p>
                 </article>
               );

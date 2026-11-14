@@ -150,6 +150,7 @@ export async function setReviewVisibility(reviewId: string, visible: boolean) {
   const admin = await requireAdmin();
   await db.review.update({ where: { id: reviewId }, data: { status: visible ? "VISIBLE" : "HIDDEN" } });
   revalidatePath("/seller/[id]", "page");
+  revalidatePath("/[cityState]/[businessName]", "page");
   revalidatePath("/listing/[id]", "page");
   await audit(admin.id, visible ? "review.restore" : "review.hide", "review", reviewId);
   revalidatePath("/admin");

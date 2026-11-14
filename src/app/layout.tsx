@@ -130,6 +130,7 @@ export default async function RootLayout({
               <p className="font-semibold">Buyers</p>
               <Link href="/" className="block text-stone-600 hover:text-brand">Browse</Link>
               <Link href="/events" className="block text-stone-600 hover:text-brand">Events</Link>
+              <Link href="/hire-influencers" className="block text-stone-600 hover:text-brand">Hire influencers</Link>
               <Link href="/safety" className="block text-stone-600 hover:text-brand">Safety tips</Link>
               <Link href="/contact" className="block text-stone-600 hover:text-brand">Contact us</Link>
               <Link href="/signup" className="block text-stone-600 hover:text-brand">Create account</Link>
@@ -137,6 +138,7 @@ export default async function RootLayout({
             <div className="space-y-1">
               <p className="font-semibold">Sellers</p>
               <Link href="/vendor/signup" className="block text-stone-600 hover:text-brand">Start selling</Link>
+              <Link href="/influencers" className="block text-stone-600 hover:text-brand">For influencers</Link>
               <Link href="/vendor/events/new" className="block text-stone-600 hover:text-brand">Post an event</Link>
               <Link href="/pricing" className="block text-stone-600 hover:text-brand">Pricing</Link>
               <Link href="/terms" className="block text-stone-600 hover:text-brand">Terms of Service</Link>

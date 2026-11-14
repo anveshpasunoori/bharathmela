@@ -83,6 +83,10 @@ export async function CreatorsHub({ page }: { page: CreatorPage }) {
 
   return (
     <div className="space-y-6">
+      <nav aria-label="Influencer marketplace" className="flex flex-wrap gap-4 text-sm font-semibold text-forest">
+        <Link href="/hire-influencers" className="hover:underline">For brands: hire influencers</Link>
+        <Link href="/influencers" className="hover:underline">For influencers: brand collaborations</Link>
+      </nav>
       <section className="space-y-3">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
           <Link href="/" className="hover:text-brand">Home</Link>

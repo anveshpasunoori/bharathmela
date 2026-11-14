@@ -22,7 +22,7 @@ type ListingForSchema = {
   details: string;
   vendorId: string;
   photos: { url: string }[];
-  vendor: { businessName: string };
+  vendor: { businessName: string; publicPath: string | null };
 };
 type Rating = { average: number; count: number } | undefined;
 
@@ -48,7 +48,7 @@ function seller(l: ListingForSchema, rating: Rating) {
   return {
     "@type": "LocalBusiness",
     name: l.vendor.businessName,
-    url: absoluteUrl(sellerPath({ id: l.vendorId, businessName: l.vendor.businessName })),
+    url: absoluteUrl(sellerPath({ id: l.vendorId, businessName: l.vendor.businessName, publicPath: l.vendor.publicPath })),
     address: { "@type": "PostalAddress", addressLocality: city(l.metro), addressRegion: region(l.metro), postalCode: l.zip, addressCountry: "US" },
     ...(rating && rating.count > 0
       ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating.average.toFixed(1), reviewCount: rating.count, bestRating: 5, worstRating: 1 } }
@@ -86,7 +86,7 @@ export function listingSchema(l: ListingForSchema, rating: Rating) {
   return { ...base, "@type": "Product", category: categoryLabel(l.category), brand: { "@type": "Brand", name: l.vendor.businessName }, ...offer };
 }
 
-export function sellerSchema(s: { id: string; businessName: string; about: string; metro: string; zip: string; phone: string }, rating: Rating) {
+export function sellerSchema(s: { id: string; businessName: string; publicPath: string | null; about: string; metro: string; zip: string; phone: string }, rating: Rating) {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -103,7 +103,7 @@ export function sellerSchema(s: { id: string; businessName: string; about: strin
 
 export function eventSchema(e: {
   id: string; title: string; description: string; startsAt: Date; endsAt: Date; venueName: string; address: string; isFree: boolean;
-  priceCents: number | null; ticketUrl: string; metro: string; vendor: { businessName: string; id: string };
+  priceCents: number | null; ticketUrl: string; metro: string; vendor: { businessName: string; id: string; publicPath: string | null };
 }) {
   return {
     "@context": "https://schema.org",
